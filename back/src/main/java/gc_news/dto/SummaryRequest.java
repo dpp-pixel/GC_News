@@ -1,4 +1,4 @@
-package dto;
+package gc_news.dto;
 
 import lombok.Builder;
 import lombok.Getter;

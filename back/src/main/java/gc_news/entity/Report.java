@@ -1,4 +1,4 @@
-package entity;
+package gc_news.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
