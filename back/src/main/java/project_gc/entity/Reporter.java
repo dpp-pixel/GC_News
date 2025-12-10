@@ -1,4 +1,4 @@
-package entity;
+package project_gc.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -11,15 +11,19 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Theme {
+public class Reporter {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long themeId;
+    private Long reporterId;
 
     private String name;
+    private String email;
+    private String profileImageUrl;
+    private Float trustScore;
 }

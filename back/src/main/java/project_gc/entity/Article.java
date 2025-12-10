@@ -1,4 +1,4 @@
-package entity;
+package project_gc.entity;
 
 import java.time.LocalDateTime;
 
@@ -16,7 +16,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
