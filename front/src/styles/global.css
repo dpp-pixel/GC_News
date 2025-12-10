@@ -1,0 +1,21 @@
+/* 완전 리셋 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* html/body/root 기준 여백 제거 */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* main은 이후 페이지 영역 */
+main {
+  width: 100%;
+  min-height: calc(100vh - 60px);
+  background: #fff;
+}
