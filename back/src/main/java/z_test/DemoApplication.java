@@ -1,4 +1,4 @@
-package z_test;
+package;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -1,0 +1,64 @@
+package back.src.main.java.controller;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.*;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+
+@RestController
+@RequestMapping("/api/news")
+public class NewsController {
+
+    @Value("${naver.clientid}")
+    private String clientId;
+
+    @Value("${naver.clientsecret}")
+    private String clientSecret;
+
+    @GetMapping
+    public String getNews(@RequestParam String query) {
+
+        try {
+            String text = URLEncoder.encode(query, "UTF-8");
+            String apiURL =
+                    "https://openapi.naver.com/v1/search/news.json?query=" + text
+                            + "&display=10&sort=date";
+
+            HttpURLConnection con = (HttpURLConnection) new URL(apiURL).openConnection();
+            con.setRequestMethod("GET");
+            con.setRequestProperty("X-Naver-Client-Id", clientId);
+            con.setRequestProperty("X-Naver-Client-Secret", clientSecret);
+
+            BufferedReader br = new BufferedReader(
+                    new InputStreamReader(con.getInputStream(), "UTF-8")
+            );
+
+            StringBuilder sb = new StringBuilder();
+            String line;
+
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+
+            return decode(sb.toString());
+
+        } catch (Exception e) {
+            return "error: " + e.getMessage();
+        }
+    }
+
+    private String decode(String text) {
+        if (text == null) return null;
+
+        try {
+            String unescapedHtml = org.apache.commons.text.StringEscapeUtils.unescapeHtml4(text);
+            return new com.fasterxml.jackson.databind.ObjectMapper()
+                    .readValue("\"" + unescapedHtml + "\"", String.class);
+
+        } catch (Exception e) {
+            return text;
+        }
+    }
+}
