@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.text.StringEscapeUtils;
 
 public class ApiExamSearchNews {
-
+/* 
     public static void main(String[] args) {
 
         String clientId = "EpWWkQ2d0jxw6KT8qumS"; 
@@ -103,4 +103,5 @@ public class ApiExamSearchNews {
             return text;
         }
     }
+        */
 }

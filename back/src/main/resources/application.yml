@@ -14,5 +14,9 @@ spring:
         format_sql: true
     show-sql: true
 
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration
+
 server:
   port: 8081

@@ -1,4 +1,4 @@
-package z_test;
+package gc_news.z_test;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
