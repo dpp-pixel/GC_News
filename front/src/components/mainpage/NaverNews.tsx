@@ -15,8 +15,7 @@ export default function NaverNews() {
     axios
       .get("http://localhost:8081/api/news", { params: { query: "속보" } })
       .then((res) => {
-        const items = res.data.items; // JSON.parse 불필요
-        setNews(items);
+        setNews(res.data.items); // JSON items 배열 바로 사용
       })
       .catch((err) => console.error("API 호출 실패:", err));
   }, []);
