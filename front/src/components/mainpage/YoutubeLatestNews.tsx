@@ -49,6 +49,7 @@ function YoutubeLatestNews() {
       const results = await Promise.all(
         channels.map(async (ch) => {
           try {
+            const ch = channels[0]; // KBS News 하나만 선택, 나중에 제거
             const res = await axios.get(
               "https://www.googleapis.com/youtube/v3/search",
               {
@@ -56,7 +57,7 @@ function YoutubeLatestNews() {
                   part: "snippet",
                   channelId: ch.channelId,
                   order: "date",
-                  maxResults: 2, // 2개 가져오기
+                  maxResults: 1, // n개 가져오기
                   key: API_KEY
                 }
               }
@@ -64,7 +65,7 @@ function YoutubeLatestNews() {
 
             const mapped = res.data.items
               .filter((item: any) => item.id.kind === "youtube#video")
-              .slice(0, 2) // 최신 4개만
+              .slice(0, 1) // 가져오는 갯수
               .map((item: any) => ({
                 videoId: item.id.videoId,
                 title: item.snippet.title
