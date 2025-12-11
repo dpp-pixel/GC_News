@@ -1,4 +1,4 @@
-package z_test;
+package gc_news.z_test;
 
 import java.io.*;
 import java.net.HttpURLConnection;
