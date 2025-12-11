@@ -22,7 +22,7 @@ public class NewsController {
     @GetMapping
     public String getNews(
             @RequestParam(required = false) String query,
-            @RequestParam(defaultValue = "10") int display,
+            @RequestParam(defaultValue = "5") int display,
             @RequestParam(defaultValue = "date") String sort) {
         try {
             RestTemplate restTemplate = new RestTemplate();

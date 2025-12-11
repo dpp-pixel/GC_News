@@ -49,7 +49,7 @@ function YoutubeLatestNews() {
       const results = await Promise.all(
         channels.map(async (ch) => {
           try {
-            const ch = channels[0]; // KBS News 하나만 선택, 나중에 제거
+            const ch = channels[0]; // KBS News 하나만 선택, 나중에 제거하면 4개 방송사정상적으로 나옴
             const res = await axios.get(
               "https://www.googleapis.com/youtube/v3/search",
               {
