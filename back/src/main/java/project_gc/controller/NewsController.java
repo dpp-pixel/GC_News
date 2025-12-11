@@ -20,7 +20,10 @@ public class NewsController {
     private final String NAVER_URL = "https://openapi.naver.com/v1/search/news.json";
 
     @GetMapping
-    public String getNews(@RequestParam String query) {
+    public String getNews(
+            @RequestParam(required = false) String query,
+            @RequestParam(defaultValue = "10") int display,
+            @RequestParam(defaultValue = "date") String sort) {
         try {
             RestTemplate restTemplate = new RestTemplate();
 
@@ -30,12 +33,16 @@ public class NewsController {
 
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
-            String url = NAVER_URL + "?query=" + URLEncoder.encode(query, "UTF-8") + "&display=5&sort=date";
+            String q = (query == null || query.isEmpty()) ? "" : query;
+
+            String url = NAVER_URL +
+                    "?query=" + URLEncoder.encode(q, "UTF-8") +
+                    "&display=" + display +
+                    "&sort=" + sort;
 
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
 
-            return response.getBody(); // JSON 그대로 반환
-
+            return response.getBody();
         } catch (Exception e) {
             return "{\"error\": \"" + e.getMessage() + "\"}";
         }
