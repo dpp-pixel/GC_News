@@ -38,6 +38,10 @@ public class Article {
 
     private Float trustWeight;
 
+    private String urlString;//url넘기기용
+
+    private String press;//언론사
+
     @ManyToOne
     @JoinColumn(name = "theme_id")
     private Theme theme;

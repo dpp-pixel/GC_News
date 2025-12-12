@@ -1,4 +1,11 @@
 package gc_news.entity;
+<<<<<<< HEAD
+=======
+
+
+
+
+>>>>>>> 2cba6169084260fcbd72b1783065efa6d58cb006
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
