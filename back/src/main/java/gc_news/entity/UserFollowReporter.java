@@ -13,15 +13,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class UserFollowReporter {
 
-<<<<<<< HEAD
-}
-=======
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long ufrId;
@@ -34,4 +32,3 @@ public class UserFollowReporter {
     @JoinColumn(name = "reporter_id")
     private Reporter reporter;
 }
->>>>>>> 2cba6169084260fcbd72b1783065efa6d58cb006

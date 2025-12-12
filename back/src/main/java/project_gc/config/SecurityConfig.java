@@ -12,7 +12,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .cors(Customizer.withDefaults()) // ⭐ CORS 활성화
+                .cors(Customizer.withDefaults()) // CORS 활성화
                 .csrf(csrf -> csrf.disable()) // CSRF 해제
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().permitAll())
