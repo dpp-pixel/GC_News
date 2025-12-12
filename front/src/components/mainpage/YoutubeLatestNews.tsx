@@ -1,27 +1,27 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import "./YoutubeLatestNews.css";
 
 const channels = [
   { name: "KBS News", channelId: "UCcQTRi69dsVYHN3exePtZ1A" },
-  { name: "MBC News", channelId: "UCF4Wxdo3inmxP-Y59wXDsFw" },
+  { name: "MBC News", channelId: "UCF4Wxdo3inmxP-Y59wXDsFw" }, 
   { name: "SBS News", channelId: "UCkinYTS9IHqOEwR1Sze2JTw" },
   { name: "YTN", channelId: "UChlgI3UHCOnwUGzWzbJ3H5w" }
 ];
 
-const API_KEY = "AIzaSyAl2vNPZa13-OJPnCLG3d-BLM1m_cJ22ds";
-
-// 카드 컴포넌트 — 작은 카드 + 4개씩 그리드
+// 카드 컴포넌트
 function YoutubeCard({ title, videoId }: { title: string; videoId: string }) {
   return (
     <div
-      style={{
-        border: "1px solid #ddd",
-        borderRadius: "10px",
-        padding: "8px",
-        width: "100%",
-        background: "#fafafa"
-      }}
-    >
+  style={{
+    border: "1px solid #ddd",
+    borderRadius: "10px",
+    padding: "8px",
+    width: "250px", // 고정 폭
+    background: "#fafafa",
+    flex: "0 0 auto" // flexbox에서 카드가 줄어들지 않게
+  }}
+>
       <div style={{ position: "relative", paddingBottom: "56%", height: 0 }}>
         <iframe
           src={`https://www.youtube.com/embed/${videoId}`}
@@ -42,46 +42,36 @@ function YoutubeCard({ title, videoId }: { title: string; videoId: string }) {
 }
 
 function YoutubeLatestNews() {
-  const [videos, setVideos] = useState<Record<string, any[]>>({});
+  const [videos, setVideos] = useState<{ videoId: string; title: string }[]>([]);
 
   useEffect(() => {
     const fetchVideos = async () => {
-      const results = await Promise.all(
-        channels.map(async (ch) => {
-          try {
-            const ch = channels[0]; // KBS News 하나만 선택, 나중에 제거하면 4개 방송사정상적으로 나옴
+      try {
+        const results = await Promise.all(
+          channels.map(async (ch) => {
             const res = await axios.get(
-              "https://www.googleapis.com/youtube/v3/search",
-              {
-                params: {
-                  part: "snippet",
-                  channelId: ch.channelId,
-                  order: "date",
-                  maxResults: 1, // n개 가져오기
-                  key: API_KEY
-                }
-              }
+              "http://localhost:8081/api/youtube/latest",
+              { params: { channelId: ch.channelId } }
             );
 
-            const mapped = res.data.items
+            const items = JSON.parse(res.data).items;
+
+            return items
               .filter((item: any) => item.id.kind === "youtube#video")
-              .slice(0, 1) // 가져오는 갯수
+              .slice(0, 3) // 갯수 조절
               .map((item: any) => ({
                 videoId: item.id.videoId,
                 title: item.snippet.title
               }));
+          })
+        );
 
-            return { name: ch.name, videos: mapped };
-          } catch (err) {
-            console.error(`FAIL: ${ch.name}`, err);
-            return { name: ch.name, videos: [] };
-          }
-        })
-      );
-
-      const newData: Record<string, any[]> = {};
-      results.forEach((r) => (newData[r.name] = r.videos));
-      setVideos(newData);
+        // 배열을 평탄화 (모든 채널 영상 하나의 배열로 합침)
+        const allVideos = results.flat();
+        setVideos(allVideos);
+      } catch (err) {
+        console.error(err);
+      }
     };
 
     fetchVideos();
@@ -91,34 +81,21 @@ function YoutubeLatestNews() {
     <div style={{ padding: "20px" }}>
       <h2 style={{ marginBottom: "20px" }}>유튜브 최신 뉴스</h2>
 
-      {channels.map((ch) => (
-        <div key={ch.name} style={{ marginBottom: "40px" }}>
-          <h3 style={{ marginBottom: "12px" }}>{ch.name}</h3>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)", // 1줄에 4개씩
-              gap: "12px",
-    marginBottom: "32px"
-            }}
-          >
-            {videos[ch.name] ? (
-              videos[ch.name].map((v) => (
-                <YoutubeCard
-                  key={v.videoId}
-                  title={v.title}
-                  videoId={v.videoId}
-                />
-              ))
-            ) : (
-              <p>불러오는 중...</p>
-            )}
-          </div>
-        </div>
-      ))}
+      <div
+        style={{
+          display: "flex",
+          gap: "16px",
+          overflowX: "auto",
+          paddingBottom: "12px"
+        }}
+      >
+        {videos.length > 0 ? (
+          videos.map((v) => <YoutubeCard key={v.videoId} title={v.title} videoId={v.videoId} />)
+        ) : (
+          <p>불러오는 중...</p>
+        )}
+      </div>
     </div>
   );
 }
-
 export default YoutubeLatestNews;

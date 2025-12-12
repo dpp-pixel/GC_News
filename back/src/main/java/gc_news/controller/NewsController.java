@@ -1,5 +1,6 @@
 package gc_news.controller;
 
+//크롤링을 이쪽에서
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -20,11 +21,6 @@ public class NewsController {
     public String crawl() {
         newsCrawlingService.crawlSection();
         return "크롤 완료 — 콘솔에서 확인하세요!";
-    }
-
-    @GetMapping("/news")
-    public List<Article> getNews() {
-        return newsCrawlingService.getAllArticles();
     }
 
 }

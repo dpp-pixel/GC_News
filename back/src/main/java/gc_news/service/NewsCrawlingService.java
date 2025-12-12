@@ -147,7 +147,4 @@ public class NewsCrawlingService {
         return 1L;
     }
 
-    public List<Article> getAllArticles() {
-        return articleRepository.findAll();
-    }
 }

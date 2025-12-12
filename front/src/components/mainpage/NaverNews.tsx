@@ -22,7 +22,7 @@ export default function NaverNews() {
         setLoading(true);
         setError(false);
 
-        const res = await axios.get("http://localhost:8081/news");
+        const res = await axios.get("http://localhost:8081/api/articles");
         setNews(res.data.slice(0, 5)); // 5개만 표시
       } catch (err) {
         console.error("API 오류:", err);
