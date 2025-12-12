@@ -4,9 +4,9 @@ import YoutubeLatestNews from "../components/mainpage/YoutubeLatestNews";
 
 export default function MainContent() {
   return (
-    <div className="flex max-w-6xl mx-auto mt-6 px-4 gap-6">
+    <div >
       {/* 메인 영역 */}
-      <div className="flex-1 space-y-6">
+      <div >
         {/* 큰 메인 뉴스 */}
         <NaverNews />
 

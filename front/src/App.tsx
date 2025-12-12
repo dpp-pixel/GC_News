@@ -12,9 +12,9 @@ function App() {
       <Header />
       <CategoryBar />
 
-<main className="flex justify-center mt-6 gap-6" style={{ paddingLeft: '260px', paddingRight: '260px' }}>
+<main>
   {/* 메인 콘텐츠 영역 */}
-  <div className="flex-1 max-w-5xl space-y-6">
+  <div>
     <Routes>
       <Route
         path="/"

@@ -8,6 +8,7 @@ import gc_news.repository.ArticleRepository;
 import gc_news.repository.ThemeRepository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -87,7 +88,7 @@ public class NewsCrawlingService {
                     imgUrl = article.select("img").attr("data-src");
                 }
                 if (imgUrl == null || imgUrl.isEmpty()) {
-                    imgUrl = null; 
+                    imgUrl = null;
                 }
 
                 // Theme 자동 매핑
@@ -144,5 +145,9 @@ public class NewsCrawlingService {
         if (url.contains("/105"))
             return 6L;
         return 1L;
+    }
+
+    public List<Article> getAllArticles() {
+        return articleRepository.findAll();
     }
 }
