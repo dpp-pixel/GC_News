@@ -22,5 +22,5 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
             """)
     List<Article> findAllWithMedia(); // mediaList까지 같이 가져오기
 
-    List<Article> findByThemeIdOrderByPublishedAtDesc(Long themeId);
+    List<Article> findByTheme_ThemeIdOrderByPublishedAtDesc(Long themeId);
 }

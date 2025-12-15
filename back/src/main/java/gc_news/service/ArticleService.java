@@ -25,6 +25,6 @@ public class ArticleService {
     }
 
     public List<Article> getArticlesByTheme(Long themeId) {
-        return articleRepository.findByThemeIdOrderByPublishedAtDesc(themeId);
+        return articleRepository.findByTheme_ThemeIdOrderByPublishedAtDesc(themeId);
     }
 }
