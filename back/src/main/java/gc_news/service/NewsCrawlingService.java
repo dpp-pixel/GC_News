@@ -15,12 +15,24 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.concurrent.atomic.AtomicInteger;
+
+
+
 @Service
 public class NewsCrawlingService {
 
     private final ArticleRepository articleRepository;
     private final ThemeRepository themeRepository;
     private final ArticleMediaRepository articleMediaRepository;
+
+    private static final Pattern SECTION_PATTERN = Pattern.compile("/section/(\\d{3})");
+    private final AtomicInteger nextSection = new AtomicInteger(0);
+    private final AtomicBoolean crawling = new AtomicBoolean(false);
+
 
     // 수집할 URL 리스트
     private final String[] urls = {
@@ -43,8 +55,20 @@ public class NewsCrawlingService {
      * 전체 섹션 크롤링
      */
     public void crawlSection() {
-        for (String url : urls) {
-            crawlOneSection(url);
+
+        // 추가: 이미 실행 중이면 그냥 종료
+        if (!crawling.compareAndSet(false, true)) {
+            System.out.println("### crawlSection already running - skip");
+            return;
+        }
+
+        try {
+            for (String url : urls) {
+                crawlOneSection(url);
+            }
+        } finally {
+            // 추가: 예외가 나도 반드시 락 해제
+            crawling.set(false);
         }
     }
 
@@ -87,7 +111,7 @@ public class NewsCrawlingService {
                     imgUrl = article.select("img").attr("data-src");
                 }
                 if (imgUrl == null || imgUrl.isEmpty()) {
-                    imgUrl = null; 
+                    imgUrl = null;
                 }
 
                 // Theme 자동 매핑
@@ -109,7 +133,7 @@ public class NewsCrawlingService {
                 System.out.println("제목: " + title);
                 System.out.println("링크: " + link);
                 System.out.println("언론사: " + press);
-
+                System.out.println("themeId=" + themeId + ", theme=" + (theme == null ? "null" : theme.getName()));
                 System.out.println("------------------------------------");
 
                 ArticleMedia media = ArticleMedia.builder()
@@ -131,18 +155,27 @@ public class NewsCrawlingService {
      * URL 기반으로 theme 자동 할당
      */
     private Long getThemeIdFromUrl(String url) {
-        if (url.contains("/100"))
-            return 1L;
-        if (url.contains("/101"))
-            return 2L;
-        if (url.contains("/102"))
-            return 3L;
-        if (url.contains("/103"))
-            return 4L;
-        if (url.contains("/104"))
-            return 5L;
-        if (url.contains("/105"))
-            return 6L;
-        return 1L;
+
+    if (url == null) return 100L;
+
+    Matcher m = SECTION_PATTERN.matcher(url);
+    if (!m.find()) return 100L;
+
+    return Long.parseLong(m.group(1)); // 100~105 그대로 반환
+}
+
+   public void crawlNextSection() {
+
+    if (!crawling.compareAndSet(false, true)) {
+        System.out.println("### crawlNextSection already running - skip");
+        return;
     }
+
+    try {
+        int idx = nextSection.getAndUpdate(i -> (i + 1) % urls.length);
+        crawlOneSection(urls[idx]);
+    } finally {
+        crawling.set(false);
+    }
+}
 }
