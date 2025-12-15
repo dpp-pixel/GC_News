@@ -20,4 +20,9 @@ public class ArticleController {
         return articleService.getAllArticlesWithMedia();
     }
 
+    @GetMapping("/category/{themeId}")
+    public List<Article> getArticlesByTheme(@PathVariable Long themeId) {
+        return articleService.getArticlesByTheme(themeId);
+    }
+
 }

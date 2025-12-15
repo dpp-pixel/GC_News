@@ -87,7 +87,7 @@ function MainArticle({ item }: { item: Article }) {
 
 function SubArticle({ item }: { item: Article }) {
   return (
-    <article className="sub-article horizontal">
+    <article className="sub-article vertical">
       {item.mediaList?.[0]?.url && (
         <div className="sub-image">
           <img src={item.mediaList[0].url} alt={item.title} />

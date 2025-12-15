@@ -23,4 +23,8 @@ public class ArticleService {
                 .limit(limit)
                 .toList();
     }
+
+    public List<Article> getArticlesByTheme(Long themeId) {
+        return articleRepository.findByThemeIdOrderByPublishedAtDesc(themeId);
+    }
 }

@@ -2,19 +2,26 @@ import { Link } from "react-router-dom";
 import styles from "./CategoryBar.module.css";
 
 export default function CategoryBar() {
+  const categories = [
+    { name: "정치", id: 100 },
+    { name: "경제", id: 101 },
+    { name: "사회", id: 102 },
+    { name: "생활/문화", id: 103 },
+    { name: "세계", id: 104 },
+    { name: "IT과학", id: 105 },
+  ];
+
   return (
     <>
       <nav className={styles.nav}>
         <ul>
-          <li><Link to="/category/정치">정치</Link></li>
-          <li><Link to="/category/경제">경제</Link></li>
-          <li><Link to="/category/사회">사회</Link></li>
-          <li><Link to="/category/생활문화">생활/문화</Link></li>
-          <li><Link to="/category/IT과학">IT/과학</Link></li>
-          <li><Link to="/category/세계">세계</Link></li>
+          {categories.map((cat) => (
+            <li key={cat.id}>
+              <Link to={`/category/${cat.id}`}>{cat.name}</Link>
+            </li>
+          ))}
         </ul>
       </nav>
-
       <div className={styles.divider}></div>
     </>
   );

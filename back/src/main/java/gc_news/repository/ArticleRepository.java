@@ -21,4 +21,6 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
                 ORDER BY a.viewCount DESC
             """)
     List<Article> findAllWithMedia(); // mediaList까지 같이 가져오기
+
+    List<Article> findByThemeIdOrderByPublishedAtDesc(Long themeId);
 }
