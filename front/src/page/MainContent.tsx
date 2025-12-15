@@ -11,7 +11,7 @@ export default function MainContent() {
         <NaverNews />
 
         {/* 하단 유튜브 영상 */}
-        <YoutubeLatestNews />
+        {/* <YoutubeLatestNews /> */}
       </div>
 
       {/* 사이드바 자리 */}

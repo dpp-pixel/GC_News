@@ -54,7 +54,7 @@ function YoutubeLatestNews() {
               { params: { channelId: ch.channelId } }
             );
 
-            const items = JSON.parse(res.data).items;
+            const items = res.data.items;
 
             return items
               .filter((item: any) => item.id.kind === "youtube#video")
