@@ -13,6 +13,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Getter
@@ -33,6 +34,7 @@ public class ArticleMedia {
 
     @ManyToOne
     @JoinColumn(name = "article_id")
+    @JsonBackReference
     private Article article;
 
     public enum MediaType {

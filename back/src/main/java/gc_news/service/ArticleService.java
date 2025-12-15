@@ -13,15 +13,12 @@ public class ArticleService {
 
     private final ArticleRepository articleRepository;
 
-    // 전체 기사 가져오기
-    public List<Article> getAllArticles() {
-        // return articleRepository.findAll(); //전체 기사 가져오기
-        return articleRepository.findAllByOrderByViewCountDesc(); // 조회수순
+    public List<Article> getAllArticlesWithMedia() {
+        return articleRepository.findAllWithMedia();
     }
 
-    // 조회수 높은 순으로 가져오기
-    public List<Article> getTopArticles(int limit) {
-        return articleRepository.findAllByOrderByViewCountDesc()
+    public List<Article> getTopArticlesWithMedia(int limit) {
+        return articleRepository.findAllWithMedia()
                 .stream()
                 .limit(limit)
                 .toList();

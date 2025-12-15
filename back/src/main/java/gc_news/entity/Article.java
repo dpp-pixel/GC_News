@@ -1,14 +1,19 @@
 package gc_news.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -38,9 +43,9 @@ public class Article {
 
     private Float trustWeight;
 
-    private String urlString;//url넘기기용
+    private String urlString;// url넘기기용
 
-    private String press;//언론사
+    private String press;// 언론사
 
     @ManyToOne
     @JoinColumn(name = "theme_id")
@@ -49,4 +54,8 @@ public class Article {
     @ManyToOne
     @JoinColumn(name = "reporter_id")
     private Reporter reporter;
+
+    @OneToMany(mappedBy = "article", fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<ArticleMedia> mediaList;
 }

@@ -1,10 +1,12 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Header from "./components/layout/Header";
 import CategoryBar from "./components/layout/categorybar/CategoryBar";
-//import Sidebar from "./components/Sidebar/Sidebar";
+// import Sidebar from "./components/Sidebar/Sidebar";
 
 import MainContent from "./page/MainContent";
 import CategoryPage from "./page/CategoryPage";
+
+import "./App.css";
 
 function App() {
   return (
@@ -12,26 +14,18 @@ function App() {
       <Header />
       <CategoryBar />
 
-<main>
-  {/* 메인 콘텐츠 영역 */}
-  <div>
-    <Routes>
-      <Route
-        path="/"
-        element={
-          <>
-            <MainContent />
-          </>
-        }
-      />
-      <Route path="/category/:name" element={<CategoryPage />} />
-    </Routes>
-  </div>
+      <main className="app-main">
+        {/* 메인 콘텐츠 */}
+        <div className="content-wrapper">
+          <Routes>
+            <Route path="/" element={<MainContent />} />
+            <Route path="/category/:name" element={<CategoryPage />} />
+          </Routes>
+        </div>
 
-  {/* 사이드바 자리 */}
-  {/* <Sidebar className="w-80" /> */}
-</main>
-
+        {/* 사이드바 자리 */}
+        {/* <Sidebar className="sidebar" /> */}
+      </main>
     </BrowserRouter>
   );
 }

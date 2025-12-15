@@ -17,11 +17,7 @@ public class ArticleController {
 
     @GetMapping
     public List<Article> getAll() {
-        return articleService.getAllArticles();
+        return articleService.getAllArticlesWithMedia();
     }
 
-    @GetMapping("/top")
-    public List<Article> getTopArticles() {
-        return articleService.getTopArticles(5); // Top 5
-    }
 }
