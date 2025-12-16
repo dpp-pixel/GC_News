@@ -8,6 +8,7 @@ interface Article {
   press: string;
   urlString: string;
   publishedAt: string;
+  mediaList?: { url: string }[];
 }
 
 export default function LatestNewsList() {
@@ -18,7 +19,7 @@ export default function LatestNewsList() {
     const fetchLatest = async () => {
       try {
         const res = await axios.get("http://localhost:8081/api/articles");
-        setNews(res.data.slice(0, 10)); // 최신 10개
+        setNews(res.data.slice(0, 16));
       } finally {
         setLoading(false);
       }
@@ -28,22 +29,51 @@ export default function LatestNewsList() {
 
   if (loading) return <p>최신 기사 불러오는 중...</p>;
 
+  const leftNews = news.slice(0, 3);
+  const centerNews = news.slice(3);
+
   return (
     <section className="latest-news">
       <h2 className="latest-title">최신 기사</h2>
 
-      <ul className="latest-list">
-        {news.map(item => (
-          <li key={item.articleId}>
-            <a href={item.urlString} target="_blank" rel="noreferrer">
-              <span className="title">{item.title}</span>
-              <span className="meta">
+      <div className="latest-grid">
+        {/* 🔹 왼쪽 */}
+        <div className="latest-left">
+          {leftNews.map(item => (
+            <article key={item.articleId} className="image-article">
+              {item.mediaList?.[0]?.url && (
+                <div className="image-wrap">
+                  <img src={item.mediaList[0].url} alt={item.title} />
+                </div>
+              )}
+              <a href={item.urlString} target="_blank" rel="noreferrer">
+                <h4>{item.title}</h4>
+              </a>
+              <p className="meta">
                 {item.press} · {new Date(item.publishedAt).toLocaleDateString()}
-              </span>
-            </a>
-          </li>
-        ))}
-      </ul>
+              </p>
+            </article>
+          ))}
+        </div>
+
+        {/* 🔹 중앙 */}
+        <div className="latest-center">
+          <ul>
+            {centerNews.map(item => (
+              <li key={item.articleId}>
+                <a href={item.urlString} target="_blank" rel="noreferrer">
+                  {item.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* 🔹 오른쪽 (비워둠) */}
+        <div className="latest-right">
+          {/* 나중에 칼럼, 오피니언 */}
+        </div>
+      </div>
     </section>
   );
 }

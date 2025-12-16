@@ -51,7 +51,7 @@ export default function NaverNews() {
 
         {/* 오른쪽 리스트 기사 */}
         <div className="right-list">
-          {news.slice(3).map((item) => (
+          {news.slice(4).map((item) => (
             <ListArticle key={item.articleId} item={item} />
           ))}
         </div>
@@ -108,8 +108,16 @@ function ListArticle({ item }: { item: Article }) {
   return (
     <article className="list-article">
       <a href={item.urlString} target="_blank" rel="noreferrer">
+
+        {item.mediaList?.[0]?.url && (
+          <div className="list-thumb">
+            <img src={item.mediaList[0].url} alt={item.title} />
+          </div>
+        )}
+
         <h4>{item.title}</h4>
         <span>{item.press}</span>
+
       </a>
     </article>
   );
