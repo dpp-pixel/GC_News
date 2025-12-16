@@ -26,53 +26,35 @@ export default function HotNews() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchHotNews = async () => {
-      try {
-       const res = await axios.get<Article[]>(
-  "http://localhost:8081/api/articles/hot",
-  {
-    params: {
-      days: 3,
-      limit: 100,
-    },
-  }
-);
+  const fetchHotNews = async () => {
+    try {
+      const res = await axios.get<Record<number, Article[]>>(
+        "http://localhost:8081/api/articles/hot/grouped",
+        {
+          params: {
+            days: 3,
+            limit: 3,
+          },
+        }
+      );
 
-        const map = new Map<number, CategoryHotNews>();
+      const result = Object.entries(res.data).map(
+        ([themeId, articles]) => ({
+          themeId: Number(themeId),
+          themeName: articles[0]?.theme?.name ?? "",
+          articles,
+        })
+      );
 
-        res.data.forEach((article) => {
-          if (!article.theme) return;
+      setHotNews(result);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-          const themeId = article.theme.themeId;
+  fetchHotNews();
+}, []);
 
-          if (!map.has(themeId)) {
-            map.set(themeId, {
-              themeId,
-              themeName: article.theme.name,
-              articles: [],
-            });
-          }
-
-          map.get(themeId)!.articles.push(article);
-        });
-
-        const result = Array.from(map.values()).map((cat) => ({
-          ...cat,
-          articles: cat.articles
-            .sort((a, b) => b.viewCount - a.viewCount)
-            .slice(0, 3),//기사 갯수
-        }));
-
-        setHotNews(result);
-      } catch (e) {
-        console.error("HotNews fetch error", e);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchHotNews();
-  }, []);
 
   if (loading) return <p>인기 뉴스 불러오는 중...</p>;
 

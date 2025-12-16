@@ -10,6 +10,11 @@ const channels = [
 ];
 
 // 카드 컴포넌트
+function decodeHtml(html: string) {// 제목 디코딩
+  const txt = document.createElement("textarea");
+  txt.innerHTML = html;
+  return txt.value;
+}
 function YoutubeCard({ title, videoId }: { title: string; videoId: string }) {
   return (
     <div
@@ -22,6 +27,7 @@ function YoutubeCard({ title, videoId }: { title: string; videoId: string }) {
     flex: "0 0 auto" // flexbox에서 카드가 줄어들지 않게
   }}
 >
+  
       <div style={{ position: "relative", paddingBottom: "56%", height: 0 }}>
         <iframe
           src={`https://www.youtube.com/embed/${videoId}`}
@@ -32,11 +38,13 @@ function YoutubeCard({ title, videoId }: { title: string; videoId: string }) {
             borderRadius: "6px"
           }}
           allowFullScreen
-          title={title}
+          title={decodeHtml(title)}//디코딩
         />
       </div>
 
-      <p style={{ fontSize: "13px", marginTop: "6px" }}>{title}</p>
+      <p style={{ fontSize: "13px", marginTop: "6px" }}>
+        {decodeHtml(title)}
+      </p>
     </div>
   );
 }
@@ -58,7 +66,7 @@ function YoutubeLatestNews() {
 
             return items
               .filter((item: any) => item.id.kind === "youtube#video")
-              .slice(0, 3) // 갯수 조절
+              .slice(0, 1) // 갯수 조절
               .map((item: any) => ({
                 videoId: item.id.videoId,
                 title: item.snippet.title
@@ -66,7 +74,7 @@ function YoutubeLatestNews() {
           })
         );
 
-        // 배열을 평탄화 (모든 채널 영상 하나의 배열로 합침)
+        // 일렬로 배열
         const allVideos = results.flat();
         setVideos(allVideos);
       } catch (err) {

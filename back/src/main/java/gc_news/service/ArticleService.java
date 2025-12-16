@@ -32,26 +32,35 @@ public class ArticleService {
 
     // 카테고리별 인기 뉴스
 
-    public Map<Long, List<Article>> getHotArticlesGroupedByTheme(int days, int limitPerTheme) {
+    public Map<Long, List<Article>> getHotArticlesGroupedByTheme(
+            int days,
+            int limitPerTheme) {
         LocalDateTime from = LocalDateTime.now().minusDays(days);
 
-        return articleRepository.findHotArticles(from).stream()
-                .filter(a -> a.getTheme() != null)
-                .collect(Collectors.groupingBy(
-                        a -> a.getTheme().getThemeId(),
-                        LinkedHashMap::new,
-                        Collectors.collectingAndThen(
-                                Collectors.toList(),
-                                list -> list.stream()
-                                        .collect(Collectors.toMap(
-                                                Article::getUrlString,
-                                                a -> a,
-                                                (a, b) -> a,
-                                                LinkedHashMap::new))
-                                        .values()
-                                        .stream()
-                                        .limit(limitPerTheme)
-                                        .toList())));
+        List<Article> articles = articleRepository.findHotArticles(from);
+
+        Map<Long, List<Article>> result = new LinkedHashMap<>();
+
+        for (Article article : articles) {
+            if (article.getTheme() == null)
+                continue;
+
+            Long themeId = article.getTheme().getThemeId();
+
+            result.putIfAbsent(themeId, new ArrayList<>());
+
+            List<Article> list = result.get(themeId);
+
+            // urlString 기준 중복 제거
+            boolean exists = list.stream()
+                    .anyMatch(a -> a.getUrlString().equals(article.getUrlString()));
+
+            if (!exists && list.size() < limitPerTheme) {
+                list.add(article);
+            }
+        }
+
+        return result;
     }
 
     public List<Article> getAllArticlesWithMedia() {
