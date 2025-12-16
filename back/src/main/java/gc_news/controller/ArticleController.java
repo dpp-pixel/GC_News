@@ -1,12 +1,14 @@
 package gc_news.controller;
 
-//db조회를 이쪽 담당
 import gc_news.entity.Article;
 import gc_news.service.ArticleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
-import java.util.Map;
+
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -15,19 +17,18 @@ public class ArticleController {
 
     private final ArticleService articleService;
 
-    // 전체 인기 뉴스
-    // 예: /api/articles/hot?days=3&limit=10
-
+    // 전체 / 테마별 인기 뉴스 (조회수 순, 최근 days일 기준)
+    // 예: /api/articles/hot?days=3&limit=10&themeId=1
     @GetMapping("/hot")
     public List<Article> hotArticles(
             @RequestParam(defaultValue = "3") int days,
-            @RequestParam(defaultValue = "10") int limit) {
-        return articleService.getHotArticles(days, limit);
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(required = false) Long themeId) {
+        return articleService.getHotArticles(days, limit, themeId);
     }
 
-    // 카테고리별 인기 뉴스
-    // /api/articles/hot/grouped?days=3&limit=3
-
+    // 카테고리별 인기 뉴스 그룹
+    // 예: /api/articles/hot/grouped?days=3&limit=3
     @GetMapping("/hot/grouped")
     public Map<Long, List<Article>> hotArticlesGrouped(
             @RequestParam(defaultValue = "3") int days,
@@ -35,14 +36,18 @@ public class ArticleController {
         return articleService.getHotArticlesGroupedByTheme(days, limit);
     }
 
+    // 모든 기사 조회 (media 포함)
     @GetMapping
     public List<Article> getAll() {
         return articleService.getAllArticlesWithMedia();
     }
 
+    // 카테고리별 최신 기사 조회 (페이지 처리)
+    // 예: /api/articles/category/{themeId}?page=0&size=10
     @GetMapping("/category/{themeId}")
-    public List<Article> getArticlesByTheme(@PathVariable Long themeId) {
-        return articleService.getArticlesByTheme(themeId);
+    public Page<Article> getArticlesByTheme(
+            @PathVariable Long themeId,
+            Pageable pageable) {
+        return articleService.getArticlesByTheme(themeId, pageable);
     }
-
 }

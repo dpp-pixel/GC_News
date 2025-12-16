@@ -31,27 +31,53 @@ export default function HotIssueSection({ themeId }: { themeId: number }) {
 
   return (
     <section className="hot-issue">
-      <h2>HOT 이슈</h2>
+  <h2>HOT 이슈</h2>
 
-      <div className="hot-main">
-        {articles[0].mediaList?.[0]?.url && (
-          <img src={articles[0].mediaList[0].url} alt="" />
+  <ul className="hot-list">
+    {articles.map((article) => (
+      <li
+        key={article.articleId}
+        className="hot-item"
+        style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "8px" }}
+      >
+        {article.mediaList?.[0]?.url && (
+          <div
+            style={{
+              flexShrink: 0,
+              width: "60px",
+              height: "60px",
+              overflow: "hidden",
+            }}
+          >
+            <img
+              src={article.mediaList[0].url}
+              alt={article.title}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                borderRadius: "4px",
+              }}
+            />
+          </div>
         )}
-
-        <a href={articles[0].urlString} target="_blank" rel="noreferrer">
-          <h3>{articles[0].title}</h3>
+        <a
+          href={article.urlString}
+          target="_blank"
+          rel="noreferrer"
+          style={{
+            fontWeight: "bold",
+            fontSize: "14px",
+            color: "#000",
+            textDecoration: "none",
+          }}
+        >
+          {article.title}
         </a>
-      </div>
+      </li>
+    ))}
+  </ul>
+</section>
 
-      <ul className="hot-list">
-        {articles.slice(1).map((a) => (
-          <li key={a.articleId}>
-            <a href={a.urlString} target="_blank" rel="noreferrer">
-              {a.title}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </section>
   );
 }
