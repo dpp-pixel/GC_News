@@ -28,9 +28,15 @@ export default function HotNews() {
   useEffect(() => {
     const fetchHotNews = async () => {
       try {
-        const res = await axios.get<Article[]>(
-          "http://localhost:8081/api/articles"
-        );
+       const res = await axios.get<Article[]>(
+  "http://localhost:8081/api/articles/hot",
+  {
+    params: {
+      days: 3,
+      limit: 100,
+    },
+  }
+);
 
         const map = new Map<number, CategoryHotNews>();
 

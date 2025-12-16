@@ -20,8 +20,16 @@ export default function NaverNews() {
   useEffect(() => {
     const fetchNews = async () => {
       try {
-        const res = await axios.get("http://localhost:8081/api/articles");
-        setNews(res.data.slice(0, 6));
+        const res = await axios.get(
+  "http://localhost:8081/api/articles/hot",
+  {
+    params: {
+      days: 3,
+      limit: 6, // 메인 + 서브 + 리스트용
+    },
+  }
+);
+        setNews(res.data);
       } catch (e) {
         setError(true);
       } finally {

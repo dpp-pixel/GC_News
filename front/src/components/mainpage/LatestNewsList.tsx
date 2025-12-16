@@ -37,7 +37,7 @@ export default function LatestNewsList() {
       <h2 className="latest-title">최신 기사</h2>
 
       <div className="latest-grid">
-        {/* 🔹 왼쪽 */}
+        {/*  왼쪽 */}
         <div className="latest-left">
           {leftNews.map(item => (
             <article key={item.articleId} className="image-article">
@@ -56,7 +56,7 @@ export default function LatestNewsList() {
           ))}
         </div>
 
-        {/* 🔹 중앙 */}
+        {/* 중앙 */}
         <div className="latest-center">
           <ul>
             {centerNews.map(item => (
