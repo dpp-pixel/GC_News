@@ -1,6 +1,18 @@
+.category-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
 .category-list ul li {
   padding: 12px 0;
   border-bottom: 1px solid #eee;
+}
+
+.category-list ul li a {
+  color: #000;
+  text-decoration: none;
+  display: block;
 }
 
 .category-list .title {
@@ -11,6 +23,10 @@
 .category-list .meta {
   font-size: 12px;
   color: #777;
+}
+
+.category-list ul li a:hover .title {
+  text-decoration: underline;
 }
 
 .pagination {

@@ -20,7 +20,7 @@ export default function HotIssueSection({ themeId }: { themeId: number }) {
         params: {
           days: 3,
           limit: 5,
-          themeId, //  있으면 좋음 (없으면 프론트 필터)
+          themeId, 
         },
       })
       .then((res) => setArticles(res.data))

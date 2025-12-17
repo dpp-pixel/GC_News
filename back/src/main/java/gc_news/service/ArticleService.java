@@ -16,7 +16,7 @@ public class ArticleService {
 
     private final ArticleRepository articleRepository;
 
-    // 전체 인기 뉴스 (조회수 순, 최근 days일 기준, 선택적 themeId)
+    // 전체 인기 뉴스 (조회수 순, 최근 days일 기준, 선택 themeId)
     public List<Article> getHotArticles(int days, int limit, Long themeId) {
         LocalDateTime from = LocalDateTime.now().minusDays(days);
 

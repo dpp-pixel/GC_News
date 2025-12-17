@@ -19,7 +19,7 @@ function App() {
         <div className="content-wrapper">
           <Routes>
             <Route path="/" element={<MainContent />} />
-            <Route path="/category/:name" element={<CategoryPage />} />
+            <Route path="/category/:themeId" element={<CategoryPage />} />
           </Routes>
         </div>
 
