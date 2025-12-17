@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import "./ArticleDetailPage.css";
 
 interface Article {
   articleId: number;
@@ -25,60 +26,53 @@ export default function ArticleDetailPage() {
 
     axios
       .get<Article>(`http://localhost:8081/api/articles/${articleId}`)
-      .then((res) => {
-        setArticle(res.data);
-      })
+      .then((res) => setArticle(res.data))
       .finally(() => setLoading(false));
   }, [articleId]);
 
-  if (loading) return <p>로딩중...</p>;
-  if (!article) return <p>기사를 찾을 수 없습니다.</p>;
+  if (loading) return <p className="article-loading">로딩중...</p>;
+  if (!article) return <p className="article-error">기사를 찾을 수 없습니다.</p>;
 
   return (
-    <main style={{ width: "800px", margin: "40px auto" }}>
+    <main className="article-detail">
       {/* 제목 */}
-      <h1 style={{ fontSize: "28px", marginBottom: "10px" }}>
-        {article.title}
-      </h1>
+      <h1 className="article-title">{article.title}</h1>
 
       {/* 메타 정보 */}
-      <div style={{ color: "#666", fontSize: "14px", marginBottom: "20px" }}>
+      <div className="article-meta">
         {article.press} ·{" "}
         {new Date(article.publishedAt).toLocaleString()} · 조회수{" "}
         {article.viewCount ?? 0}
       </div>
 
       {/* 대표 이미지 */}
-      {article.mediaList?.[0]?.url && (
-        <img
-          src={article.mediaList[0].url}
-          alt={article.title}
-          style={{
-            width: "100%",
-            maxHeight: "400px",
-            objectFit: "cover",
-            marginBottom: "20px",
-          }}
-        />
+      {article.mediaList?.[0]?.url ? (
+        <div className="article-image">
+          <img
+            src={article.mediaList[0].url.split("?")[0]}
+            alt={article.title}
+            loading="lazy"
+          />
+        </div>
+      ) : (
+        <div className="article-image no-image">
+          <span>이미지 없음</span>
+        </div>
       )}
 
-      {/* 기사 본문 */}
-      <article style={{ fontSize: "16px", lineHeight: "1.7" }}>
-        {article.content ? (
-          article.content
-        ) : (
-          <p>본문 내용이 제공되지 않는 기사입니다.</p>
-        )}
+      {/* 본문 */}
+      <article className="article-content">
+        {article.content ? article.content : "본문 내용이 제공되지 않는 기사입니다."}
       </article>
 
-      {/* 좋아요 / 싫어요 자리 */}
-      <section style={{ marginTop: "40px" }}>
+      {/* 좋아요 / 싫어요 */}
+      <section className="article-actions">
         <button>👍 좋아요</button>
-        <button style={{ marginLeft: "10px" }}>👎 싫어요</button>
+        <button>👎 싫어요</button>
       </section>
 
       {/* 댓글 자리 */}
-      <section style={{ marginTop: "40px" }}>
+      <section className="article-comments">
         <h3>댓글</h3>
         <p>댓글 기능 예정</p>
       </section>
