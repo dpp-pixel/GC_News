@@ -50,4 +50,9 @@ public class ArticleController {
             Pageable pageable) {
         return articleService.getArticlesByTheme(themeId, pageable);
     }
+
+    @GetMapping("/{articleId}")
+    public Article getArticleDetail(@PathVariable Long articleId) {
+        return articleService.getArticleDetail(articleId);
+    }
 }

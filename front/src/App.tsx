@@ -5,7 +5,7 @@ import CategoryBar from "./components/layout/categorybar/CategoryBar";
 
 import MainContent from "./page/MainContent";
 import CategoryPage from "./page/CategoryPage";
-
+import ArticleDetailPage from "./page/ArticleDetailPage";
 import "./App.css";
 
 function App() {
@@ -20,6 +20,7 @@ function App() {
           <Routes>
             <Route path="/" element={<MainContent />} />
             <Route path="/category/:themeId" element={<CategoryPage />} />
+            <Route path="/article/:articleId" element={<ArticleDetailPage />} />
           </Routes>
         </div>
 

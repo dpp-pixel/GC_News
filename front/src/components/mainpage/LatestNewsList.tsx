@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "./LatestNewsList.css";
-
+import { Link } from "react-router-dom";
 interface Article {
   articleId: number;
   title: string;
@@ -46,9 +46,9 @@ export default function LatestNewsList() {
                   <img src={item.mediaList[0].url} alt={item.title} />
                 </div>
               )}
-              <a href={item.urlString} target="_blank" rel="noreferrer">
-                <h4>{item.title}</h4>
-              </a>
+              <Link to={`/article/${item.articleId}`}>
+  <h4>{item.title}</h4>
+</Link>
               <p className="meta">
                 {item.press} · {new Date(item.publishedAt).toLocaleDateString()}
               </p>
@@ -61,9 +61,9 @@ export default function LatestNewsList() {
           <ul>
             {centerNews.map(item => (
               <li key={item.articleId}>
-                <a href={item.urlString} target="_blank" rel="noreferrer">
-                  {item.title}
-                </a>
+                <Link to={`/article/${item.articleId}`}>
+  {item.title}
+</Link>
               </li>
             ))}
           </ul>

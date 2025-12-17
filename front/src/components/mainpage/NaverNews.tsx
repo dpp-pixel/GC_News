@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "./NaverNews.css";
-
+import { Link } from "react-router-dom";
 interface Article {
   articleId: number;
   title: string;
@@ -81,9 +81,10 @@ function MainArticle({ item }: { item: Article }) {
       )}
 
       <div className="main-text">
-        <a href={item.urlString} target="_blank" rel="noreferrer">
+        <Link to={`/article/${item.articleId}`}>
           <h1>{item.title}</h1>
-        </a>
+        </Link>
+
         {item.content && <p className="summary">{item.content}</p>}
         <p className="meta">
           {item.press} · {new Date(item.publishedAt).toLocaleString()}
@@ -101,10 +102,12 @@ function SubArticle({ item }: { item: Article }) {
           <img src={item.mediaList[0].url} alt={item.title} />
         </div>
       )}
+
       <div className="sub-text">
-        <a href={item.urlString} target="_blank" rel="noreferrer">
+        <Link to={`/article/${item.articleId}`}>
           <h3>{item.title}</h3>
-        </a>
+        </Link>
+
         {item.content && <p className="summary">{item.content}</p>}
         <p className="meta">{item.press}</p>
       </div>
@@ -115,8 +118,7 @@ function SubArticle({ item }: { item: Article }) {
 function ListArticle({ item }: { item: Article }) {
   return (
     <article className="list-article">
-      <a href={item.urlString} target="_blank" rel="noreferrer">
-
+      <Link to={`/article/${item.articleId}`} className="list-link">
         {item.mediaList?.[0]?.url && (
           <div className="list-thumb">
             <img src={item.mediaList[0].url} alt={item.title} />
@@ -125,8 +127,7 @@ function ListArticle({ item }: { item: Article }) {
 
         <h4>{item.title}</h4>
         <span>{item.press}</span>
-
-      </a>
+      </Link>
     </article>
   );
 }

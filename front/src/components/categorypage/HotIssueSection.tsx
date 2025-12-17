@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "./HotIssueSection.css";
-
+import { Link } from "react-router-dom";
 interface Article {
   articleId: number;
   title: string;
@@ -61,19 +61,17 @@ export default function HotIssueSection({ themeId }: { themeId: number }) {
             />
           </div>
         )}
-        <a
-          href={article.urlString}
-          target="_blank"
-          rel="noreferrer"
-          style={{
-            fontWeight: "bold",
-            fontSize: "14px",
-            color: "#000",
-            textDecoration: "none",
-          }}
-        >
-          {article.title}
-        </a>
+        <Link
+              to={`/article/${article.articleId}`}
+              style={{
+                fontWeight: "bold",
+                fontSize: "14px",
+                color: "#000",
+                textDecoration: "none",
+              }}
+            >
+              {article.title}
+            </Link>
       </li>
     ))}
   </ul>

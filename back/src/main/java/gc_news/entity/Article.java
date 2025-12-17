@@ -58,4 +58,9 @@ public class Article {
     @OneToMany(mappedBy = "article", fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<ArticleMedia> mediaList;
+
+    public void increaseViewCount() {
+        this.viewCount = (this.viewCount == null ? 1 : this.viewCount + 1);
+    }
+
 }

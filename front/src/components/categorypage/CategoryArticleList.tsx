@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 import "./CategoryArticleList.css";
 
 interface Article {
   articleId: number;
   title: string;
   press: string;
-  urlString: string;
   publishedAt: string;
 }
 
@@ -23,7 +23,8 @@ export default function CategoryArticleList({ themeId }: { themeId: number }) {
       .then((res) => {
         setArticles(res.data.content);
         setTotalPages(res.data.totalPages);
-      });
+      })
+      .catch(console.error);
   }, [page, themeId]);
 
   return (
@@ -33,25 +34,31 @@ export default function CategoryArticleList({ themeId }: { themeId: number }) {
       <ul>
         {articles.map((a) => (
           <li key={a.articleId}>
-            <a href={a.urlString} target="_blank" rel="noreferrer">
+           
+            <Link
+              to={`/article/${a.articleId}`}
+              className="article-link"
+            >
               <span className="title">{a.title}</span>
               <span className="meta">
                 {a.press} ·{" "}
                 {new Date(a.publishedAt).toLocaleDateString()}
               </span>
-            </a>
+            </Link>
           </li>
         ))}
       </ul>
 
       <div className="pagination">
-        <button disabled={page === 0} onClick={() => setPage(p => p - 1)}>
+        <button disabled={page === 0} onClick={() => setPage((p) => p - 1)}>
           이전
         </button>
-        <span>{page + 1} / {totalPages}</span>
+        <span>
+          {page + 1} / {totalPages}
+        </span>
         <button
           disabled={page + 1 === totalPages}
-          onClick={() => setPage(p => p + 1)}
+          onClick={() => setPage((p) => p + 1)}
         >
           다음
         </button>

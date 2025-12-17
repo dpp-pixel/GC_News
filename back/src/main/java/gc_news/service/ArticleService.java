@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -82,4 +83,14 @@ public class ArticleService {
     public Page<Article> getArticlesByTheme(Long themeId, Pageable pageable) {
         return articleRepository.findByTheme_ThemeIdOrderByPublishedAtDesc(themeId, pageable);
     }
+
+    @Transactional
+    public Article getArticleDetail(Long articleId) {
+        Article article = articleRepository.findById(articleId)
+                .orElseThrow(() -> new RuntimeException("기사 없음"));
+
+        article.increaseViewCount(); // 조회수 +1
+        return article;
+    }
+
 }
