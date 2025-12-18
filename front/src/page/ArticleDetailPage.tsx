@@ -24,8 +24,19 @@ interface Article {
   }[];
 }
 
+/* 임시 유저 키 (로그인 전) */
+const getUserKey = () => {
+  let key = localStorage.getItem("userKey");
+  if (!key) {
+    key = crypto.randomUUID();
+    localStorage.setItem("userKey", key);
+  }
+  return key;
+};
+
 export default function ArticleDetailPage() {
   const { articleId } = useParams();
+
   const [article, setArticle] = useState<Article | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
@@ -59,39 +70,49 @@ export default function ArticleDetailPage() {
     if (!newComment.trim() || !articleId) return;
 
     await axios.post(
-  `http://localhost:8081/api/comments?articleId=${articleId}`,
-  { content: newComment },
-  {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  }
-);
+      `http://localhost:8081/api/comments?articleId=${articleId}`,
+      { content: newComment },
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
 
     setNewComment("");
     fetchComments();
   };
 
+  /* 댓글 삭제 */
   const deleteComment = async (commentId: number) => {
-  if (!window.confirm("삭제 하시겠습니까.")) return;
+    if (!window.confirm("삭제 하시겠습니까?")) return;
 
-  await axios.delete(`http://localhost:8081/api/comments/${commentId}`);
+    await axios.delete(`http://localhost:8081/api/comments/${commentId}`);
 
-  setComments(prev =>
-    prev.filter(comment => comment.commentId !== commentId)
-  );
-};
+    setComments(prev =>
+      prev.filter(comment => comment.commentId !== commentId)
+    );
+  };
 
-const likeComment = async (commentId: number) => {
-  await axios.post(`http://localhost:8081/api/comments/${commentId}/like`);
-  fetchComments();
-};
+  /* 댓글 좋아요 / 싫어요 토글 */
+  const reactComment = async (
+    commentId: number,
+    type: "like" | "dislike"
+  ) => {
+    const userKey = getUserKey();
 
-const dislikeComment = async (commentId: number) => {
-  await axios.post(`http://localhost:8081/api/comments/${commentId}/dislike`);
-  fetchComments();
-};
-  
+    await axios.post(
+      "http://localhost:8081/api/comments/reactions",
+      null,
+      {
+        params: {
+          commentId,
+          userKey,
+          type,
+        },
+      }
+    );
+
+    fetchComments();
+  };
 
   if (loading) return <p className="article-loading">로딩중...</p>;
   if (!article) return <p className="article-error">기사를 찾을 수 없습니다.</p>;
@@ -128,12 +149,6 @@ const dislikeComment = async (commentId: number) => {
         {article.content ?? "본문 내용이 제공되지 않는 기사입니다."}
       </article>
 
-      {/* 좋아요 / 싫어요 */}
-      <section className="article-actions">
-        <button>👍 좋아요</button>
-        <button>👎 싫어요</button>
-      </section>
-
       {/* 댓글 */}
       <section className="article-comments">
         <h3>댓글 {comments.length}</h3>
@@ -150,35 +165,35 @@ const dislikeComment = async (commentId: number) => {
 
         {/* 댓글 목록 */}
         <ul className="comment-list">
-  {comments.map(c => (
-    <li key={c.commentId}>
-      <p className="comment-content">{c.content}</p>
+          {comments.map(c => (
+            <li key={c.commentId}>
+              <p className="comment-content">{c.content}</p>
 
-      <div className="comment-footer">
-        <span className="comment-date">
-          {new Date(c.createdAt).toLocaleString()}
-        </span>
+              <div className="comment-footer">
+                <span className="comment-date">
+                  {new Date(c.createdAt).toLocaleString()}
+                </span>
 
-      <div className="comment-actions">
-          <button onClick={() => likeComment(c.commentId)}>
-            👍 {c.likeCount}
-          </button>
-          <button onClick={() => dislikeComment(c.commentId)}>
-            👎 {c.dislikeCount}
-          </button>
+                <div className="comment-actions">
+                  <button onClick={() => reactComment(c.commentId, "like")}>
+                    👍 {c.likeCount}
+                  </button>
 
-        <button
-          className="comment-delete"
-          onClick={() => deleteComment(c.commentId)}
-        >
-          삭제
-        </button>
-      </div>
-      </div>
-    </li>
-  ))}
-</ul>
+                  <button onClick={() => reactComment(c.commentId, "dislike")}>
+                    👎 {c.dislikeCount}
+                  </button>
 
+                  <button
+                    className="comment-delete"
+                    onClick={() => deleteComment(c.commentId)}
+                  >
+                    삭제
+                  </button>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
       </section>
     </main>
   );

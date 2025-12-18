@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import gc_news.entity.Article;
 import gc_news.entity.Comment;
 import gc_news.repository.ArticleRepository;
+import gc_news.repository.CommentReactionRepository;
 import gc_news.repository.CommentRepository;
 //import gc_news.repository.UserRepository;
 //import gc_news.entity.User;
@@ -21,6 +22,7 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final ArticleRepository articleRepository;
+    private final CommentReactionRepository commentReactionRepository;
     // private final UserRepository userRepository;
 
     public void likeComment(Long commentId) {
@@ -63,6 +65,12 @@ public class CommentService {
 
     /** 댓글 삭제 */
     public void deleteComment(Long commentId) {
-        commentRepository.deleteById(commentId);
+
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("댓글 없음"));
+
+        commentReactionRepository.deleteByComment(comment);
+
+        commentRepository.delete(comment);
     }
 }
