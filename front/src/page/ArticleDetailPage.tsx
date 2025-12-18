@@ -7,6 +7,8 @@ interface Comment {
   commentId: number;
   content: string;
   createdAt: string;
+  likeCount: number;
+  dislikeCount: number;
 }
 
 interface Article {
@@ -80,6 +82,15 @@ export default function ArticleDetailPage() {
   );
 };
 
+const likeComment = async (commentId: number) => {
+  await axios.post(`http://localhost:8081/api/comments/${commentId}/like`);
+  fetchComments();
+};
+
+const dislikeComment = async (commentId: number) => {
+  await axios.post(`http://localhost:8081/api/comments/${commentId}/dislike`);
+  fetchComments();
+};
   
 
   if (loading) return <p className="article-loading">로딩중...</p>;
@@ -148,12 +159,21 @@ export default function ArticleDetailPage() {
           {new Date(c.createdAt).toLocaleString()}
         </span>
 
+      <div className="comment-actions">
+          <button onClick={() => likeComment(c.commentId)}>
+            👍 {c.likeCount}
+          </button>
+          <button onClick={() => dislikeComment(c.commentId)}>
+            👎 {c.dislikeCount}
+          </button>
+
         <button
           className="comment-delete"
           onClick={() => deleteComment(c.commentId)}
         >
           삭제
         </button>
+      </div>
       </div>
     </li>
   ))}

@@ -123,6 +123,23 @@
   align-items: center;
 }
 
+.comment-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.comment-actions button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: #555;
+}
+
+.comment-actions button:hover {
+  color: #000;
+}
+
 .comment-delete {
   background: none;
   border: none;

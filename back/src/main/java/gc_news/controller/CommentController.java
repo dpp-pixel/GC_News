@@ -27,6 +27,18 @@ public class CommentController {
         return commentService.createComment(articleId, request.getContent());// user.getUserId(), 로그인 추가시
     }
 
+    /* 댓글 좋아요 */
+    @PostMapping("/{commentId}/like")
+    public void like(@PathVariable Long commentId) {
+        commentService.likeComment(commentId);
+    }
+
+    /* 댓글 싫어요 */
+    @PostMapping("/{commentId}/dislike")
+    public void dislike(@PathVariable Long commentId) {
+        commentService.dislikeComment(commentId);
+    }
+
     /** 기사별 댓글 목록 */
     @GetMapping("/article/{articleId}")
     public List<Comment> getCommentsByArticle(
