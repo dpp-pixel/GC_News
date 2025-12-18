@@ -41,6 +41,7 @@ public class Article {
 
     private String press;//언론사
 
+
     @ManyToOne
     @JoinColumn(name = "theme_id")
     private Theme theme;
@@ -48,4 +49,6 @@ public class Article {
     @ManyToOne
     @JoinColumn(name = "reporter_id")
     private Reporter reporter;
+
 }
+
