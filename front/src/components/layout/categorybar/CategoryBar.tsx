@@ -1,3 +1,4 @@
+// src/components/layout/categorybar/CategoryBar.tsx
 import { Link } from "react-router-dom";
 import styles from "./CategoryBar.module.css";
 
@@ -8,11 +9,11 @@ export default function CategoryBar() {
     { name: "사회", id: 102 },
     { name: "생활/문화", id: 103 },
     { name: "세계", id: 104 },
-    { name: "IT과학", id: 105 },
+    { name: "IT/과학", id: 105 },
   ];
 
   return (
-    <>
+    <div className={styles["category-bar"]}>
       <nav className={styles.nav}>
         <ul>
           {categories.map((cat) => (
@@ -22,7 +23,7 @@ export default function CategoryBar() {
           ))}
         </ul>
       </nav>
-      <div className={styles.divider}></div>
-    </>
+      <div className={styles.divider} />
+    </div>
   );
 }

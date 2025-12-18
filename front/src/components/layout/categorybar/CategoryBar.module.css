@@ -1,25 +1,45 @@
+/* src/components/layout/categorybar/CategoryBar.module.css */
+
+.category-bar {
+  width: 100%;
+  display: flex;
+  flex-direction: column;  /* nav + 검은 줄을 세로로 */
+  align-items: center;
+}
+
+/* 메뉴 영역 */
 .nav {
   margin-top: 10px;
 }
 
+/* 메뉴 리스트 */
 .nav ul {
   list-style: none;
   display: flex;
   justify-content: center;
-  gap: 32px;
-  padding: 0;
-  margin: 0;
-  font-size: 15px;
+  gap: 35px;
+  padding: 10px 0;
+  margin: 0 auto;
+  font-size: 18px;
+  font-weight: bold;
 }
 
+/* li 자체 */
 .nav li {
   cursor: pointer;
 }
 
+/* a 태그 기본 스타일 제거 + 색 */
+.nav a {
+  text-decoration: none;
+  color: #000;
+}
+
+/* 아래 검은 줄 한 줄 */
 .divider {
-    width: 50%;
-    height: 2px;
-    background: #000;
-    margin: 13px auto 0;
-    border-radius: 2px;
+  width: 65%;
+  height: 3px;
+  background: #000;
+  margin: 15px auto 0;
+  border-radius: 2px;
 }
