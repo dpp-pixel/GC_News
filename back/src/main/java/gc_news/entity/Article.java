@@ -41,6 +41,9 @@ public class Article {
 
     private String press;//언론사
 
+     @Column(unique = true)
+    private String externalJournalistId; // 네이버 기자 ID
+
 
     @ManyToOne
     @JoinColumn(name = "theme_id")

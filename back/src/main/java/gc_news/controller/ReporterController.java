@@ -18,9 +18,7 @@ public class ReporterController {
   private final ReporterArticleCrawlingService reporterArticleCrawlingService;
   @GetMapping("/{reporterId}")
 public Map<String, Object> getReporterPage(
-    @PathVariable Long reporterId,
-    @RequestParam String officeId,
-    @RequestParam String journalistId
+    @PathVariable Long reporterId
 ) {
     Reporter reporter = reporterRepository.findById(reporterId)
             .orElseThrow(() -> new IllegalArgumentException("기자 없음"));
@@ -28,7 +26,7 @@ public Map<String, Object> getReporterPage(
     return Map.of(
         "reporter", reporter,
         "articles", reporterArticleCrawlingService
-                .crawlReporterArticles(journalistPageUrl)
+                .crawlReporterArticles(reporter)
     );
 }
 }
