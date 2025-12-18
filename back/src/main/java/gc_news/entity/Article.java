@@ -59,6 +59,10 @@ public class Article {
     @JsonManagedReference
     private List<ArticleMedia> mediaList;
 
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Comment> comments;
+
     public void increaseViewCount() {
         this.viewCount = (this.viewCount == null ? 1 : this.viewCount + 1);
     }
