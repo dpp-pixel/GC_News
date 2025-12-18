@@ -53,5 +53,13 @@ public class Article {
     @JoinColumn(name = "reporter_id")
     private Reporter reporter;
 
+    /** 테마/섹션 헤드라인 여부 */
+    @Builder.Default
+    private boolean headline = false;
+
+      /** 관련뉴스(클러스터) 개수 */
+    @Builder.Default
+    private int clusterCount = 0;
+
 }
 

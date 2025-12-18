@@ -32,9 +32,8 @@ public class ArticleService {
         // 여기서 ID 추출
         String externalJournalistId = extractJournalistId(journalistUrl);
 
-        if (reporterElement == null) {
-            // 기자 없는 기사 (속보, 연합뉴스 일부 등)
-            return;
+        if (externalJournalistId == null) {
+            return; // 이상한 URL이면 그냥 기자 연결 안 함
         }
 
         String reporterName = reporterElement.text().trim();
