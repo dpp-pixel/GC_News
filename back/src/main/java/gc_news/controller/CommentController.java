@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import gc_news.dto.CommentRequest;
 import gc_news.entity.Comment;
 import gc_news.entity.User;
 import gc_news.service.CommentService;
@@ -22,8 +23,8 @@ public class CommentController {
     public Comment createComment(
             @RequestParam Long articleId,
             // @AuthenticationPrincipal User user,
-            @RequestBody String content) {
-        return commentService.createComment(articleId, content);// user.getUserId(), 로그인 추가시
+            @RequestBody CommentRequest request) {
+        return commentService.createComment(articleId, request.getContent());// user.getUserId(), 로그인 추가시
     }
 
     /** 기사별 댓글 목록 */

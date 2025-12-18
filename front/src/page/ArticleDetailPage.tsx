@@ -3,6 +3,12 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import "./ArticleDetailPage.css";
 
+interface Comment {
+  commentId: number;
+  content: string;
+  createdAt: string;
+}
+
 interface Article {
   articleId: number;
   title: string;
@@ -19,16 +25,62 @@ interface Article {
 export default function ArticleDetailPage() {
   const { articleId } = useParams();
   const [article, setArticle] = useState<Article | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
 
+  /* 기사 상세 */
   useEffect(() => {
     if (!articleId) return;
 
     axios
       .get<Article>(`http://localhost:8081/api/articles/${articleId}`)
-      .then((res) => setArticle(res.data))
+      .then(res => setArticle(res.data))
       .finally(() => setLoading(false));
   }, [articleId]);
+
+  /* 댓글 목록 */
+  const fetchComments = () => {
+    if (!articleId) return;
+
+    axios
+      .get<Comment[]>(`http://localhost:8081/api/comments/article/${articleId}`)
+      .then(res => setComments(res.data));
+  };
+
+  useEffect(() => {
+    fetchComments();
+  }, [articleId]);
+
+  /* 댓글 작성 */
+  const submitComment = async () => {
+    if (!newComment.trim() || !articleId) return;
+
+    await axios.post(
+  `http://localhost:8081/api/comments?articleId=${articleId}`,
+  { content: newComment },
+  {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  }
+);
+
+    setNewComment("");
+    fetchComments();
+  };
+
+  const deleteComment = async (commentId: number) => {
+  if (!window.confirm("삭제 하시겠습니까.")) return;
+
+  await axios.delete(`http://localhost:8081/api/comments/${commentId}`);
+
+  setComments(prev =>
+    prev.filter(comment => comment.commentId !== commentId)
+  );
+};
+
+  
 
   if (loading) return <p className="article-loading">로딩중...</p>;
   if (!article) return <p className="article-error">기사를 찾을 수 없습니다.</p>;
@@ -62,7 +114,7 @@ export default function ArticleDetailPage() {
 
       {/* 본문 */}
       <article className="article-content">
-        {article.content ? article.content : "본문 내용이 제공되지 않는 기사입니다."}
+        {article.content ?? "본문 내용이 제공되지 않는 기사입니다."}
       </article>
 
       {/* 좋아요 / 싫어요 */}
@@ -71,10 +123,42 @@ export default function ArticleDetailPage() {
         <button>👎 싫어요</button>
       </section>
 
-      {/* 댓글 자리 */}
+      {/* 댓글 */}
       <section className="article-comments">
-        <h3>댓글</h3>
-        <p>댓글 기능 예정</p>
+        <h3>댓글 {comments.length}</h3>
+
+        {/* 댓글 작성 */}
+        <div className="comment-form">
+          <textarea
+            placeholder="댓글을 입력하세요"
+            value={newComment}
+            onChange={e => setNewComment(e.target.value)}
+          />
+          <button onClick={submitComment}>등록</button>
+        </div>
+
+        {/* 댓글 목록 */}
+        <ul className="comment-list">
+  {comments.map(c => (
+    <li key={c.commentId}>
+      <p className="comment-content">{c.content}</p>
+
+      <div className="comment-footer">
+        <span className="comment-date">
+          {new Date(c.createdAt).toLocaleString()}
+        </span>
+
+        <button
+          className="comment-delete"
+          onClick={() => deleteComment(c.commentId)}
+        >
+          삭제
+        </button>
+      </div>
+    </li>
+  ))}
+</ul>
+
       </section>
     </main>
   );

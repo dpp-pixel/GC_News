@@ -35,9 +35,9 @@ public class Comment {
 
     private LocalDateTime createdAt;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    // @ManyToOne
+    // @JoinColumn(name = "user_id")
+    // private User user; 로그인 만들고 주석 해제
 
     @ManyToOne
     @JoinColumn(name = "article_id")
