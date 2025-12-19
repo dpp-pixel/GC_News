@@ -27,7 +27,7 @@ public class ReporterArticleCrawlingService {
         try {
             String url = String.format(
                 "https://media.naver.com/api/journalist/articles?officeId=%s&journalistId=%s&page=1&pageSize=20",
-                reporter.getPress(),             
+                reporter.getPress(),// 나중에 수정해야함. press는 처음 기사 불러올 때 가져오는 것.       
                 reporter.getExternalJournalistId() // journalistId
             );
 
