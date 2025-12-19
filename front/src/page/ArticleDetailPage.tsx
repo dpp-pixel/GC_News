@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import "./ArticleDetailPage.css";
-
+import ArticleReaction from "../components/articledetailpage/ArticleReaction";
 interface Comment {
   commentId: number;
   content: string;
@@ -149,6 +149,9 @@ export default function ArticleDetailPage() {
         {article.content ?? "본문 내용이 제공되지 않는 기사입니다."}
       </article>
 
+      {/* 기사 반응 */}
+    <ArticleReaction articleId={article.articleId} />
+    
       {/* 댓글 */}
       <section className="article-comments">
         <h3>댓글 {comments.length}</h3>
