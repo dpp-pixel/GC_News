@@ -14,6 +14,7 @@ import gc_news.repository.CommentRepository;
 //import gc_news.repository.UserRepository;
 //import gc_news.entity.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 
 @Service
 @RequiredArgsConstructor
@@ -44,14 +45,22 @@ public class CommentService {
         return commentRepository.save(comment);
     }
 
-    /** 기사별 댓글 목록 */
+    // 베스트 댓글
+    @Transactional(readOnly = true)
+    public List<Comment> getBestComments(Long articleId) {
+        return commentRepository.findBestComments(
+                articleId,
+                PageRequest.of(0, 3));// 갯수
+    }
+
+    // 최신순
     @Transactional(readOnly = true)
     public List<Comment> getCommentsByArticle(Long articleId) {
         return commentRepository
                 .findByArticle_ArticleIdOrderByCreatedAtAsc(articleId);
     }
 
-    /** 댓글 삭제 */
+    // 댓글 삭제
     public void deleteComment(Long commentId) {
 
         Comment comment = commentRepository.findById(commentId)

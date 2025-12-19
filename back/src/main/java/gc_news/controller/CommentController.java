@@ -27,14 +27,21 @@ public class CommentController {
         return commentService.createComment(articleId, request.getContent());// user.getUserId(), 로그인 추가시
     }
 
-    /** 기사별 댓글 목록 */
+    // 베스트
+    @GetMapping("/article/{articleId}/best")
+    public List<Comment> getBestComments(
+            @PathVariable Long articleId) {
+        return commentService.getBestComments(articleId);
+    }
+
+    // 최신
     @GetMapping("/article/{articleId}")
     public List<Comment> getCommentsByArticle(
             @PathVariable Long articleId) {
         return commentService.getCommentsByArticle(articleId);
     }
 
-    /* 댓글 삭제 */
+    // 삭제
     @DeleteMapping("/{commentId}")
     public void deleteComment(
             @PathVariable Long commentId

@@ -39,6 +39,7 @@ export default function ArticleDetailPage() {
 
   const [article, setArticle] = useState<Article | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [bestComments, setBestComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -60,9 +61,19 @@ export default function ArticleDetailPage() {
       .get<Comment[]>(`http://localhost:8081/api/comments/article/${articleId}`)
       .then(res => setComments(res.data));
   };
+  const fetchBestComments = () => {
+  if (!articleId) return;
+
+  axios
+    .get<Comment[]>(
+      `http://localhost:8081/api/comments/article/${articleId}/best`
+    )
+    .then(res => setBestComments(res.data));
+};
 
   useEffect(() => {
     fetchComments();
+     fetchBestComments(); 
   }, [articleId]);
 
   /* 댓글 작성 */
@@ -151,7 +162,29 @@ export default function ArticleDetailPage() {
 
       {/* 기사 반응 */}
     <ArticleReaction articleId={article.articleId} />
-    
+    {bestComments.length > 0 && (
+  <section className="best-comments">
+    <h3>베스트 댓글</h3>
+
+    <ul className="comment-list best">
+      {bestComments.map(c => (
+        <li key={c.commentId}>
+          <p className="comment-content">{c.content}</p>
+
+          <div className="comment-footer">
+            <span className="comment-date">
+              {new Date(c.createdAt).toLocaleString()}
+            </span>
+
+            <div className="comment-actions">
+              <span>👍 {c.likeCount}</span>
+            </div>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </section>
+)}
       {/* 댓글 */}
       <section className="article-comments">
         <h3>댓글 {comments.length}</h3>
