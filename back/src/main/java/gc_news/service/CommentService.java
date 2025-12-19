@@ -25,18 +25,6 @@ public class CommentService {
     private final CommentReactionRepository commentReactionRepository;
     // private final UserRepository userRepository;
 
-    public void likeComment(Long commentId) {
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("댓글 없음"));
-        comment.setLikeCount(comment.getLikeCount() + 1);
-    }
-
-    public void dislikeComment(Long commentId) {
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("댓글 없음"));
-        comment.setDislikeCount(comment.getDislikeCount() + 1);
-    }
-
     /** 댓글 작성 */
     public Comment createComment(Long articleId, String content) {// Long userId, 추가
 
@@ -50,7 +38,7 @@ public class CommentService {
                 .article(article)
                 // .user(user)
                 .content(content)
-                .createdAt(LocalDateTime.now())
+
                 .build();
 
         return commentRepository.save(comment);
