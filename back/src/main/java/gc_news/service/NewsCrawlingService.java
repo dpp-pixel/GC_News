@@ -15,12 +15,10 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.concurrent.atomic.AtomicInteger;
-
-
 
 @Service
 public class NewsCrawlingService {
@@ -32,7 +30,6 @@ public class NewsCrawlingService {
     private static final Pattern SECTION_PATTERN = Pattern.compile("/section/(\\d{3})");
     private final AtomicInteger nextSection = new AtomicInteger(0);
     private final AtomicBoolean crawling = new AtomicBoolean(false);
-
 
     // 수집할 URL 리스트
     private final String[] urls = {
@@ -152,30 +149,149 @@ public class NewsCrawlingService {
     }
 
     /**
+     * 전 테마(섹션)의 "헤드라인 박스"만 크롤링
+     * - 상단 테마 헤드라인용
+     * - 메인 페이지 글로벌 헤드라인용(관련뉴스 수 이용)
+     */
+    public void crawlHeadlineSections() {
+
+        if (!crawling.compareAndSet(false, true)) {
+            System.out.println("### crawlHeadlinesOnly already running - skip");
+            return;
+        }
+
+        try {
+            for (String url : urls) {
+                crawlHeadlineBoxInSection(url);
+            }
+        } finally {
+            crawling.set(false);
+        }
+    }
+
+    /**
+     * 한 섹션 페이지의 헤드라인 영역만 크롤링
+     */
+    private void crawlHeadlineBoxInSection(String url) {
+        try {
+            Document doc = Jsoup.connect(url)
+                    .userAgent("Mozilla/5.0")
+                    .timeout(5000)
+                    .get();
+                    
+            Element headlineSection = doc.selectFirst("div.section_article.as_headline");
+            if (headlineSection == null) {
+                System.out.println("### 헤드라인 섹션을 찾지 못함: " + url);
+                return;
+            }
+
+            Elements headlineItems = headlineSection.select("li.sa_item");
+            System.out.println("헤드라인 기사 개수 = " + headlineItems.size());
+
+            Long themeId = getThemeIdFromUrl(url);
+            Theme theme = themeRepository.findById(themeId).orElse(null);
+
+            for (Element item : headlineItems) {
+
+                // 제목 & 링크
+                Element titleAnchor = item.selectFirst("div.sa_text a.sa_text_title");
+                if (titleAnchor == null)
+                    continue;
+
+                String title = titleAnchor.text();
+                String link = titleAnchor.attr("href");
+                if (link == null || link.isEmpty())
+                    continue;
+
+                // 언론사: div.sa_text_info_left > div.sa_text_press
+                String press = item.select("div.sa_text_info_left div.sa_text_press").text();
+
+                // 이미지
+                String imgUrl = item.select("img").attr("src");
+                if (imgUrl == null || imgUrl.isEmpty()) {
+                    imgUrl = item.select("img").attr("data-src");
+                }
+                if (imgUrl != null && imgUrl.isEmpty()) {
+                    imgUrl = null;
+                }
+
+                // 관련뉴스(클러스터) 개수: div.sa_text_info_right > span.sa_text_cluster_num
+                String clusterText = item.select("div.sa_text_info_right span.sa_text_cluster_num").text();
+                int clusterCount = 0;
+                if (!clusterText.isBlank()) {
+                    // 혹시 "72" 말고 "72+" 같은 게 나와도 숫자만 뽑도록
+                    String digits = clusterText.replaceAll("[^0-9]", "");
+                    if (!digits.isBlank()) {
+                        clusterCount = Integer.parseInt(digits);
+                    }
+                }
+
+                // 이미 존재하는 기사면 headline/clusterCount만 갱신
+                Article article = articleRepository.findByUrlString(link).orElse(null);
+                if (article != null) {
+                    article.setHeadline(true);
+                    article.setClusterCount(clusterCount);
+                    articleRepository.save(article);
+                } else {
+                    // 새 기사 저장
+                    article = Article.builder()
+                            .title(title)
+                            .press(press)
+                            .urlString(link)
+                            .theme(theme)
+                            .publishedAt(LocalDateTime.now()) // 필요하면 상세 페이지에서 다시 갱신
+                            .headline(true)
+                            .clusterCount(clusterCount)
+                            .build();
+
+                    Article savedArticle = articleRepository.save(article);
+
+                    if (imgUrl != null) {
+                        ArticleMedia media = ArticleMedia.builder()
+                                .mediaType(ArticleMedia.MediaType.image)
+                                .url(imgUrl)
+                                .article(savedArticle)
+                                .build();
+                        articleMediaRepository.save(media);
+                    }
+                }
+
+                System.out.printf("[HEADLINE] theme=%d, cluster=%d, title=%s%n",
+                        themeId, clusterCount, title);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * URL 기반으로 theme 자동 할당
      */
     private Long getThemeIdFromUrl(String url) {
 
-    if (url == null) return 100L;
+        if (url == null)
+            return 100L;
 
-    Matcher m = SECTION_PATTERN.matcher(url);
-    if (!m.find()) return 100L;
+        Matcher m = SECTION_PATTERN.matcher(url);
+        if (!m.find())
+            return 100L;
 
-    return Long.parseLong(m.group(1)); // 100~105 그대로 반환
-}
-
-   public void crawlNextSection() {
-
-    if (!crawling.compareAndSet(false, true)) {
-        System.out.println("### crawlNextSection already running - skip");
-        return;
+        return Long.parseLong(m.group(1)); // 100~105 그대로 반환
     }
 
-    try {
-        int idx = nextSection.getAndUpdate(i -> (i + 1) % urls.length);
-        crawlOneSection(urls[idx]);
-    } finally {
-        crawling.set(false);
+    public void crawlNextSection() {
+
+        if (!crawling.compareAndSet(false, true)) {
+            System.out.println("### crawlNextSection already running - skip");
+            return;
+        }
+
+        try {
+            int idx = nextSection.getAndUpdate(i -> (i + 1) % urls.length);
+            crawlOneSection(urls[idx]);
+        } finally {
+            crawling.set(false);
+        }
     }
-}
 }
