@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 import "./NaverNews.css";
 
 interface Article {
@@ -12,6 +13,22 @@ interface Article {
   mediaList?: { url: string; mediaType: string }[];
 }
 
+// ✅ HTML 태그 제거 + 길이 제한용 유틸 함수
+function stripHtml(html: string | null, maxLength = 120): string {
+  if (!html) return "";
+
+  // 태그 제거
+  let text = html.replace(/<[^>]+>/g, " ");
+  // 공백 정리
+  text = text.replace(/\s+/g, " ").trim();
+
+  // 너무 길면 뒤를 자르고 "..." 붙이기
+  if (text.length > maxLength) {
+    return text.slice(0, maxLength) + "…";
+  }
+  return text;
+}
+
 export default function NaverNews() {
   const [news, setNews] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,17 +37,18 @@ export default function NaverNews() {
   useEffect(() => {
     const fetchNews = async () => {
       try {
-        const res = await axios.get(
-  "http://localhost:8081/api/articles/hot",
-  {
-    params: {
-      days: 3,
-      limit: 6, // 메인 + 서브 + 리스트용
-    },
-  }
-);
+        const res = await axios.get<Article[]>(
+          "http://localhost:8081/api/articles/hot",
+          {
+            params: {
+              days: 3,
+              limit: 6, // 메인 + 서브 + 리스트용
+            },
+          }
+        );
         setNews(res.data);
       } catch (e) {
+        console.error("NaverNews /api/articles/hot error:", e);
         setError(true);
       } finally {
         setLoading(false);
@@ -46,7 +64,6 @@ export default function NaverNews() {
   return (
     <section className="news-container">
       <div className="main-layout">
-
         {/* 왼쪽 영역: 메인 + 서브 기사 */}
         <div className="left-news">
           {news[0] && <MainArticle item={news[0]} />}
@@ -63,15 +80,16 @@ export default function NaverNews() {
             <ListArticle key={item.articleId} item={item} />
           ))}
         </div>
-
       </div>
     </section>
   );
 }
 
-/* ================== 컴포넌트 ================== */
+/* ================== 하위 컴포넌트 ================== */
 
 function MainArticle({ item }: { item: Article }) {
+  const summary = stripHtml(item.content, 160); // 메인 카드라 조금 더 길게
+
   return (
     <article className="main-article horizontal">
       {item.mediaList?.[0]?.url && (
@@ -81,10 +99,13 @@ function MainArticle({ item }: { item: Article }) {
       )}
 
       <div className="main-text">
-        <a href={item.urlString} target="_blank" rel="noreferrer">
+        {/* 제목 클릭 → 기사 상세 */}
+        <Link to={`/news/${item.articleId}`} className="title-link">
           <h1>{item.title}</h1>
-        </a>
-        {item.content && <p className="summary">{item.content}</p>}
+        </Link>
+
+        {summary && <p className="summary">{summary}</p>}
+
         <p className="meta">
           {item.press} · {new Date(item.publishedAt).toLocaleString()}
         </p>
@@ -94,6 +115,8 @@ function MainArticle({ item }: { item: Article }) {
 }
 
 function SubArticle({ item }: { item: Article }) {
+  const summary = stripHtml(item.content, 80);
+
   return (
     <article className="sub-article vertical">
       {item.mediaList?.[0]?.url && (
@@ -101,11 +124,14 @@ function SubArticle({ item }: { item: Article }) {
           <img src={item.mediaList[0].url} alt={item.title} />
         </div>
       )}
+
       <div className="sub-text">
-        <a href={item.urlString} target="_blank" rel="noreferrer">
+        {/* 제목 클릭 → 기사 상세 */}
+        <Link to={`/news/${item.articleId}`} className="title-link">
           <h3>{item.title}</h3>
-        </a>
-        {item.content && <p className="summary">{item.content}</p>}
+        </Link>
+
+        {summary && <p className="summary">{summary}</p>}
         <p className="meta">{item.press}</p>
       </div>
     </article>
@@ -115,8 +141,8 @@ function SubArticle({ item }: { item: Article }) {
 function ListArticle({ item }: { item: Article }) {
   return (
     <article className="list-article">
-      <a href={item.urlString} target="_blank" rel="noreferrer">
-
+      {/* 리스트 전체 클릭 → 기사 상세 */}
+      <Link to={`/news/${item.articleId}`} className="list-link">
         {item.mediaList?.[0]?.url && (
           <div className="list-thumb">
             <img src={item.mediaList[0].url} alt={item.title} />
@@ -125,8 +151,7 @@ function ListArticle({ item }: { item: Article }) {
 
         <h4>{item.title}</h4>
         <span>{item.press}</span>
-
-      </a>
+      </Link>
     </article>
   );
 }

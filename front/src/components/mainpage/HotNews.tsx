@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 import "./HotNews.css";
 
 interface Article {
@@ -26,35 +27,34 @@ export default function HotNews() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  const fetchHotNews = async () => {
-    try {
-      const res = await axios.get<Record<number, Article[]>>(
-        "http://localhost:8081/api/articles/hot/grouped",
-        {
-          params: {
-            days: 3,
-            limit: 3,
-          },
-        }
-      );
+    const fetchHotNews = async () => {
+      try {
+        const res = await axios.get<Record<number, Article[]>>(
+          "http://localhost:8081/api/articles/hot/grouped",
+          {
+            params: {
+              days: 3,
+              limit: 3,
+            },
+          }
+        );
 
-      const result = Object.entries(res.data).map(
-        ([themeId, articles]) => ({
-          themeId: Number(themeId),
-          themeName: articles[0]?.theme?.name ?? "",
-          articles,
-        })
-      );
+        const result = Object.entries(res.data).map(
+          ([themeId, articles]) => ({
+            themeId: Number(themeId),
+            themeName: articles[0]?.theme?.name ?? "",
+            articles,
+          })
+        );
 
-      setHotNews(result);
-    } finally {
-      setLoading(false);
-    }
-  };
+        setHotNews(result);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchHotNews();
-}, []);
-
+    fetchHotNews();
+  }, []);
 
   if (loading) return <p>인기 뉴스 불러오는 중...</p>;
 
@@ -80,14 +80,13 @@ export default function HotNews() {
                     </div>
                   )}
 
-                  <a
-                    href={article.urlString}
-                    target="_blank"
-                    rel="noreferrer"
+                  {/* ❗️여기가 핵심 수정 부분 */}
+                  <Link
+                    to={`/news/${article.articleId}`}
                     className={idx === 0 ? "hot-title main" : "hot-title"}
                   >
                     {article.title}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>

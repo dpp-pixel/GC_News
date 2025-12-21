@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 import "./LatestNewsList.css";
 
 interface Article {
@@ -14,20 +15,55 @@ interface Article {
 export default function LatestNewsList() {
   const [news, setNews] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchLatest = async () => {
       try {
-        const res = await axios.get("http://localhost:8081/api/articles");
-        setNews(res.data.slice(0, 16));
+        setLoading(true);
+        setError(null);
+
+        const res = await axios.get<Article[]>(
+          "http://localhost:8081/api/articles"
+        );
+
+        if (!cancelled) {
+          // 최대 16개까지만 사용
+          setNews(res.data.slice(0, 16));
+        }
+      } catch (e: any) {
+        console.error("LatestNewsList /api/articles error:", e);
+        if (!cancelled) {
+          setError("최신 기사 목록을 불러오는 데 실패했습니다.");
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
+
     fetchLatest();
+
+    // 컴포넌트 언마운트 시 setState 호출 방지
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  if (loading) return <p>최신 기사 불러오는 중...</p>;
+  if (loading) {
+    return <p>최신 기사 불러오는 중...</p>;
+  }
+
+  if (error) {
+    return <p style={{ color: "red" }}>{error}</p>;
+  }
+
+  if (news.length === 0) {
+    return <p>표시할 최신 기사가 없습니다.</p>;
+  }
 
   const leftNews = news.slice(0, 3);
   const centerNews = news.slice(3);
@@ -37,42 +73,44 @@ export default function LatestNewsList() {
       <h2 className="latest-title">최신 기사</h2>
 
       <div className="latest-grid">
-        {/*  왼쪽 */}
+        {/* 왼쪽: 썸네일 있는 큰 카드 3개 */}
         <div className="latest-left">
-          {leftNews.map(item => (
+          {leftNews.map((item) => (
             <article key={item.articleId} className="image-article">
               {item.mediaList?.[0]?.url && (
                 <div className="image-wrap">
                   <img src={item.mediaList[0].url} alt={item.title} />
                 </div>
               )}
-              <a href={item.urlString} target="_blank" rel="noreferrer">
+
+              {/* 내부 상세 페이지로 이동 */}
+              <Link to={`/news/${item.articleId}`}>
                 <h4>{item.title}</h4>
-              </a>
+              </Link>
+
               <p className="meta">
-                {item.press} · {new Date(item.publishedAt).toLocaleDateString()}
+                {item.press} ·{" "}
+                {new Date(item.publishedAt).toLocaleDateString()}
               </p>
             </article>
           ))}
         </div>
 
-        {/* 중앙 */}
+        {/* 중앙: 제목 리스트 */}
         <div className="latest-center">
           <ul>
-            {centerNews.map(item => (
+            {centerNews.map((item) => (
               <li key={item.articleId}>
-                <a href={item.urlString} target="_blank" rel="noreferrer">
+                <Link to={`/news/${item.articleId}`}>
                   {item.title}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
         </div>
 
-        {/* 🔹 오른쪽 (비워둠) */}
-        <div className="latest-right">
-          {/* 나중에 칼럼, 오피니언 */}
-        </div>
+        {/* 오른쪽: 예약 영역 */}
+        <div className="latest-right">{/* 나중에 칼럼/오피니언 */}</div>
       </div>
     </section>
   );
