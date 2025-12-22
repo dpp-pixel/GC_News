@@ -5,115 +5,75 @@ import ReporterCard, {
 } from "../../../components/reporter/ReporterCard";
 import "./MySubscribeSection.css";
 
-/* 더미 데이터 */
-const MOCK_REPORTERS: ReporterInfo[] = [
-  {
-    id: 1,
-    name: "김대기",
-    email: "watingkim@donga.com",
-    subscribers: 100,
-    recommends: 3,
-    tags: ["정치부", "정직한", "솔직한"],
-    trustScore: 80,
-    imageUrl: "",
-  },
-  {
-    id: 2,
-    name: "김장철",
-    email: "kimchiseason@news.com",
-    subscribers: 95,
-    recommends: 12,
-    tags: ["경제", "침착한"],
-    trustScore: 78,
-    imageUrl: "",
-  },
-  {
-    id: 3,
-    name: "이서연",
-    email: "seoyeon@press.co.kr",
-    subscribers: 140,
-    recommends: 23,
-    tags: ["사회", "깊이있는"],
-    trustScore: 82,
-    imageUrl: "",
-  },
-  {
-    id: 4,
-    name: "박민수",
-    email: "minsu@media.com",
-    subscribers: 88,
-    recommends: 9,
-    tags: ["국방", "분석력 좋은"],
-    trustScore: 76,
-    imageUrl: "",
-  },
-  {
-    id: 5,
-    name: "한성태",
-    email: "hansung@news.com",
-    subscribers: 120,
-    recommends: 35,
-    tags: ["정치부", "차분한"],
-    trustScore: 80,
-    imageUrl: "",
-  },
-];
+/* ===== 더미 데이터 (슬라이더 테스트용, 반드시 10개 이상) ===== */
+const MOCK_REPORTERS: ReporterInfo[] = Array.from(
+  { length: 10 },
+  (_, i) => ({
+    id: i + 1,
+    name: `기자${i + 1}`,
+    email: `reporter${i + 1}@news.com`,
+    subscribers: 80 + i * 5,
+    recommends: 3 + i * 2,
+    tags: ["정치부", "분석"],
+    trustScore: 70 + i,
+    imageUrl: `https://picsum.photos/150?random=${i + 1}`,
+  })
+);
 
-const VISIBLE_COUNT = 4;
+const CARD_WIDTH = 360;
+const CARD_GAP = 24;
+const MOVE_UNIT = CARD_WIDTH + CARD_GAP;
 
 export default function MySubscribeSection() {
-  const [startIndex, setStartIndex] = useState(0);
+  const [index, setIndex] = useState(0);
 
-  const canGoPrev = startIndex > 0;
-  const canGoNext =
-    startIndex + VISIBLE_COUNT < MOCK_REPORTERS.length;
-
-  const visibleReporters = MOCK_REPORTERS.slice(
-    startIndex,
-    startIndex + VISIBLE_COUNT
-  );
+  const maxIndex = MOCK_REPORTERS.length - 1;
 
   const handlePrev = () => {
-    if (!canGoPrev) return;
-    setStartIndex((prev) => Math.max(0, prev - 1));
+    setIndex((prev) => Math.max(0, prev - 1));
   };
 
   const handleNext = () => {
-    if (!canGoNext) return;
-    setStartIndex((prev) =>
-      Math.min(
-        MOCK_REPORTERS.length - VISIBLE_COUNT,
-        prev + 1
-      )
+    setIndex((prev) =>
+      Math.min(maxIndex, prev + 1)
     );
   };
 
   return (
     <div className="reporter-slider">
+      {/* 왼쪽 화살표 */}
       <button
         type="button"
-        className={`arrow left ${
-          canGoPrev ? "" : "disabled"
-        }`}
+        className={`arrow ${index === 0 ? "disabled" : ""}`}
         onClick={handlePrev}
-        disabled={!canGoPrev}
       >
         &#60;
       </button>
 
-      <div className="card-track">
-        {visibleReporters.map((reporter) => (
-          <ReporterCard key={reporter.id} info={reporter} />
-        ))}
+      {/* ===== 카드 뷰포트 ===== */}
+      <div className="card-viewport">
+        <div
+          className="card-track"
+          style={{
+            transform: `translateX(-${index * MOVE_UNIT}px)`,
+          }}
+        >
+          {MOCK_REPORTERS.map((reporter) => (
+            <ReporterCard
+              key={reporter.id}
+              info={reporter}
+            />
+          ))}
+        </div>
       </div>
 
+      {/* 오른쪽 화살표 */}
       <button
         type="button"
-        className={`arrow right ${
-          canGoNext ? "" : "disabled"
+        className={`arrow ${
+          index >= maxIndex ? "disabled" : ""
         }`}
         onClick={handleNext}
-        disabled={!canGoNext}
       >
         &#62;
       </button>

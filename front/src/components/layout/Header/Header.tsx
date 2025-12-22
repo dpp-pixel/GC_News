@@ -74,7 +74,7 @@ export default function Header() {
   const handleLogout = () => {
   setIsLoggedIn(false);
   setIsUserOpen(false);
-  // alert("임시 로그아웃 되었습니다."); // ← 이제 필요 없으니 주석 처리 or 삭제
+  
   navigate("/"); // ✅ 바로 메인으로 이동
 };
 

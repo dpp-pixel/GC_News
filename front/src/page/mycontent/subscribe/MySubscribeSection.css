@@ -1,31 +1,41 @@
-/* src/page/mycontent/subscribe/MySubscribeSection.css */
-
+/* ===== 슬라이더 전체 ===== */
 .reporter-slider {
   margin-top: 24px;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 16px;
 }
 
+/* ===== 실제 보이는 영역 ===== */
+.card-viewport {
+  width: 100%;
+  max-width: 1200px;       /* ⬅️ 화면 기준 */
+  overflow: hidden;
+}
+
+/* ===== 카드 트랙 ===== */
 .card-track {
-  flex: 1;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
+  display: flex;
+  gap: 24px;
+  transition: transform 0.35s ease;
+  will-change: transform;
 }
 
+/* ===== 화살표 ===== */
 .arrow {
-  width: 32px;
+  width: 36px;
   height: 72px;
   border-radius: 18px;
   border: none;
-  background: #444;
-  color: #fff;
+  background: #cfcfcf;
+  color: #333;
   font-size: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   cursor: pointer;
+}
+
+.arrow:hover:not(.disabled) {
+  background: #bdbdbd;
 }
 
 .arrow.disabled {

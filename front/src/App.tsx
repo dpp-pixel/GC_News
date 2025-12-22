@@ -9,7 +9,7 @@ import MainContent from "./page/MainContent";
 import CategoryPage from "./page/CategoryPage";
 import NewsDetailPage from "./page/NewsDetailPage";
 import MyContentsPage from "./page/mycontent/MyContentsPage";
-import ProfilePage from "./page/ProfilePage";
+import ProfilePage from "./page/profilepage/ProfilePage";
 
 import "./App.css";
 

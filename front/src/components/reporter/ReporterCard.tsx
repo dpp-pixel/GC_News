@@ -1,15 +1,14 @@
 // src/components/reporter/ReporterCard.tsx
 import styles from "./ReporterCard.module.css";
 
-// ✅ MyContentsPage 등에서 같이 쓸 수 있게 export
 export interface ReporterInfo {
   id: number;
   name: string;
   email: string;
   subscribers: number;
   recommends: number;
-  tags: string[];        // 예: ["정치부", "정직한", "솔직한"]
-  trustScore: number;    // 0 ~ 100
+  tags: string[];
+  trustScore: number;
   imageUrl: string;
 }
 
@@ -28,23 +27,27 @@ export default function ReporterCard({ info }: { info: ReporterInfo }) {
 
   return (
     <div className={styles.card}>
-      {/* 프로필 영역 */}
+      {/* ===== 상단 프로필 ===== */}
       <div className={styles.profile}>
-        <img src={imageUrl} alt={`${name} 기자`} className={styles.avatar} />
+        <img
+          src={imageUrl}
+          alt={`${name} 기자`}
+          className={styles.avatar}
+        />
         <div className={styles.name}>{name} 기자</div>
         <div className={styles.position}>정치부 열혈기자</div>
       </div>
 
       <div className={styles.horizontalLine} />
 
-      {/* 구독 / 추천 요약 */}
+      {/* ===== 구독 / 추천 요약 ===== */}
       <div className={styles.summaryRow}>
         <span>구독 {subscribers}</span>
         <span className={styles.separator}>|</span>
         <span>추천 {recommends}</span>
       </div>
 
-      {/* 태그들 */}
+      {/* ===== 태그 ===== */}
       <div className={styles.tagsRow}>
         {tags.map((tag) => (
           <span key={tag} className={styles.tag}>
@@ -53,25 +56,21 @@ export default function ReporterCard({ info }: { info: ReporterInfo }) {
         ))}
       </div>
 
-      {/* 간단 설명 (더미) */}
-      <p className={styles.desc}>
-        정치/사회 섹션에서 정책 기사를 중심으로 취재하고 있습니다.
-      </p>
+      {/* ===== 액션 영역 ===== */}
+      <div className={styles.actionSection}>
+        <div className={styles.buttonRow}>
+          <button type="button" className={styles.primaryButton}>
+            + 구독
+          </button>
+          <button type="button" className={styles.secondaryButton}>
+            추천
+          </button>
+        </div>
 
-      {/* 구독 / 추천 버튼 */}
-      <div className={styles.buttonRow}>
-        <button type="button" className={styles.primaryButton}>
-          + 구독
-        </button>
-        <button type="button" className={styles.secondaryButton}>
-          추천
-        </button>
+        <div className={styles.emailBox}>{email}</div>
       </div>
 
-      {/* 이메일 박스 */}
-      <div className={styles.emailBox}>{email}</div>
-
-      {/* 신뢰도 영역 */}
+      {/* ===== 신뢰도 ===== */}
       <div className={styles.trustSection}>
         <div className={styles.trustHeader}>
           <span>기자 신뢰도</span>
@@ -91,7 +90,7 @@ export default function ReporterCard({ info }: { info: ReporterInfo }) {
         </div>
       </div>
 
-      {/* 하단 기타 버튼 (예: 작성 기사 확인, 날짜 입력) */}
+      {/* ===== 하단 버튼 ===== */}
       <div className={styles.bottomButtons}>
         <button type="button" className={styles.fullWidthButton}>
           작성한 기사 확인
