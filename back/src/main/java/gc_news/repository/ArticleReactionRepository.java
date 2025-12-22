@@ -8,21 +8,27 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ArticleReactionRepository
-        extends JpaRepository<Reaction, Long> {
+                extends JpaRepository<Reaction, Long> {
 
-    void deleteByUserKeyAndTargetTypeAndTargetId(
-            String userKey,
-            TargetType targetType,
-            Long targetId);
+        Optional<Reaction> findByUserKeyAndTargetTypeAndTargetId(
+                        String userKey,
+                        TargetType targetType,
+                        Long targetId);
 
-    @Query("""
-                SELECT r.reactionType, COUNT(r)
-                FROM Reaction r
-                WHERE r.targetType = 'article'
-                  AND r.targetId = :articleId
-                GROUP BY r.reactionType
-            """)
-    List<Object[]> countByArticle(@Param("articleId") Long articleId);
+        void deleteByUserKeyAndTargetTypeAndTargetId(
+                        String userKey,
+                        TargetType targetType,
+                        Long targetId);
+
+        @Query("""
+                            SELECT r.reactionType, COUNT(r)
+                            FROM Reaction r
+                            WHERE r.targetType = 'article'
+                              AND r.targetId = :articleId
+                            GROUP BY r.reactionType
+                        """)
+        List<Object[]> countByArticle(@Param("articleId") Long articleId);
 }

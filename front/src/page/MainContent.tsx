@@ -15,7 +15,7 @@ export default function MainContent() {
         <LatestNewsList /> 
 
         {/* 하단 유튜브 영상 */}
-         <YoutubeLatestNews /> 
+         {/* <YoutubeLatestNews />  */}
 
         {/* 테마 별 조회수 높은순 */}
         <HotNews/>

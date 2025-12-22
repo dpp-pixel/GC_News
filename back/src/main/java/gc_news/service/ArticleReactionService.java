@@ -28,14 +28,28 @@ public class ArticleReactionService {
             TargetType targetType,
             Long targetId,
             ReactionType reactionType) {
-        // 1. 타겟별 허용 리액션 검증
+
         validateReaction(targetType, reactionType);
 
-        // 2. 기존 반응 제거 (같은 유저, 같은 타겟)
-        reactionRepository.deleteByUserKeyAndTargetTypeAndTargetId(
-                userKey, targetType, targetId);
+        // 1. 기존 반응 조회
+        var existing = reactionRepository
+                .findByUserKeyAndTargetTypeAndTargetId(
+                        userKey, targetType, targetId);
 
-        // 3. 반응 저장
+        // 2. 같은 반응이면 → 취소
+        if (existing.isPresent()) {
+            Reaction old = existing.get();
+
+            if (old.getReactionType() == reactionType) {
+                reactionRepository.delete(old);
+                return; // ⭐ 여기서 끝
+            }
+
+            // 3. 다른 반응이면 기존 반응 삭제
+            reactionRepository.delete(old);
+        }
+
+        // 4. 새 반응 저장
         Reaction reaction = Reaction.builder()
                 .userKey(userKey)
                 .targetType(targetType)
@@ -57,14 +71,15 @@ public class ArticleReactionService {
         return counts;
     }
 
-    /**
-     * 타겟별 리액션 허용 규칙
-     */
     private void validateReaction(TargetType t, ReactionType r) {
-        if (t == TargetType.comment && (r == ReactionType.like || r == ReactionType.dislike))
+
+        if (t == TargetType.article &&
+                (r == ReactionType.happy ||
+                        r == ReactionType.sad ||
+                        r == ReactionType.angry)) {
             return;
-        if (t == TargetType.article && r != ReactionType.like && r != ReactionType.dislike)
-            return;
+        }
         throw new IllegalArgumentException("사용불가");
     }
+
 }

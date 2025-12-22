@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import "./ArticleReaction.css";
 
 /* 임시 유저 키 */
 const getUserKey = () => {
@@ -36,6 +37,7 @@ export default function ArticleReaction({ articleId }: Props) {
   }, [articleId]);
 
   const react = async (type: "happy" | "sad" | "angry") => {
+     console.log("clicked:", type);
     const userKey = getUserKey();
 
     await axios.post(
