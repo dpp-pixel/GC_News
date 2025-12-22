@@ -1,0 +1,103 @@
+.footer {
+  background: #000;
+  color: #fff;
+  margin-top: 80px;
+  padding: 32px 0 24px;
+  font-size: 13px;
+}
+
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px;
+  box-sizing: border-box;
+}
+
+/* 상단 영역 */
+.footer-top {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.footer-logo {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* Insight News 옆 본문 전체 */
+.footer-top-body {
+  display: flex;
+  justify-content: space-between;
+  gap: 48px;
+}
+
+/* 왼쪽 (임시 컨텐츠 + 카테고리) */
+.footer-left {
+  display: flex;
+  gap: 24px;
+}
+
+.footer-left-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* 공통 세로 구분선: 한 줄로 쭉 내려감 */
+.footer-divider {
+  width: 1px;
+  background: #555;
+  align-self: stretch; /* 부모 높이만큼 늘리기 */
+}
+
+/* 오른쪽 (솔데스크 정보) */
+.footer-right {
+  display: flex;
+  gap: 24px;
+}
+
+.footer-right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.footer-row {
+  line-height: 1.6;
+}
+
+/* 하단 바 */
+.footer-bottom {
+  border-top: 1px solid #333;
+  padding-top: 12px;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.footer-bottom-links {
+  display: flex;
+  gap: 16px;
+}
+
+.footer-bottom-links button {
+  background: none;
+  border: none;
+  color: #ddd;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.footer-bottom-links button:hover {
+  color: #fff;
+}
+
+.footer-copy {
+  font-size: 11px;
+  color: #aaa;
+}

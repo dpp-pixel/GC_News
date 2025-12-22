@@ -1,0 +1,151 @@
+/* src/page/mycontent/bookmark/MyBookmarkSection.css */
+
+.bookmark-layout {
+  margin-top: 32px;
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+/* 왼쪽 필터 */
+.bookmark-filter {
+  width: 200px;
+  background: #444;
+  color: #fff;
+  border-radius: 4px;
+  padding: 24px 16px;
+}
+
+.bookmark-filter h3 {
+  font-size: 14px;
+  margin: 0 0 16px;
+}
+
+.filter-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.filter-item {
+  margin-bottom: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.filter-item.active {
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+/* 오른쪽 영역 */
+.bookmark-main {
+  flex: 1;
+}
+
+.bookmark-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.bookmark-count {
+  font-size: 14px;
+  color: #555;
+}
+
+.bookmark-clear {
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: none;
+  background: #00c4ff;
+  color: #003047;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.22);
+}
+
+.bookmark-empty {
+  padding: 40px 24px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  color: #777;
+}
+
+.bookmark-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bookmark-item {
+  display: flex;
+  background: #f5f5f5;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.bookmark-thumb {
+  width: 260px;
+  background: #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.bookmark-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bookmark-info {
+  flex: 1;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.bookmark-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.bookmark-meta {
+  font-size: 13px;
+  color: #777;
+  margin-bottom: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.bookmark-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.bookmark-delete {
+  margin-left: auto;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid #ddd;
+  background: #fff;
+  cursor: pointer;
+}
+
+.bookmark-footer {
+  margin-top: 16px;
+  font-size: 12px;
+  color: #999;
+  text-align: right;
+}

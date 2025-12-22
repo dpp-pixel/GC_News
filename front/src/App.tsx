@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 
 import Header from "./components/layout/Header";
 import CategoryBar from "./components/layout/categorybar/CategoryBar";
+import Footer from "./components/layout/footer/Footer";   // ✅ 추가
 
 import MainContent from "./page/MainContent";
 import CategoryPage from "./page/CategoryPage";
@@ -54,6 +55,9 @@ function AppShell() {
           </Routes>
         </div>
       </main>
+
+      {/* ✅ 모든 페이지 공통 푸터 */}
+      <Footer />
     </>
   );
 }
