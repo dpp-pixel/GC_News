@@ -30,8 +30,12 @@ export default function LatestNewsList() {
         );
 
         if (!cancelled) {
-          // 최대 16개까지만 사용
-          setNews(res.data.slice(0, 16));
+          // 날짜 기준으로 최신순 정렬 후 최대 16개
+          const sortedNews = res.data.sort(
+            (a, b) =>
+              new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+          );
+          setNews(sortedNews.slice(0, 16));
         }
       } catch (e: any) {
         console.error("LatestNewsList /api/articles error:", e);
@@ -47,23 +51,14 @@ export default function LatestNewsList() {
 
     fetchLatest();
 
-    // 컴포넌트 언마운트 시 setState 호출 방지
     return () => {
       cancelled = true;
     };
   }, []);
 
-  if (loading) {
-    return <p>최신 기사 불러오는 중...</p>;
-  }
-
-  if (error) {
-    return <p style={{ color: "red" }}>{error}</p>;
-  }
-
-  if (news.length === 0) {
-    return <p>표시할 최신 기사가 없습니다.</p>;
-  }
+  if (loading) return <p>최신 기사 불러오는 중...</p>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  if (news.length === 0) return <p>표시할 최신 기사가 없습니다.</p>;
 
   const leftNews = news.slice(0, 3);
   const centerNews = news.slice(3);
@@ -82,12 +77,9 @@ export default function LatestNewsList() {
                   <img src={item.mediaList[0].url} alt={item.title} />
                 </div>
               )}
-
-              {/* 내부 상세 페이지로 이동 */}
               <Link to={`/news/${item.articleId}`}>
                 <h4>{item.title}</h4>
               </Link>
-
               <p className="meta">
                 {item.press} ·{" "}
                 {new Date(item.publishedAt).toLocaleDateString()}
@@ -101,9 +93,7 @@ export default function LatestNewsList() {
           <ul>
             {centerNews.map((item) => (
               <li key={item.articleId}>
-                <Link to={`/news/${item.articleId}`}>
-                  {item.title}
-                </Link>
+                <Link to={`/news/${item.articleId}`}>{item.title}</Link>
               </li>
             ))}
           </ul>
