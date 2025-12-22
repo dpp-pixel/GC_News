@@ -23,4 +23,10 @@ public class NewsController {
         return "크롤 완료 — 콘솔에서 확인하세요!";
     }
 
+     //헤드라인만 크롤링
+    @GetMapping("/news/crawl/headline")
+    public String crawlHeadlines() {
+        newsCrawlingService.crawlHeadlineSections();
+        return "헤드라인 크롤 완료 — 콘솔에서 확인하세요!";
+    }
 }

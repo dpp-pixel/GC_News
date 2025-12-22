@@ -8,7 +8,12 @@ import lombok.Setter;
 @Setter
 @Builder
 public class ReporterRequest {
+    private Long reporterId;
     private String name;
+    private String press;
     private String email;
     private String profileImageUrl;
+    private Float trustScore;
+    private boolean headline;
+    private int clusterCount;
 }
