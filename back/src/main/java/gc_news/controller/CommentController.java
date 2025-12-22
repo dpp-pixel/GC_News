@@ -41,11 +41,24 @@ public class CommentController {
         return commentService.getCommentsByArticle(articleId);
     }
 
+    @GetMapping
+    public List<Comment> getMyComments(
+            @AuthenticationPrincipal User user,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return commentService.getUserComments(user.getUserId(), page, size);
+    }
+
     // 삭제
     @DeleteMapping("/{commentId}")
     public void deleteComment(
             @PathVariable Long commentId
     /* ,@AuthenticationPrincipal User user */ ) {
         commentService.deleteComment(commentId);// , user.getUserId()로그인
+    }
+
+    @GetMapping("/api/users/me/comments/count")
+    public Long getMyCommentCount(@AuthenticationPrincipal User user) {
+        return commentService.countUserComments(user.getUserId());
     }
 }

@@ -70,4 +70,16 @@ public class CommentService {
 
         commentRepository.delete(comment);
     }
+
+    // 로그인 사용자 댓글 최신순 조회 (무한 스크롤용)
+    @Transactional(readOnly = true)
+    public List<Comment> getUserComments(String userId, int page, int size) {
+        return commentRepository.findByUser_UserIdOrderByCreatedAtDesc(userId,
+                PageRequest.of(page, size));
+    }
+
+    @Transactional(readOnly = true)
+    public Long countUserComments(String userId) {
+        return commentRepository.countByUser_UserId(userId);
+    }
 }
