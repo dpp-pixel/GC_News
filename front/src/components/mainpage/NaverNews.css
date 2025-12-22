@@ -1,0 +1,162 @@
+/* ===== 전체 컨테이너 ===== */
+.news-container {
+  width: 1100px;
+  margin: 0 auto;
+  padding: 30px 0;
+  font-family: Arial, sans-serif;
+}
+
+/* ===== 메인 레이아웃 ===== */
+.main-layout {
+  display: grid;
+  grid-template-columns: 2.2fr 1fr;
+  gap: 32px;
+}
+
+/* ===== 왼쪽 영역 ===== */
+.left-news {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== 메인 기사 ===== */
+.main-article.horizontal {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.main-image {
+  width: 360px;
+  height: 240px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.main-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.main-text h1 {
+  font-size: 26px;
+  line-height: 1.3;
+  margin-bottom: 10px;
+}
+
+.main-text .summary {
+  font-size: 15px;
+  color: #444;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* 최대 3줄 */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.main-text .meta {
+  font-size: 12px;
+  color: #888;
+  margin-top: 6px;
+}
+
+/* ===== 서브 기사 ===== */
+.sub-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.sub-article.vertical {
+  display: flex;
+  flex-direction: column;
+  padding-top: 12px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.sub-image {
+  width: 100%;
+    height: 165px;
+  overflow: hidden;
+}
+
+.sub-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sub-text h3 {
+  font-size: 18px;
+  margin: 8px 0 4px;
+}
+
+.sub-text .summary {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* 최대 3줄 */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.sub-text .meta {
+  font-size: 12px;
+  color: #888;
+  margin-top: 4px;
+}
+
+/* ===== 리스트 기사 ===== */
+.list-article {
+  padding: 14px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.list-article a {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #000;
+  text-decoration: none;
+}
+
+.list-article a:hover {
+  text-decoration: underline;
+}
+
+/*이미지 크기 2배 */
+.list-thumb {
+  width: 100%;
+  height: 150px;
+  margin-bottom: 6px;
+}
+
+.list-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 제목 */
+.list-article h4 {
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* 언론사 */
+.list-article span {
+  font-size: 12px;
+  color: #999;
+}
+.news-container a {
+  color: #000;
+  text-decoration: none;
+}
+
+.news-container a:hover {
+  text-decoration: underline;
+}

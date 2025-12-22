@@ -16,7 +16,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -45,6 +46,11 @@ public class Report {
     @JoinColumn(name = "user_id")
     private User user;
 
-    public enum TargetType { user, comment, article, reporter, summary }
-    public enum Status { pending, resolved }
+    public enum TargetType {
+        user, comment, article, reporter, summary
+    }
+
+    public enum Status {
+        pending, resolved
+    }
 }

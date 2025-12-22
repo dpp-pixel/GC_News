@@ -18,7 +18,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -46,5 +47,7 @@ public class Summary {
     @JoinColumn(name = "article_id")
     private Article article;
 
-    public enum TargetType { article, theme, global }
+    public enum TargetType {
+        article, theme, global
+    }
 }

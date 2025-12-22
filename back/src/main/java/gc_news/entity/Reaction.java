@@ -15,7 +15,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -37,6 +38,11 @@ public class Reaction {
     @JoinColumn(name = "user_id")
     private User user;
 
-    public enum TargetType { article, comment }
-    public enum ReactionType { like, dislike, happy, sad, angry }
+    public enum TargetType {
+        article, comment
+    }
+
+    public enum ReactionType {
+        like, dislike, happy, sad, angry
+    }
 }

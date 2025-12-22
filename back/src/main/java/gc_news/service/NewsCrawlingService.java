@@ -8,6 +8,7 @@ import gc_news.repository.ArticleRepository;
 import gc_news.repository.ThemeRepository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -178,4 +179,5 @@ public class NewsCrawlingService {
         crawling.set(false);
     }
 }
+
 }
