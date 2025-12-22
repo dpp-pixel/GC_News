@@ -1,0 +1,78 @@
+/* src/page/mycontent/comment/MyCommentSection.css */
+
+.comment-section {
+  margin-top: 32px;
+}
+
+.comment-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.comment-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.comment-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.comment-count {
+  margin-left: 6px;
+  font-size: 14px;
+  color: #777;
+}
+
+.comment-sort-tabs {
+  display: flex;
+  gap: 16px;
+}
+
+.comment-sort-tab {
+  background: none;
+  border: none;
+  padding: 4px 0;
+  font-size: 14px;
+  cursor: pointer;
+  color: #777;
+}
+
+.comment-sort-tab.active {
+  color: #000;
+  font-weight: 600;
+  border-bottom: 2px solid #000;
+}
+
+.comment-clear {
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: none;
+  background: #00c4ff;
+  color: #003047;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.22);
+}
+
+.comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.comment-text {
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #333;
+}
+
+.comment-footer {
+  margin-top: 12px;
+}
