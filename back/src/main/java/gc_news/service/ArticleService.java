@@ -17,20 +17,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+
+
+import gc_news.entity.Article;
+import gc_news.entity.Reporter;
+import gc_news.repository.ReporterRepository;
+import lombok.RequiredArgsConstructor;
+
+
 @Service
 @RequiredArgsConstructor
 public class ArticleService {
 
+    private final ReporterRepository reporterRepository;
     private final ArticleRepository articleRepository;
 
-    // ✅ 단일 기사 상세 조회
+    //단일 기사 상세 조회
     @Transactional(readOnly = true)
     public Article getArticleById(Long articleId) {
         return articleRepository.findById(articleId)
                 .orElseThrow(() -> new RuntimeException("Article not found: " + articleId));
     }
 
-        // ✅ 상세 조회 시, content 가 비었으면 네이버 원문에서 크롤링해서 채우기
+        //상세 조회 시, content 가 비었으면 네이버 원문에서 크롤링해서 채우기
     @Transactional
     public Article loadArticleContentIfNeeded(Long articleId) {
 
@@ -89,13 +98,13 @@ public class ArticleService {
         return article;
     }
 
-    // ✅ 전체 기사 (media 포함) - 일단 모든 기사 반환
+    //전체 기사 (media 포함) - 일단 모든 기사 반환
     @Transactional(readOnly = true)
     public List<Article> getAllArticlesWithMedia() {
         return articleRepository.findAll();
     }
 
-    // ✅ 인기 뉴스 (최근 days일 기준 + 날짜 내림차순 상위 limit개)
+    //인기 뉴스 (최근 days일 기준 + 날짜 내림차순 상위 limit개)
     @Transactional(readOnly = true)
     public List<Article> getHotArticles(int days, int limit, Long themeId) {
 
@@ -122,7 +131,7 @@ public class ArticleService {
                 .toList();
     }
 
-    // ✅ 카테고리별 인기 뉴스 그룹 (테마별로 limitPerTheme개씩)
+    //카테고리별 인기 뉴스 그룹 (테마별로 limitPerTheme개씩)
     @Transactional(readOnly = true)
     public Map<Long, List<Article>> getHotArticlesGroupedByTheme(int days, int limitPerTheme) {
 
@@ -150,11 +159,60 @@ public class ArticleService {
                 ));
     }
 
-    // ✅ 카테고리별 최신 기사 (페이지네이션)
+    //카테고리별 최신 기사 (페이지네이션)
     @Transactional(readOnly = true)
     public Page<Article> getArticlesByTheme(Long themeId, Pageable pageable) {
         // 이미 CategoryPage 가 잘 뜬다고 했으니,
         // ArticleRepository 안에 이 메서드가 정의되어 있다고 가정.
         return articleRepository.findByTheme_ThemeIdOrderByPublishedAtDesc(themeId, pageable);
     }
+
+  
+    /**
+     * 기사 상세 HTML에서 기자를 찾아 Article에 연결
+     */
+    public void attachReporterFromArticlePage(Document document, Article article) {
+
+        // 네이버 기사 상세에서 기자 링크 or 기자 이름 영역
+        Element reporterElement = document.selectFirst("a[href*=/journalist/]");
+
+        if (reporterElement == null) {
+            // 기자 없는 기사 (속보, 연합뉴스 일부 등)
+            return;
+        }
+
+        String journalistUrl = reporterElement.attr("href");
+        // 여기서 ID 추출
+        String externalJournalistId = extractJournalistId(journalistUrl);
+
+        if (externalJournalistId == null) {
+            return; // 이상한 URL이면 그냥 기자 연결 안 함
+        }
+
+        String reporterName = reporterElement.text().trim();
+        String press = article.getPress(); // 기사에 이미 있음
+
+        Reporter reporter = reporterRepository
+                .findByExternalJournalistId(externalJournalistId)
+                .orElseGet(() -> reporterRepository.save(
+                        Reporter.builder()
+                                .externalJournalistId(externalJournalistId)
+                                .name(reporterName)
+                                .press(press)
+                                .build()));
+
+        article.setReporter(reporter);
+    }
+
+    private String extractJournalistId(String journalistUrl) {
+        // 예: https://media.naver.com/journalist/655/81986
+        if (journalistUrl == null || journalistUrl.isBlank()) {
+            return null;
+        }
+        String[] parts = journalistUrl.split("/");
+        return parts[parts.length - 1]; // "81986"
+    }
 }
+
+
+

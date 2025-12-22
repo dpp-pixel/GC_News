@@ -29,7 +29,7 @@ public record ArticleDetailResponse(
                         ))
                         .toList();
 
-        // ✅ 기자 이름 만들기 (Reporter 엔티티에서 꺼내기)
+        //기자 이름 만들기 (Reporter 엔티티에서 꺼내기)
         String reporterName = null;
         if (article.getReporter() != null) {
             // Reporter 엔티티에 필드명이 name 이라고 가정
@@ -37,7 +37,7 @@ public record ArticleDetailResponse(
             // 만약 필드명이 다르면 여기 한 줄만 바꿔주면 됩니다.
         }
 
-        // ✅ DB에 저장된 content 를 그대로 본문 HTML로 사용
+        //DB에 저장된 content 를 그대로 본문 HTML로 사용
         String contentHtml = article.getContent();
         if (contentHtml == null) {
             contentHtml = "";

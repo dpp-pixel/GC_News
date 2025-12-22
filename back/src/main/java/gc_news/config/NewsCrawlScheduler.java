@@ -16,4 +16,10 @@ public class NewsCrawlScheduler {
     public void crawlOneSectionEvery2Min() {
         newsCrawlingService.crawlNextSection();
     }
+
+     // 59분마다 헤드라인 전체 갱신 (test)
+    @Scheduled(cron = "0 0/59 * * * ?")
+    public void crawlHeadlinesEvery30Min() {
+        newsCrawlingService.crawlHeadlineSections();
+    }
 }
