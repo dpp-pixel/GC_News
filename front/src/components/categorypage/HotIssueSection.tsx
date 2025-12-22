@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import "./HotIssueSection.css";
 import { Link } from "react-router-dom";
+import "./HotIssueSection.css";
+
 interface Article {
   articleId: number;
   title: string;
@@ -20,7 +21,7 @@ export default function HotIssueSection({ themeId }: { themeId: number }) {
         params: {
           days: 3,
           limit: 5,
-          themeId, 
+          themeId,
         },
       })
       .then((res) => setArticles(res.data))
@@ -31,38 +32,46 @@ export default function HotIssueSection({ themeId }: { themeId: number }) {
 
   return (
     <section className="hot-issue">
-  <h2>HOT 이슈</h2>
+      <h2>HOT 이슈</h2>
 
-  <ul className="hot-list">
-    {articles.map((article) => (
-      <li
-        key={article.articleId}
-        className="hot-item"
-        style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "8px" }}
-      >
-        {article.mediaList?.[0]?.url && (
-          <div
+      <ul className="hot-list">
+        {articles.map((article) => (
+          <li
+            key={article.articleId}
+            className="hot-item"
             style={{
-              flexShrink: 0,
-              width: "60px",
-              height: "60px",
-              overflow: "hidden",
+              display: "flex",
+              gap: "8px",
+              alignItems: "center",
+              marginBottom: "8px",
             }}
           >
-            <img
-              src={article.mediaList[0].url}
-              alt={article.title}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                borderRadius: "4px",
-              }}
-            />
-          </div>
-        )}
-        <Link
-              to={`/article/${article.articleId}`}
+            {/* 썸네일 */}
+            {article.mediaList?.[0]?.url && (
+              <div
+                style={{
+                  flexShrink: 0,
+                  width: "60px",
+                  height: "60px",
+                  overflow: "hidden",
+                }}
+              >
+                <img
+                  src={article.mediaList[0].url}
+                  alt={article.title}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    borderRadius: "4px",
+                  }}
+                />
+              </div>
+            )}
+
+            {/* ❗️여기가 핵심: 제목 클릭 → 기사 상세 */}
+            <Link
+              to={`/news/${article.articleId}`}
               style={{
                 fontWeight: "bold",
                 fontSize: "14px",
@@ -72,10 +81,9 @@ export default function HotIssueSection({ themeId }: { themeId: number }) {
             >
               {article.title}
             </Link>
-      </li>
-    ))}
-  </ul>
-</section>
-
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

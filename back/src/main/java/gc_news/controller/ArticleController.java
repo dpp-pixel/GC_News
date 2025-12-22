@@ -1,5 +1,6 @@
 package gc_news.controller;
 
+import gc_news.dto.ArticleDetailResponse;
 import gc_news.entity.Article;
 import gc_news.service.ArticleService;
 import lombok.RequiredArgsConstructor;
@@ -51,8 +52,11 @@ public class ArticleController {
         return articleService.getArticlesByTheme(themeId, pageable);
     }
 
+    // ✅ 기사 상세 조회 (본문 없으면 크롤링해서 채움)
     @GetMapping("/{articleId}")
-    public Article getArticleDetail(@PathVariable Long articleId) {
-        return articleService.getArticleDetail(articleId);
+    public ArticleDetailResponse getArticleDetail(@PathVariable Long articleId) {
+        Article article = articleService.loadArticleContentIfNeeded(articleId);
+        return ArticleDetailResponse.from(article);
     }
+
 }

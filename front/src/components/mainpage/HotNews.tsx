@@ -79,8 +79,9 @@ export default function HotNews() {
                     </div>
                   )}
 
+                  {/* ❗️여기가 핵심 수정 부분 */}
                   <Link
-                    to={`/article/${article.articleId}`}
+                    to={`/news/${article.articleId}`}
                     className={idx === 0 ? "hot-title main" : "hot-title"}
                   >
                     {article.title}

@@ -34,11 +34,8 @@ export default function CategoryArticleList({ themeId }: { themeId: number }) {
       <ul>
         {articles.map((a) => (
           <li key={a.articleId}>
-           
-            <Link
-              to={`/article/${a.articleId}`}
-              className="article-link"
-            >
+            {/* ❗️여기가 핵심: 제목 클릭 → 기사 상세 */}
+            <Link to={`/news/${a.articleId}`} className="article-link">
               <span className="title">{a.title}</span>
               <span className="meta">
                 {a.press} ·{" "}

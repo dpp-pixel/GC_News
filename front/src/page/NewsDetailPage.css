@@ -1,0 +1,67 @@
+.news-detail {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 16px 80px;
+}
+
+/* 로딩 / 에러 메시지 */
+.news-loading {
+  max-width: 720px;
+  margin: 80px auto;
+  padding: 24px 16px;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+}
+
+/* 헤더 */
+.article-header {
+  border-bottom: 1px solid #e5e5e5;
+  padding-bottom: 16px;
+}
+
+.article-header .press {
+  font-size: 14px;
+  font-weight: bold;
+  color: #2565d0;
+  margin-bottom: 8px;
+}
+
+.article-header .title {
+  font-size: 26px;
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.article-header .meta {
+  font-size: 13px;
+  color: #666;
+  display: flex;
+  gap: 8px;
+}
+
+/* 대표 이미지 */
+.article-image {
+  margin: 24px 0;
+}
+
+.article-image img {
+  width: 100%;
+  border-radius: 4px;
+}
+
+/* 본문 */
+.article-body {
+  font-size: 16px;
+  line-height: 1.7;
+  color: #222;
+}
+
+.article-body p {
+  margin-bottom: 16px;
+}
+
+.article-body img {
+  max-width: 100%;
+  margin: 16px 0;
+}
