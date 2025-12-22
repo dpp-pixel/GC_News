@@ -7,6 +7,7 @@ import gc_news.entity.Article;
 import gc_news.repository.ArticleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +35,12 @@ public class ArticleService {
     public Article getArticleById(Long articleId) {
         return articleRepository.findById(articleId)
                 .orElseThrow(() -> new RuntimeException("Article not found: " + articleId));
+    }
+
+    @Transactional(readOnly = true)
+    public List<Article> getHeadlineArticles(int limit) {
+        return articleRepository.findHeadlineArticles(
+                PageRequest.of(0, limit));
     }
 
     // 상세 조회 시, content 가 비었으면 네이버 원문에서 크롤링해서 채우기

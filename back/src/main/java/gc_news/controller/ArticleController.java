@@ -59,4 +59,10 @@ public class ArticleController {
         return ArticleDetailResponse.from(article);
     }
 
+    @GetMapping("/headline")
+    public List<Article> headlineArticles(
+            @RequestParam(defaultValue = "5") int limit) {
+        return articleService.getHeadlineArticles(limit);
+    }
+
 }

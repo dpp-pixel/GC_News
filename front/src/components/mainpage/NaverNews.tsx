@@ -38,17 +38,16 @@ export default function NaverNews() {
     const fetchNews = async () => {
       try {
         const res = await axios.get<Article[]>(
-          "http://localhost:8081/api/articles/hot",
-          {
-            params: {
-              days: 3,
-              limit: 6, // 메인 + 서브 + 리스트용
-            },
-          }
-        );
+  "http://localhost:8081/api/articles/headline",
+  {
+    params: {
+      limit: 6,
+    },
+  }
+);
         setNews(res.data);
       } catch (e) {
-        console.error("NaverNews /api/articles/hot error:", e);
+        console.error("NaverNews /api/articles/headline error:", e);
         setError(true);
       } finally {
         setLoading(false);
