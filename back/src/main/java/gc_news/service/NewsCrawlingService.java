@@ -295,9 +295,4 @@ public class NewsCrawlingService {
             crawling.set(false);
         }
     }
-<<<<<<< HEAD
-}
-
-=======
->>>>>>> origin/feature/CrawlingHeadline
 }
