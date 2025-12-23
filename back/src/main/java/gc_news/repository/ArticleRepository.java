@@ -25,7 +25,7 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
                 FROM Article a
                 LEFT JOIN FETCH a.mediaList
                 WHERE a.headline = true
-                ORDER BY a.publishedAt DESC
+                ORDER BY a.clusterCount DESC, a.publishedAt DESC
             """)
     List<Article> findHeadlineArticles(Pageable pageable);
 
@@ -62,7 +62,7 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
                 LEFT JOIN FETCH a.theme
                 WHERE a.headline = true
                 AND a.theme.themeId = :themeId
-                ORDER BY a.publishedAt DESC
+                ORDER BY a.clusterCount DESC, a.publishedAt DESC
             """)
     List<Article> findHeadlineArticlesByTheme(
             @Param("themeId") Long themeId,

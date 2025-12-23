@@ -25,22 +25,23 @@ export default function MyBookmarkSection() {
   const [selectedFilter, setSelectedFilter] = useState<string>("전체");
   const [loadingBookmarks, setLoadingBookmarks] = useState(false);
 
-  useEffect(() => {
-    const fetchArticles = async () => {
-      try {
-        setLoadingBookmarks(true);
-        const res = await axios.get<Article[]>(
-          "http://localhost:8081/api/articles"
-        );
-        setBookmarkArticles(res.data.slice(0, 10));
-      } catch (e) {
-        console.error("기사 로딩 실패:", e);
-      } finally {
-        setLoadingBookmarks(false);
-      }
-    };
+  /** 로그인 유저 북마크 조회 */
+  const fetchBookmarks = async () => {
+    try {
+      setLoadingBookmarks(true);
+      const res = await axios.get<Article[]>(
+        "http://localhost:8081/api/bookmarks/my"
+      );
+      setBookmarkArticles(res.data);
+    } catch (e) {
+      console.error("북마크 로딩 실패:", e);
+    } finally {
+      setLoadingBookmarks(false);
+    }
+  };
 
-    fetchArticles();
+  useEffect(() => {
+    fetchBookmarks();
   }, []);
 
   const filteredBookmarks =
@@ -50,19 +51,28 @@ export default function MyBookmarkSection() {
           (a) => getArticleCategory(a) === selectedFilter
         );
 
-  const handleClearAllBookmarks = () => {
-    if (bookmarkArticles.length === 0) return;
-    if (
-      window.confirm(
-        "북마크를 모두 삭제하시겠습니까? (현재는 화면에서만 삭제됩니다)"
-      )
-    ) {
-      setBookmarkArticles([]);
+  /** 단일 북마크 삭제 */
+  const handleDeleteOneBookmark = async (articleId: number) => {
+    try {
+      await axios.delete(`http://localhost:8081/api/bookmarks/${articleId}`);
+      setBookmarkArticles((prev) =>
+        prev.filter((a) => a.articleId !== articleId)
+      );
+    } catch (e) {
+      console.error("북마크 삭제 실패:", e);
     }
   };
 
-  const handleDeleteOneBookmark = (id: number) => {
-    setBookmarkArticles((prev) => prev.filter((a) => a.articleId !== id));
+  /** 전체 북마크 삭제 */
+  const handleClearAllBookmarks = async () => {
+    if (bookmarkArticles.length === 0) return;
+    if (!window.confirm("북마크를 모두 삭제하시겠습니까?")) return;
+    try {
+      await axios.delete(`http://localhost:8081/api/bookmarks`);
+      setBookmarkArticles([]);
+    } catch (e) {
+      console.error("전체 북마크 삭제 실패:", e);
+    }
   };
 
   return (
@@ -89,7 +99,7 @@ export default function MyBookmarkSection() {
       <section className="bookmark-main">
         <div className="bookmark-header">
           <span className="bookmark-count">
-            총 {filteredBookmarks.length}개 북마크 (임시)
+            총 {filteredBookmarks.length}개 북마크
           </span>
           <button
             type="button"
@@ -105,8 +115,6 @@ export default function MyBookmarkSection() {
         ) : filteredBookmarks.length === 0 ? (
           <div className="bookmark-empty">
             북마크된 기사가 없습니다.
-            <br />
-            (현재는 /api/articles 결과를 임시로 사용 중)
           </div>
         ) : (
           <ul className="bookmark-list">
@@ -135,8 +143,7 @@ export default function MyBookmarkSection() {
                   <div className="bookmark-meta">
                     <span>{article.press}</span>
                     <span>
-                      ·{" "}
-                      {new Date(article.publishedAt).toLocaleString()}
+                      · {new Date(article.publishedAt).toLocaleString()}
                     </span>
                   </div>
 
@@ -161,7 +168,6 @@ export default function MyBookmarkSection() {
 
         <div className="bookmark-footer">
           북마크 기사가 10개를 넘으면 페이지를 나눠서 보여줄 예정입니다
-          (임시 안내 문구).
         </div>
       </section>
     </div>

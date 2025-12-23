@@ -9,6 +9,7 @@ interface Article {
   urlString: string;
   press: string;
   viewCount: number;
+  clusterCount: number;
   mediaList?: { url: string }[];
 }
 
@@ -81,6 +82,16 @@ export default function HotIssueSection({ themeId }: { themeId: number }) {
             >
               {article.title}
             </Link>
+            <span
+          style={{
+            fontSize: "12px",
+            color: "gray",
+            alignSelf: "flex-end",
+            marginTop: "2px",
+          }}
+        >
+          관련뉴스 {article.clusterCount}개
+        </span>
           </li>
         ))}
       </ul>
