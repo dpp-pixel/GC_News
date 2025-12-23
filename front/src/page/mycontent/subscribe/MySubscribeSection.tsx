@@ -5,77 +5,58 @@ import ReporterCard, {
 } from "../../../components/reporter/ReporterCard";
 import "./MySubscribeSection.css";
 
-/* ===== 더미 데이터 (슬라이더 테스트용, 반드시 10개 이상) ===== */
-const MOCK_REPORTERS: ReporterInfo[] = Array.from(
-  { length: 10 },
+const MOCK_REPORTERS: ReporterInfo[] = Array.from({ length: 10 }).map(
   (_, i) => ({
     id: i + 1,
-    name: `기자${i + 1}`,
+    name: `김기덕${i + 1}`,
     email: `reporter${i + 1}@news.com`,
     subscribers: 80 + i * 5,
     recommends: 3 + i * 2,
     tags: ["정치부", "분석"],
     trustScore: 70 + i,
-    imageUrl: `https://picsum.photos/150?random=${i + 1}`,
+    imageUrl: "https://picsum.photos/150",
   })
 );
 
 const CARD_WIDTH = 360;
-const CARD_GAP = 24;
-const MOVE_UNIT = CARD_WIDTH + CARD_GAP;
+const GAP = 24;
+const VISIBLE_COUNT = 5;
 
 export default function MySubscribeSection() {
   const [index, setIndex] = useState(0);
 
-  const maxIndex = MOCK_REPORTERS.length - 1;
+  const maxIndex = MOCK_REPORTERS.length - VISIBLE_COUNT;
 
-  const handlePrev = () => {
-    setIndex((prev) => Math.max(0, prev - 1));
-  };
+  const canPrev = index > 0;
+  const canNext = index < maxIndex;
 
-  const handleNext = () => {
-    setIndex((prev) =>
-      Math.min(maxIndex, prev + 1)
-    );
-  };
+  const translateX = index * (CARD_WIDTH + GAP);
 
   return (
-    <div className="reporter-slider">
-      {/* 왼쪽 화살표 */}
+    <div className="slider-wrapper">
       <button
-        type="button"
-        className={`arrow ${index === 0 ? "disabled" : ""}`}
-        onClick={handlePrev}
+        className={`arrow ${!canPrev ? "disabled" : ""}`}
+        onClick={() => canPrev && setIndex(index - 1)}
       >
-        &#60;
+        ‹
       </button>
 
-      {/* ===== 카드 뷰포트 ===== */}
       <div className="card-viewport">
         <div
           className="card-track"
-          style={{
-            transform: `translateX(-${index * MOVE_UNIT}px)`,
-          }}
+          style={{ transform: `translateX(-${translateX}px)` }}
         >
-          {MOCK_REPORTERS.map((reporter) => (
-            <ReporterCard
-              key={reporter.id}
-              info={reporter}
-            />
+          {MOCK_REPORTERS.map((info) => (
+            <ReporterCard key={info.id} info={info} />
           ))}
         </div>
       </div>
 
-      {/* 오른쪽 화살표 */}
       <button
-        type="button"
-        className={`arrow ${
-          index >= maxIndex ? "disabled" : ""
-        }`}
-        onClick={handleNext}
+        className={`arrow ${!canNext ? "disabled" : ""}`}
+        onClick={() => canNext && setIndex(index + 1)}
       >
-        &#62;
+        ›
       </button>
     </div>
   );

@@ -1,19 +1,23 @@
-// src/components/reporter/ReporterCard.tsx
+import { useNavigate } from "react-router-dom";
 import styles from "./ReporterCard.module.css";
 
+// ✅ MyContentsPage 등에서 같이 쓸 수 있게 export
 export interface ReporterInfo {
   id: number;
   name: string;
   email: string;
   subscribers: number;
   recommends: number;
-  tags: string[];
-  trustScore: number;
+  tags: string[];        // 예: ["정치부", "정직한", "솔직한"]
+  trustScore: number;    // 0 ~ 100
   imageUrl: string;
 }
 
 export default function ReporterCard({ info }: { info: ReporterInfo }) {
+  const navigate = useNavigate();
+
   const {
+    id,
     name,
     email,
     subscribers,
@@ -27,14 +31,22 @@ export default function ReporterCard({ info }: { info: ReporterInfo }) {
 
   return (
     <div className={styles.card}>
-      {/* ===== 상단 프로필 ===== */}
+      {/* ===== 프로필 영역 ===== */}
       <div className={styles.profile}>
         <img
           src={imageUrl}
           alt={`${name} 기자`}
           className={styles.avatar}
         />
-        <div className={styles.name}>{name} 기자</div>
+
+        {/* 🔗 기자 이름 클릭 → 기자 페이지 이동 */}
+        <div
+          className={styles.name}
+          onClick={() => navigate(`/reporter/${id}`)}
+        >
+          {name} 기자
+        </div>
+
         <div className={styles.position}>정치부 열혈기자</div>
       </div>
 
@@ -56,19 +68,23 @@ export default function ReporterCard({ info }: { info: ReporterInfo }) {
         ))}
       </div>
 
-      {/* ===== 액션 영역 ===== */}
-      <div className={styles.actionSection}>
-        <div className={styles.buttonRow}>
-          <button type="button" className={styles.primaryButton}>
-            + 구독
-          </button>
-          <button type="button" className={styles.secondaryButton}>
-            추천
-          </button>
-        </div>
+      {/* ===== 설명 (더미) ===== */}
+      <p className={styles.desc}>
+        정치/사회 섹션에서 정책 기사를 중심으로 취재하고 있습니다.
+      </p>
 
-        <div className={styles.emailBox}>{email}</div>
+      {/* ===== 액션 버튼 ===== */}
+      <div className={styles.buttonRow}>
+        <button type="button" className={styles.primaryButton}>
+          + 구독
+        </button>
+        <button type="button" className={styles.secondaryButton}>
+          추천
+        </button>
       </div>
+
+      {/* ===== 이메일 ===== */}
+      <div className={styles.emailBox}>{email}</div>
 
       {/* ===== 신뢰도 ===== */}
       <div className={styles.trustSection}>

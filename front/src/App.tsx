@@ -3,13 +3,14 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 
 import Header from "./components/layout/Header";
 import CategoryBar from "./components/layout/categorybar/CategoryBar";
-import Footer from "./components/layout/footer/Footer";   // ✅ 추가
-
+import Footer from "./components/layout/footer/Footer"; 
+import ReporterPage from "./components/reporter/repoterpage/ReporterPage";
 import MainContent from "./page/MainContent";
 import CategoryPage from "./page/CategoryPage";
 import NewsDetailPage from "./page/NewsDetailPage";
 import MyContentsPage from "./page/mycontent/MyContentsPage";
 import ProfilePage from "./page/profilepage/ProfilePage";
+
 
 import "./App.css";
 
@@ -21,11 +22,11 @@ function App() {
   );
 }
 
-// ✅ 실제 레이아웃을 담당하는 컴포넌트
+//  실제 레이아웃을 담당하는 컴포넌트
 function AppShell() {
   const location = useLocation();
 
-  // ✅ 이 경로들에서는 카테고리바 숨기기
+  //  이 경로들에서는 카테고리바 숨기기
   const hideCategoryBar =
     location.pathname.startsWith("/my-contents") ||
     location.pathname.startsWith("/profile");
@@ -34,7 +35,7 @@ function AppShell() {
     <>
       <Header />
 
-      {/* ✅ 내 콘텐츠/회원정보 페이지가 아니면 카테고리바 보여줌 */}
+      {/* 내 콘텐츠/회원정보 페이지가 아니면 카테고리바 보여줌 */}
       {!hideCategoryBar && <CategoryBar />}
 
       <main className="app-main">
@@ -52,11 +53,14 @@ function AppShell() {
             {/* 내 정보 관련 페이지 */}
             <Route path="/my-contents" element={<MyContentsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+
+            {/* 기자 페이지 */}
+            <Route path="/reporter/:reporterId" element={<ReporterPage />} />
           </Routes>
         </div>
       </main>
 
-      {/* ✅ 모든 페이지 공통 푸터 */}
+      {/* 모든 페이지 공통 푸터 */}
       <Footer />
     </>
   );
