@@ -1,12 +1,12 @@
 package gc_news.dto;
 
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
-public class UserSignupRequest {
-    private String name;
+@Builder
+public class UserLoginRequest {
     private String email;
     private String password;
+    private String role;
 }
