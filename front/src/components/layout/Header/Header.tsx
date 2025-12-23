@@ -1,14 +1,16 @@
 // src/components/layout/Header/Header.tsx
 import { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import styles from "./Header.module.css";
 
 import searchIcon from "/src/assets/icons/search.svg";
 import userIcon from "/src/assets/icons/user4.svg";
 
 export default function Header() {
-  // 임시 로그인 상태
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // 로그인 상태: localStorage의 토큰을 기준으로
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    return !!localStorage.getItem("accessToken");
+  });
 
   // 드롭다운 / 검색창 열림 상태
   const [isUserOpen, setIsUserOpen] = useState(false);
@@ -19,8 +21,15 @@ export default function Header() {
   const searchDrawerRef = useRef<HTMLDivElement | null>(null);
   const searchIconRef = useRef<HTMLButtonElement | null>(null);
 
-  // ✅ 라우터 이동
+  // 라우터 이동 / 현재 경로
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // ✅ 라우트가 바뀔 때마다 토큰 다시 확인해서 isLoggedIn 동기화
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    setIsLoggedIn(!!token);
+  }, [location.pathname]);
 
   // 바깥 클릭 시 메뉴/검색창 닫기
   useEffect(() => {
@@ -59,32 +68,36 @@ export default function Header() {
 
   // ===================== 내 정보 기능들 =====================
 
-  // ✅ 내 콘텐츠로 이동
+  // 내 콘텐츠로 이동
   const handleMyContents = () => {
     navigate("/my-contents");
     setIsUserOpen(false);
   };
 
-  // ✅ 회원정보로 이동
+  // 회원정보로 이동
   const handleProfile = () => {
     navigate("/profile");
     setIsUserOpen(false);
   };
 
+  // 로그아웃
   const handleLogout = () => {
-  setIsLoggedIn(false);
-  setIsUserOpen(false);
-  
-  navigate("/"); // ✅ 바로 메인으로 이동
-};
+
+    // 토큰 삭제
+    localStorage.removeItem("accessToken");
 
 
-  // ✅ 로그인 화면 이동 (나중에 진짜 로그인 페이지 연결)
-  const handleGoLoginPage = () => {
-    alert("로그인 화면으로 이동 (임시)");
-    // 나중에: navigate("/login");
+    // UI 상태 정리
+    setIsLoggedIn(false);
+    setIsUserOpen(false);
+
+    navigate("/");
   };
 
+  // 로그인 화면 이동
+  const handleGoLoginPage = () => {
+    navigate("/login");
+  };
   // =======================================================
 
   return (
@@ -125,6 +138,7 @@ export default function Header() {
             )}
           </button>
 
+          {/* ✅ 드롭다운: 중첩 div 제거하고 한 번만 사용 */}
           <div
             className={`${styles.dropdown} ${
               isUserOpen ? styles.open : ""
@@ -138,18 +152,7 @@ export default function Header() {
                   className={styles.userMenuItem}
                   onClick={handleGoLoginPage}
                 >
-                  로그인 화면으로 이동
-                </button>
-
-                <div className={styles.dropdownDivider} />
-
-                {/* DEV: 임시 로그인 */}
-                <button
-                  type="button"
-                  className={`${styles.userMenuItem} ${styles.devItem}`}
-                  onClick={() => setIsLoggedIn(true)}
-                >
-                  [DEV] 임시 로그인
+                  로그인
                 </button>
               </>
             ) : (
@@ -158,14 +161,14 @@ export default function Header() {
                 <button
                   type="button"
                   className={styles.userMenuItem}
-                  onClick={handleMyContents}  
+                  onClick={handleMyContents}
                 >
                   내 콘텐츠
                 </button>
                 <button
                   type="button"
                   className={styles.userMenuItem}
-                  onClick={handleProfile}      
+                  onClick={handleProfile}
                 >
                   회원정보
                 </button>
@@ -175,17 +178,6 @@ export default function Header() {
                   onClick={handleLogout}
                 >
                   로그아웃
-                </button>
-
-                <div className={styles.dropdownDivider} />
-
-                {/* DEV: 임시 로그아웃 */}
-                <button
-                  type="button"
-                  className={`${styles.userMenuItem} ${styles.devItem}`}
-                  onClick={() => setIsLoggedIn(false)}
-                >
-                  [DEV] 임시 로그아웃
                 </button>
               </>
             )}
