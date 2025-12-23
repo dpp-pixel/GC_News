@@ -47,6 +47,10 @@ public class Article {
 
     private String press;// 언론사
 
+     @Column(unique = true)
+    private String externalJournalistId; // 네이버 기자 ID
+
+
     @ManyToOne
     @JoinColumn(name = "theme_id")
     private Theme theme;
@@ -55,7 +59,17 @@ public class Article {
     @JoinColumn(name = "reporter_id")
     private Reporter reporter;
 
-    @OneToMany(mappedBy = "article", fetch = FetchType.LAZY)
+    /** 테마/섹션 헤드라인 여부 */
+    @Builder.Default
+    private boolean headline = false;
+
+      /** 관련뉴스(클러스터) 개수 */
+    @Builder.Default
+    private int clusterCount = 0;
+
+     @OneToMany(mappedBy = "article", fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<ArticleMedia> mediaList;
+
 }
+

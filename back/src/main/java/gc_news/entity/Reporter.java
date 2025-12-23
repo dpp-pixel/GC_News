@@ -1,9 +1,16 @@
 package gc_news.entity;
 
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import jakarta.persistence.Column;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,8 +29,14 @@ public class Reporter {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long reporterId;
 
+    @Column(unique = true)
+    private String externalJournalistId; // 네이버 기자 ID
+
     private String name;
     private String email;
     private String profileImageUrl;
     private Float trustScore;
+    private String press;
+
+     
 }
