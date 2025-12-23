@@ -12,6 +12,7 @@ interface Article {
 }
 
 export default function MyRecentSection() {
+   const DAYS = 3;
   const [recentArticles, setRecentArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,7 +21,10 @@ export default function MyRecentSection() {
     const fetchArticles = async () => {
       try {
         const res = await axios.get<Article[]>(
-          "http://localhost:8081/api/users/me/view-history"
+          "http://localhost:8081/api/users/me/view-history",
+          {
+            params: { days: DAYS },
+          }
         );
         setRecentArticles(res.data);
       } catch (e) {
@@ -40,6 +44,9 @@ export default function MyRecentSection() {
   return (
     <div className="bookmark-layout recent-layout">
       <section className="bookmark-main recent-main">
+        <div className="recent-title">
+          최근 {DAYS}일간의 기사입니다
+        </div>
         {recentArticles.length === 0 && <div>최근 본 기사가 없습니다.</div>}
 
         <ul className="bookmark-list">

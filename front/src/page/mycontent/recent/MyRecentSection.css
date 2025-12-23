@@ -13,3 +13,9 @@
 .recent-main {
   /* 필요 시 확장 */
 }
+.recent-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 14px;
+}
