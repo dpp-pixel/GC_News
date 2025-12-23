@@ -61,8 +61,16 @@ public class ArticleController {
 
     @GetMapping("/headline")
     public List<Article> headlineArticles(
+            @RequestParam(required = false) Long themeId,
             @RequestParam(defaultValue = "5") int limit) {
-        return articleService.getHeadlineArticles(limit);
+
+        if (themeId == null) {
+
+            return articleService.getHeadlineArticles(limit);
+        }
+
+        // 카테고리별 헤드라인
+        return articleService.getHeadlineArticlesByTheme(themeId, limit);
     }
 
 }

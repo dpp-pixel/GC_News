@@ -159,6 +159,13 @@ public class ArticleService {
                                         .toList())));
     }
 
+    @Transactional(readOnly = true)
+    public List<Article> getHeadlineArticlesByTheme(Long themeId, int limit) {
+        return articleRepository.findHeadlineArticlesByTheme(
+                themeId,
+                PageRequest.of(0, limit));
+    }
+
     // 카테고리별 최신 기사 (페이지네이션)
     @Transactional(readOnly = true)
     public Page<Article> getArticlesByTheme(Long themeId, Pageable pageable) {

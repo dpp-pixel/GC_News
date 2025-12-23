@@ -55,4 +55,17 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     // Page 처리된 카테고리별 기사
     Page<Article> findByTheme_ThemeIdOrderByPublishedAtDesc(Long themeId, Pageable pageable);
 
+    @Query("""
+                SELECT DISTINCT a
+                FROM Article a
+                LEFT JOIN FETCH a.mediaList
+                LEFT JOIN FETCH a.theme
+                WHERE a.headline = true
+                AND a.theme.themeId = :themeId
+                ORDER BY a.publishedAt DESC
+            """)
+    List<Article> findHeadlineArticlesByTheme(
+            @Param("themeId") Long themeId,
+            Pageable pageable);
+
 }

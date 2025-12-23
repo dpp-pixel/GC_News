@@ -17,7 +17,7 @@ export default function HotIssueSection({ themeId }: { themeId: number }) {
 
   useEffect(() => {
     axios
-      .get<Article[]>("http://localhost:8081/api/articles/hot", {
+      .get<Article[]>("http://localhost:8081/api/articles/headline", {
         params: {
           days: 3,
           limit: 5,
@@ -32,7 +32,7 @@ export default function HotIssueSection({ themeId }: { themeId: number }) {
 
   return (
     <section className="hot-issue">
-      <h2>HOT 이슈</h2>
+      <h2>헤드라인 뉴스</h2>
 
       <ul className="hot-list">
         {articles.map((article) => (
