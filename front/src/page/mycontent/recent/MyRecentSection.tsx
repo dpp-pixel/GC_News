@@ -1,5 +1,6 @@
+// front/src/page/mycontent/recent/MyRecentSection.tsx
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { api } from "../../../api/client"; // client.ts 경로 반영
 import "./MyRecentSection.css";
 
 interface Article {
@@ -12,7 +13,7 @@ interface Article {
 }
 
 export default function MyRecentSection() {
-   const DAYS = 3;
+  const DAYS = 3;
   const [recentArticles, setRecentArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,12 +21,9 @@ export default function MyRecentSection() {
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        const res = await axios.get<Article[]>(
-          "http://localhost:8081/api/users/me/view-history",
-          {
-            params: { days: DAYS },
-          }
-        );
+        const res = await api.get<Article[]>("/api/users/me/view-history", {
+          params: { days: DAYS },
+        });
         setRecentArticles(res.data);
       } catch (e) {
         console.error("최근 본 기사 로딩 실패:", e);
@@ -44,9 +42,7 @@ export default function MyRecentSection() {
   return (
     <div className="bookmark-layout recent-layout">
       <section className="bookmark-main recent-main">
-        <div className="recent-title">
-          최근 {DAYS}일간의 기사입니다
-        </div>
+        <div className="recent-title">최근 {DAYS}일간의 기사입니다</div>
         {recentArticles.length === 0 && <div>최근 본 기사가 없습니다.</div>}
 
         <ul className="bookmark-list">

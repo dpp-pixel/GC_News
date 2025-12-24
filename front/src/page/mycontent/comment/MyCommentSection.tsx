@@ -1,7 +1,7 @@
 // src/page/mycontent/comment/MyCommentSection.tsx
 import { useEffect, useState, useCallback, useRef } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { api } from "../../../api/client";
 import "./MyCommentSection.css";
 
 interface CommentItem {
@@ -27,17 +27,16 @@ export default function MyCommentSection() {
   const observer = useRef<IntersectionObserver | null>(null);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
-const [totalComments, setTotalComments] = useState(0);
+  const [totalComments, setTotalComments] = useState(0);
 
+  // 댓글 가져오기
   const fetchComments = useCallback(async () => {
     if (loading || !hasMore) return;
-
     setLoading(true);
     try {
-      const res = await axios.get<CommentItem[]>("/api/users/me/comments", {
+      const res = await api.get<CommentItem[]>("/api/users/me/comments", {
         params: { page, size: 10 },
       });
-
       setComments((prev) => [...prev, ...res.data]);
       setHasMore(res.data.length === 10);
       setPage((prev) => prev + 1);
@@ -52,25 +51,25 @@ const [totalComments, setTotalComments] = useState(0);
     fetchComments();
   }, []);
 
+  // 무한 스크롤
   const lastCommentRef = useCallback(
     (node: HTMLLIElement | null) => {
       if (loading) return;
       if (observer.current) observer.current.disconnect();
-
       observer.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && hasMore) {
           fetchComments();
         }
       });
-
       if (node) observer.current.observe(node);
     },
     [loading, hasMore, fetchComments]
   );
 
+  // 댓글 삭제
   const handleDeleteOneComment = async (id: number) => {
     try {
-      await axios.delete(`/api/comments/${id}`);
+      await api.delete(`/api/comments/${id}`);
       setComments((prev) => prev.filter((c) => c.commentId !== id));
     } catch (error) {
       console.error("댓글 삭제 실패:", error);
@@ -82,21 +81,22 @@ const [totalComments, setTotalComments] = useState(0);
     navigate(`/news/${articleId}#comment-${commentId}`);
   };
 
+  // 총 댓글 수
   useEffect(() => {
-  const fetchTotalComments = async () => {
-    try {
-      const res = await axios.get<number>("/api/users/me/comments/count");
-      setTotalComments(res.data);
-    } catch (error) {
-      console.error("총 댓글 수 로딩 실패", error);
-    }
-  };
+    const fetchTotalComments = async () => {
+      try {
+        const res = await api.get<number>("/api/users/me/comments/count");
+        setTotalComments(res.data);
+      } catch (error) {
+        console.error("총 댓글 수 로딩 실패", error);
+      }
+    };
+    fetchTotalComments();
+  }, []);
 
-  fetchTotalComments();
-}, []);
-
+  // 정렬
   const sortedComments = [...comments]
-    .filter((c) => c.article) // article 없는 경우 제외
+    .filter((c) => c.article)
     .sort((a, b) => {
       if (commentSort === "created") {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
@@ -132,11 +132,7 @@ const [totalComments, setTotalComments] = useState(0);
           </div>
         </div>
 
-        <button
-          type="button"
-          className="comment-clear"
-          onClick={() => setComments([])}
-        >
+        <button type="button" className="comment-clear" onClick={() => setComments([])}>
           전체 삭제
         </button>
       </div>
@@ -171,9 +167,7 @@ const [totalComments, setTotalComments] = useState(0);
               <div className="bookmark-info">
                 <div
                   className="bookmark-title"
-                  onClick={() =>
-                    handleClickComment(item.article!.articleId, item.commentId)
-                  }
+                  onClick={() => handleClickComment(item.article!.articleId, item.commentId)}
                   style={{ cursor: "pointer" }}
                 >
                   {item.article?.title || "제목 없음"}

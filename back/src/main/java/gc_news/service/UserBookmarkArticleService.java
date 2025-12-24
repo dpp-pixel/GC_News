@@ -19,7 +19,7 @@ public class UserBookmarkArticleService {
 
     @Transactional
     public boolean toggleBookmark(User user, Article article) {
-        var existing = repository.findByUser_UserIdAndArticle_ArticleId(user.getUserId(), article.getArticleId());
+        var existing = repository.findByUserAndArticle_ArticleId(user, article.getArticleId());
         if (existing.isPresent()) {
             repository.delete(existing.get());
             return false; // 북마크 해제
@@ -34,11 +34,11 @@ public class UserBookmarkArticleService {
 
     @Transactional(readOnly = true)
     public boolean isBookmarked(User user, Long articleId) {
-        return repository.findByUser_UserIdAndArticle_ArticleId(user.getUserId(), articleId).isPresent();
+        return repository.findByUserAndArticle_ArticleId(user, articleId).isPresent();
     }
 
     @Transactional(readOnly = true)
-    public List<UserBookmarkArticle> getBookmarks(String userId) {
-        return repository.findByUser_UserIdOrderByUbaIdDesc(userId);
+    public List<UserBookmarkArticle> getBookmarks(User user) {
+        return repository.findByUserOrderByUbaIdDesc(user);
     }
 }

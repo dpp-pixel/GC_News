@@ -73,15 +73,15 @@ public class CommentService {
 
     /** 로그인 사용자 댓글 최신순 조회 (무한 스크롤용) */
     @Transactional(readOnly = true)
-    public List<Comment> getUserComments(String userId, int page, int size) {
-        return commentRepository.findByUser_UserIdOrderByCreatedAtDesc(
-                userId,
+    public List<Comment> getUserComments(User user, int page, int size) {
+        return commentRepository.findByUserOrderByCreatedAtDesc(
+                user,
                 PageRequest.of(page, size));
     }
 
     /** 로그인 사용자 댓글 개수 */
     @Transactional(readOnly = true)
-    public Long countUserComments(String userId) {
-        return commentRepository.countByUser_UserId(userId);
+    public Long countUserComments(User user) {
+        return commentRepository.countByUser(user);
     }
 }

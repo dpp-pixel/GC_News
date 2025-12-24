@@ -38,7 +38,7 @@ public class UserBookmarkArticleController {
     // 유저가 저장한 북마크 리스트 조회
     @GetMapping("/my")
     public List<Article> getMyBookmarks(@AuthenticationPrincipal User user) {
-        return bookmarkService.getBookmarks(user.getUserId())
+        return bookmarkService.getBookmarks(user)
                 .stream()
                 .map(UserBookmarkArticle::getArticle)
                 .toList();

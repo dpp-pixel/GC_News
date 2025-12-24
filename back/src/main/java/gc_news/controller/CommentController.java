@@ -65,7 +65,7 @@ public class CommentController {
                     "로그인이 필요합니다.");
         }
 
-        return commentService.getUserComments(user.getUserId(), page, size);
+        return commentService.getUserComments(user, page, size);
     }
 
     // 댓글 삭제
@@ -93,6 +93,6 @@ public class CommentController {
                     "로그인이 필요합니다.");
         }
 
-        return commentService.countUserComments(user.getUserId());
+        return commentService.countUserComments(user);
     }
 }

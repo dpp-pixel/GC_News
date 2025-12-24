@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 import gc_news.entity.Comment;
 import gc_news.entity.Reaction;
+import gc_news.entity.User;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
@@ -34,7 +35,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
       Pageable pageable);
 
   // 사용자별 댓글 최신순 조회
-  List<Comment> findByUser_UserIdOrderByCreatedAtDesc(String userId, Pageable pageable);
+  List<Comment> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
 
-  Long countByUser_UserId(String userId);
+  Long countByUser(User user);
 }

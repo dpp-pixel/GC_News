@@ -21,6 +21,14 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     Optional<Article> findByUrlString(String urlString);
 
     @Query("""
+            SELECT a
+            FROM Article a
+            LEFT JOIN FETCH a.mediaList
+            ORDER BY a.publishedAt DESC
+            """)
+    List<Article> findTopLatestArticles(Pageable pageable);
+
+    @Query("""
                 SELECT DISTINCT a
                 FROM Article a
                 LEFT JOIN FETCH a.mediaList

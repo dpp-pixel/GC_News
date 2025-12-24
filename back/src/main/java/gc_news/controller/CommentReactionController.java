@@ -28,7 +28,7 @@ public class CommentReactionController {
         }
         commentReactionService.toggleReaction(
                 commentId,
-                user.getUserId().toString(),
+                user,
                 type);
 
     }

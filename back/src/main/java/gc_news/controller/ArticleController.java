@@ -38,9 +38,15 @@ public class ArticleController {
     }
 
     // 모든 기사 조회 (media 포함)
-    @GetMapping
-    public List<Article> getAll() {
-        return articleService.getAllArticlesWithMedia();
+    // @GetMapping
+    // public List<Article> getAll() {
+    // return articleService.getAllArticlesWithMedia();
+    // }
+    // 최신 기사 조회 (limit 개수)
+    @GetMapping("/latest")
+    public List<Article> getLatestArticles(
+            @RequestParam(defaultValue = "16") int limit) {
+        return articleService.getLatestArticles(limit);
     }
 
     // 카테고리별 최신 기사 조회 (페이지 처리)

@@ -35,13 +35,9 @@ public class Reaction {
     @Enumerated(EnumType.STRING)
     private ReactionType reactionType;
 
-    // 로그인 전 임시
-    @Column(nullable = false)
-    private String userKey;
-
-    // @ManyToOne 로그인 추가후 변경
-    // @JoinColumn(name = "user_id")
-    // private User user;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
     public enum TargetType {
         article, comment

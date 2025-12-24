@@ -23,9 +23,9 @@ public class CommentReaction {
     @JoinColumn(name = "comment_id", nullable = false)
     private Comment comment;
 
-    /** 로그인 전: 임시 키 / 로그인 후: userId */
-    @Column(name = "user_key", nullable = false)
-    private String userKey;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     /** like / dislike */
     @Enumerated(EnumType.STRING)
