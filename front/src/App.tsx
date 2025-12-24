@@ -10,6 +10,8 @@ import CategoryPage from "./page/CategoryPage";
 import NewsDetailPage from "./page/NewsDetailPage";
 import MyContentsPage from "./page/mycontent/MyContentsPage";
 import ProfilePage from "./page/ProfilePage";
+import Login from "./page/Login";
+import Signup from "./page/Signup";
 
 import "./App.css";
 
@@ -21,11 +23,11 @@ function App() {
   );
 }
 
-// ✅ 실제 레이아웃을 담당하는 컴포넌트
+// 실제 레이아웃을 담당하는 컴포넌트
 function AppShell() {
   const location = useLocation();
 
-  // ✅ 이 경로들에서는 카테고리바 숨기기
+  // 이 경로들에서는 카테고리바 숨기기
   const hideCategoryBar =
     location.pathname.startsWith("/my-contents") ||
     location.pathname.startsWith("/profile");
@@ -34,7 +36,7 @@ function AppShell() {
     <>
       <Header />
 
-      {/* ✅ 내 콘텐츠/회원정보 페이지가 아니면 카테고리바 보여줌 */}
+      {/* 내 콘텐츠/회원정보 페이지가 아니면 카테고리바 보여줌 */}
       {!hideCategoryBar && <CategoryBar />}
 
       <main className="app-main">
@@ -52,6 +54,10 @@ function AppShell() {
             {/* 내 정보 관련 페이지 */}
             <Route path="/my-contents" element={<MyContentsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            
+            {/* 로그인 / 회원가입 */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
           </Routes>
         </div>
       </main>

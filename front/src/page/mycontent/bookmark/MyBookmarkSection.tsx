@@ -148,8 +148,6 @@ export default function MyBookmarkSection() {
                   </div>
 
                   <div className="bookmark-stats">
-                    <span>댓글 0</span>
-                    <span>좋아요 0</span>
                     <button
                       type="button"
                       className="bookmark-delete"

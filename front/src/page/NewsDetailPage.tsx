@@ -17,6 +17,7 @@ interface ArticleDetail {
   publishedAt: string;
   contentHtml?: string | null;
   mediaList?: Media[];
+   bookmarked?: boolean;
 }
 
 export default function NewsDetailPage() {
@@ -25,6 +26,7 @@ export default function NewsDetailPage() {
   const [article, setArticle] = useState<ArticleDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [bookmarkLoading, setBookmarkLoading] = useState(false);
 
   useEffect(() => {
     if (!id) {
@@ -52,7 +54,30 @@ export default function NewsDetailPage() {
 
     fetchDetail();
   }, [id]);
-
+ const toggleBookmark = async () => {
+    if (!article) return;
+    try {
+      setBookmarkLoading(true);
+      if (article.bookmarked) {
+        // 삭제
+        await axios.delete(
+          `http://localhost:8081/api/users/me/bookmarks/${article.articleId}`
+        );
+        setArticle({ ...article, bookmarked: false });
+      } else {
+        // 추가
+        await axios.post(
+          `http://localhost:8081/api/users/me/bookmarks`,
+          { articleId: article.articleId }
+        );
+        setArticle({ ...article, bookmarked: true });
+      }
+    } catch (e) {
+      console.error("북마크 토글 실패:", e);
+    } finally {
+      setBookmarkLoading(false);
+    }
+  };
   if (loading) {
     return <div className="news-loading">기사 불러오는 중...</div>;
   }
@@ -85,6 +110,15 @@ export default function NewsDetailPage() {
             입력{" "}
             {new Date(article.publishedAt).toLocaleString()}
           </span>
+
+          {/* 북마크 버튼 */}
+          <button
+            className={`bookmark-btn ${article.bookmarked ? "active" : ""}`}
+            onClick={toggleBookmark}
+            disabled={bookmarkLoading}
+          >
+            {article.bookmarked ? "북마크 취소" : "북마크"}
+          </button>
         </div>
       </header>
 
