@@ -1,15 +1,24 @@
 package gc_news.controller;
 
-import gc_news.dto.ArticleDetailResponse;
-import gc_news.entity.Article;
-import gc_news.service.ArticleService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import gc_news.dto.ArticleDetailResponse;
+import gc_news.entity.Article;
+import gc_news.entity.Summary;
+import gc_news.service.AiService;
+import gc_news.service.ArticleService;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
@@ -17,6 +26,7 @@ import java.util.Map;
 public class ArticleController {
 
     private final ArticleService articleService;
+    private final AiService aiService;
 
     // 전체 / 테마별 인기 뉴스 (조회수 순, 최근 days일 기준)
     // 예: /api/articles/hot?days=3&limit=10&themeId=1
@@ -52,11 +62,19 @@ public class ArticleController {
         return articleService.getArticlesByTheme(themeId, pageable);
     }
 
-    // ✅ 기사 상세 조회 (본문 없으면 크롤링해서 채움)
-@GetMapping("/{articleId}")
-public ArticleDetailResponse getArticleDetail(@PathVariable Long articleId) {
-    Article article = articleService.loadArticleContentIfNeeded(articleId);
-    return ArticleDetailResponse.from(article);
-}
+    // 기사 상세 조회 (본문 없으면 크롤링해서 채움)
+    @GetMapping("/{articleId}")
+    public ArticleDetailResponse getArticleDetail(@PathVariable Long articleId) {
+        Article article = articleService.loadArticleContentIfNeeded(articleId);
+        return ArticleDetailResponse.from(article);
+    }
 
+    //ai 요약
+    @PostMapping("/{articleId}/ai-summary")
+    public ResponseEntity<Summary> summarize(
+            @PathVariable Long articleId,
+            @RequestParam(defaultValue = "false") boolean force) {
+        Summary summary = aiService.summarizeArticleFromDbAndSave(articleId, force);
+        return ResponseEntity.ok(summary);
+    }
 }
