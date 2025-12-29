@@ -16,11 +16,29 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // CSRF 해제
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> {
+                })
+                .formLogin(login -> login.disable())
+                .httpBasic(basic -> basic.disable())
+
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll() // 모든 요청 허용
-                )
-                .formLogin(login -> login.disable()) // 로그인 폼 제거
+                        // ✅ 로그인 없이 허용
+                        .requestMatchers(
+                                "/api/auth/**",
+                                "/api/articles/**",
+                                "/api/comments/article/**")
+                        .permitAll()
+
+                        // ✅ 로그인 필요
+                        .requestMatchers(
+                                "/api/comments/**",
+                                "/api/bookmarks/**")
+                        .authenticated()
+
+                        // 그 외
+                        .anyRequest().permitAll())
+
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class);

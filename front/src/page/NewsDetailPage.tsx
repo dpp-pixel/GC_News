@@ -5,6 +5,7 @@ import { api } from "../api/client"; // client.ts 인스턴스
 import "./NewsDetailPage.css";
 import ArticleReaction from "../components/articledetailpage/ArticleReaction";
 import ArticleComments from "../components/articledetailpage/ArticleComments";
+import { isLoggedIn } from "../auth/auth";
 
 interface Media {
   url: string;
@@ -56,8 +57,12 @@ export default function NewsDetailPage() {
   }, [id]);
 
   // 북마크 토글
-  const toggleBookmark = async () => {
+   const toggleBookmark = async () => {
     if (!article) return;
+    if (!isLoggedIn()) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
 
     try {
       setBookmarkLoading(true);

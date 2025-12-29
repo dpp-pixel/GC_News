@@ -2,15 +2,16 @@ package gc_news.controller;
 
 import java.util.List;
 
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
-
 import gc_news.entity.Article;
 import gc_news.entity.User;
 import gc_news.entity.UserBookmarkArticle;
-import gc_news.service.ArticleService;
+import gc_news.repository.ArticleRepository;
 import gc_news.service.UserBookmarkArticleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -18,29 +19,71 @@ import lombok.RequiredArgsConstructor;
 public class UserBookmarkArticleController {
 
     private final UserBookmarkArticleService bookmarkService;
-    private final ArticleService articleService;
+    private final ArticleRepository articleRepository;
 
-    // 북마크 토글
     @PostMapping("/toggle/{articleId}")
-    public boolean toggleBookmark(@AuthenticationPrincipal User user,
-            @PathVariable Long articleId) {
-        Article article = articleService.getArticleById(articleId);
-        return bookmarkService.toggleBookmark(user, article);
+    public ResponseEntity<String> toggleBookmark(
+            @PathVariable Long articleId,
+            @AuthenticationPrincipal User user) {
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+
+        try {
+            Article article = articleRepository.findById(articleId)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 기사입니다."));
+
+            boolean added = bookmarkService.toggleBookmark(user, article);
+            return ResponseEntity.ok(added ? "북마크 추가" : "북마크 제거");
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("북마크 토글 실패: " + e.getMessage());
+        }
     }
 
-    // 특정 기사 북마크 여부
     @GetMapping("/status/{articleId}")
-    public boolean isBookmarked(@AuthenticationPrincipal User user,
+    public ResponseEntity<?> isBookmarked(
+            @AuthenticationPrincipal User user,
             @PathVariable Long articleId) {
-        return bookmarkService.isBookmarked(user, articleId);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+
+        try {
+            boolean bookmarked = bookmarkService.isBookmarked(user, articleId);
+            return ResponseEntity.ok(bookmarked);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("북마크 조회 실패: " + e.getMessage());
+        }
     }
 
-    // 유저가 저장한 북마크 리스트 조회
     @GetMapping("/my")
-    public List<Article> getMyBookmarks(@AuthenticationPrincipal User user) {
-        return bookmarkService.getBookmarks(user)
-                .stream()
-                .map(UserBookmarkArticle::getArticle)
-                .toList();
+    public ResponseEntity<?> getMyBookmarks(@AuthenticationPrincipal User user) {
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+
+        try {
+            List<Article> bookmarks = bookmarkService.getBookmarks(user)
+                    .stream()
+                    .map(UserBookmarkArticle::getArticle)
+                    .toList();
+            return ResponseEntity.ok(bookmarks);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("북마크 리스트 조회 실패: " + e.getMessage());
+        }
     }
 }

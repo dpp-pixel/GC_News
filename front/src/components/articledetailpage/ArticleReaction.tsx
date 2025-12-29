@@ -1,16 +1,7 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { api } from "../../api/client"; 
 import "./ArticleReaction.css";
-
-/* 임시 유저 키 */
-const getUserKey = () => {
-  let key = localStorage.getItem("userKey");
-  if (!key) {
-    key = crypto.randomUUID();
-    localStorage.setItem("userKey", key);
-  }
-  return key;
-};
+import { isLoggedIn } from "../../auth/auth";
 
 interface Props {
   articleId: number;
@@ -25,43 +16,43 @@ type ReactionCounts = {
 export default function ArticleReaction({ articleId }: Props) {
   const [counts, setCounts] = useState<ReactionCounts>({});
 
+  // 서버에서 기사 감정 반응 개수 조회
   const fetchCounts = async () => {
-    const res = await axios.get(
-      `http://localhost:8081/api/articles/${articleId}/reactions`
-    );
-    setCounts(res.data);
+    try {
+      const res = await api.get(`/articles/${articleId}/reactions`);
+      setCounts(res.data);
+    } catch (e: any) {
+      console.error("감정 반응 조회 실패:", e);
+      alert(e.response?.data || "감정 반응 조회 실패");
+    }
   };
 
   useEffect(() => {
     fetchCounts();
   }, [articleId]);
 
+  // 기사 감정 반응 처리
   const react = async (type: "happy" | "sad" | "angry") => {
-     console.log("clicked:", type);
-    const userKey = getUserKey();
+    if (!isLoggedIn()) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
 
-    await axios.post(
-      "http://localhost:8081/api/articles/reactions",
-      null,
-      {
-        params: { articleId, userKey, type },
-      }
-    );
-
-    fetchCounts();
+    try {
+      // 서버에서는 소문자 Enum을 기대 → type.toLowerCase()로 맞춤
+      await api.post("/articles/reactions", null, { params: { articleId, type: type.toLowerCase() } });
+      fetchCounts(); // 반응 후 개수 새로 조회
+    } catch (e: any) {
+      console.error("감정 반응 실패:", e);
+      alert(e.response?.data || "감정 반응 실패");
+    }
   };
 
   return (
     <div className="article-reactions">
-      <button onClick={() => react("happy")}>
-        😊 행복해요 {counts.happy ?? 0}
-      </button>
-      <button onClick={() => react("sad")}>
-        😢 슬퍼요 {counts.sad ?? 0}
-      </button>
-      <button onClick={() => react("angry")}>
-        😡 화나요 {counts.angry ?? 0}
-      </button>
+      <button onClick={() => react("happy")}>😊 행복해요 {counts.happy ?? 0}</button>
+      <button onClick={() => react("sad")}>😢 슬퍼요 {counts.sad ?? 0}</button>
+      <button onClick={() => react("angry")}>😡 화나요 {counts.angry ?? 0}</button>
     </div>
   );
 }
