@@ -5,117 +5,58 @@ import ReporterCard, {
 } from "../../../components/reporter/ReporterCard";
 import "./MySubscribeSection.css";
 
-/* 더미 데이터 */
-const MOCK_REPORTERS: ReporterInfo[] = [
-  {
-    id: 1,
-    name: "김대기",
-    email: "watingkim@donga.com",
-    subscribers: 100,
-    recommends: 3,
-    tags: ["정치부", "정직한", "솔직한"],
-    trustScore: 80,
-    imageUrl: "",
-  },
-  {
-    id: 2,
-    name: "김장철",
-    email: "kimchiseason@news.com",
-    subscribers: 95,
-    recommends: 12,
-    tags: ["경제", "침착한"],
-    trustScore: 78,
-    imageUrl: "",
-  },
-  {
-    id: 3,
-    name: "이서연",
-    email: "seoyeon@press.co.kr",
-    subscribers: 140,
-    recommends: 23,
-    tags: ["사회", "깊이있는"],
-    trustScore: 82,
-    imageUrl: "",
-  },
-  {
-    id: 4,
-    name: "박민수",
-    email: "minsu@media.com",
-    subscribers: 88,
-    recommends: 9,
-    tags: ["국방", "분석력 좋은"],
-    trustScore: 76,
-    imageUrl: "",
-  },
-  {
-    id: 5,
-    name: "한성태",
-    email: "hansung@news.com",
-    subscribers: 120,
-    recommends: 35,
-    tags: ["정치부", "차분한"],
-    trustScore: 80,
-    imageUrl: "",
-  },
-];
+const MOCK_REPORTERS: ReporterInfo[] = Array.from({ length: 10 }).map(
+  (_, i) => ({
+    id: i + 1,
+    name: `김기덕${i + 1}`,
+    email: `reporter${i + 1}@news.com`,
+    subscribers: 80 + i * 5,
+    recommends: 3 + i * 2,
+    tags: ["정치부", "분석"],
+    trustScore: 70 + i,
+    imageUrl: "https://picsum.photos/150",
+  })
+);
 
-const VISIBLE_COUNT = 4;
+const CARD_WIDTH = 360;
+const GAP = 24;
+const VISIBLE_COUNT = 5;
 
 export default function MySubscribeSection() {
-  const [startIndex, setStartIndex] = useState(0);
+  const [index, setIndex] = useState(0);
 
-  const canGoPrev = startIndex > 0;
-  const canGoNext =
-    startIndex + VISIBLE_COUNT < MOCK_REPORTERS.length;
+  const maxIndex = MOCK_REPORTERS.length - VISIBLE_COUNT;
 
-  const visibleReporters = MOCK_REPORTERS.slice(
-    startIndex,
-    startIndex + VISIBLE_COUNT
-  );
+  const canPrev = index > 0;
+  const canNext = index < maxIndex;
 
-  const handlePrev = () => {
-    if (!canGoPrev) return;
-    setStartIndex((prev) => Math.max(0, prev - 1));
-  };
-
-  const handleNext = () => {
-    if (!canGoNext) return;
-    setStartIndex((prev) =>
-      Math.min(
-        MOCK_REPORTERS.length - VISIBLE_COUNT,
-        prev + 1
-      )
-    );
-  };
+  const translateX = index * (CARD_WIDTH + GAP);
 
   return (
-    <div className="reporter-slider">
+    <div className="slider-wrapper">
       <button
-        type="button"
-        className={`arrow left ${
-          canGoPrev ? "" : "disabled"
-        }`}
-        onClick={handlePrev}
-        disabled={!canGoPrev}
+        className={`arrow ${!canPrev ? "disabled" : ""}`}
+        onClick={() => canPrev && setIndex(index - 1)}
       >
-        &#60;
+        ‹
       </button>
 
-      <div className="card-track">
-        {visibleReporters.map((reporter) => (
-          <ReporterCard key={reporter.id} info={reporter} />
-        ))}
+      <div className="card-viewport">
+        <div
+          className="card-track"
+          style={{ transform: `translateX(-${translateX}px)` }}
+        >
+          {MOCK_REPORTERS.map((info) => (
+            <ReporterCard key={info.id} info={info} />
+          ))}
+        </div>
       </div>
 
       <button
-        type="button"
-        className={`arrow right ${
-          canGoNext ? "" : "disabled"
-        }`}
-        onClick={handleNext}
-        disabled={!canGoNext}
+        className={`arrow ${!canNext ? "disabled" : ""}`}
+        onClick={() => canNext && setIndex(index + 1)}
       >
-        &#62;
+        ›
       </button>
     </div>
   );

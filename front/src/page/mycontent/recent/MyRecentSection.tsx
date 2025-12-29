@@ -1,6 +1,8 @@
 // front/src/page/mycontent/recent/MyRecentSection.tsx
 import { useEffect, useState } from "react";
 import { api } from "../../../api/client"; // client.ts 경로 반영
+import apiClient from "@/auth/apiClient";   // ✅ 공통 클라이언트
+import { Loading } from "@/components";
 import "./MyRecentSection.css";
 
 interface Article {
@@ -21,12 +23,16 @@ export default function MyRecentSection() {
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        const res = await api.get<Article[]>("/api/users/me/view-history", {
+        const res = await api.get<Article[]>("/users/me/view-history", {
           params: { days: DAYS },
         });
         setRecentArticles(res.data);
-      } catch (e) {
-        console.error("최근 본 기사 로딩 실패:", e);
+      } catch (e: any) {
+        console.error(
+          "최근 본 기사 로딩 실패:",
+          e?.response?.status,
+          e?.response?.data
+        );
         setError("최근 본 기사 로딩에 실패했습니다.");
       } finally {
         setLoading(false);
@@ -36,8 +42,15 @@ export default function MyRecentSection() {
     fetchArticles();
   }, []);
 
-  if (loading) return <p>최근 본 기사 불러오는 중...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  // ✅ 로딩 상태
+  if (loading) {
+    return <Loading text="최신 기사 불러오는 중" />;
+  }
+
+  // ✅ 에러 상태
+  if (error) {
+    return <p style={{ color: "red" }}>{error}</p>;
+  }
 
   return (
     <div className="bookmark-layout recent-layout">

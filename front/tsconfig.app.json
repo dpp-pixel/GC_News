@@ -16,6 +16,13 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
+    /* 🔽 alias 설정 추가된 부분 🔽 */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    /* 🔼 여기까지 🔼 */
+
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,

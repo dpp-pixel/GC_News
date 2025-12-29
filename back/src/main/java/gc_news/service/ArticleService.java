@@ -75,12 +75,12 @@ public class ArticleService {
             );
 
             String html;
-            if (body != null) {
+            if (body != null && !body.text().isBlank()) {
                 html = body.html();
             } else {
-                html = "<p>기사 본문을 가져오지 못했습니다. "
+                html = "<p>기사 본문을 불러오지 못했습니다. "
                         + "<a href=\"" + url + "\" target=\"_blank\" rel=\"noopener noreferrer\">"
-                        + "원문에서 확인하기</a></p>";
+                        + "원문 기사 바로가기</a></p>";
             }
 
             // 3) 엔티티에 저장 후 DB 반영
