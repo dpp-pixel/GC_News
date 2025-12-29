@@ -16,3 +16,19 @@
 .sidebar {
   width: 320px;
 }
+/* src/App.css 맨 아래 쪽에 추가 */
+
+/* 기사 상세 페이지에서 헤더+카테고리바를 상단에 고정 */
+.detail-header-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 30;
+}
+
+/* 고정된 영역의 높이만큼 본문을 아래로 밀어주는 spacer */
+.detail-header-spacer {
+  /* 헤더(60px) + 카테고리바 영역 높이(대략 60px 근처) */
+  height: 120px; /* 필요하면 110~140 사이에서 눈대중으로 조정 */
+}

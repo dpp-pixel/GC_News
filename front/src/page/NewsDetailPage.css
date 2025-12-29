@@ -1,3 +1,9 @@
+/* ✅ 헤더 + 고정 카테고리바 높이만큼 기사 영역을 아래로 내림 */
+.news-detail-page {
+  padding-top: 80px; /* 필요하면 70~100 사이에서 미세조정 */
+}
+
+/* 기사 본문 컨테이너 */
 .news-detail {
   max-width: 720px;
   margin: 0 auto;

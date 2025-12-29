@@ -5,7 +5,28 @@
   display: flex;
   flex-direction: column;  /* nav + 검은 줄을 세로로 */
   align-items: center;
+
+  /* 🔹 투명하게 비치던 부분을 흰색으로 덮기 */
+  background: #ffffff;
+
+  /* 🔹 살짝 떠 있는 느낌을 주는 그림자 (선택사항) */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+
+  /* fixed 래퍼 안에서도 위 컨텐츠보다 위에 오도록 */
+  z-index: 20;
 }
+
+
+/* ✅ 기사 상세 페이지에서 카테고리바를 헤더 바로 아래에 고정 */
+.categoryBarFixed {
+  position: fixed;
+  top: 60px;        /* ← 헤더 높이(60px)만큼 내려서 헤더 안 가리게 함 */
+  left: 0;
+  width: 100%;
+  background: #fff;
+  z-index: 20;
+}
+
 
 /* 메뉴 영역 */
 .nav {

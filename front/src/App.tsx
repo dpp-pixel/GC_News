@@ -24,7 +24,7 @@ function App() {
   );
 }
 
-// 실제 레이아웃을 담당하는 컴포넌트
+// 실제 레이아웃 담당
 function AppShell() {
   const location = useLocation();
 
@@ -32,6 +32,9 @@ function AppShell() {
   const isAuthPage =
     location.pathname.startsWith("/login") ||
     location.pathname.startsWith("/signup");
+
+  // ✅ 기사 상세 페이지 여부 (/news/:id)
+  const isNewsDetailPage = location.pathname.startsWith("/news/");
 
   // ✅ 이 경로들에서는 카테고리바 숨기기
   const hideCategoryBar =
@@ -41,12 +44,28 @@ function AppShell() {
 
   return (
     <>
-      {/* ✅ 로그인/회원가입 페이지가 아닐 때만 헤더 노출 */}
-      {!isAuthPage && <Header />}
+      {/* ---------- 상단 영역 (헤더 + 카테고리바) ---------- */}
+      {!isAuthPage && (
+        isNewsDetailPage ? (
+          // ✅ 기사 상세 페이지: 헤더 + 카테고리바 합체 & 고정 + spacer
+          <>
+            <div className="detail-header-fixed">
+              <Header />
+              {!hideCategoryBar && <CategoryBar />}
+            </div>
+            {/* 고정된 영역 높이만큼 본문을 아래로 밀어주는 역할 */}
+            <div className="detail-header-spacer" />
+          </>
+        ) : (
+          // ✅ 나머지 페이지: 기존 방식
+          <>
+            <Header />
+            {!hideCategoryBar && <CategoryBar />}
+          </>
+        )
+      )}
 
-      {/* ✅ 로그인/회원가입 페이지가 아니고, hideCategoryBar가 false일 때만 카테고리바 노출 */}
-      {!hideCategoryBar && <CategoryBar />}
-
+      {/* ---------- 메인 콘텐츠 ---------- */}
       <main className="app-main">
         <div className="content-wrapper">
           <Routes>
@@ -73,8 +92,8 @@ function AppShell() {
         </div>
       </main>
 
-      {/* 푸터는 그대로 공통 노출 (필요하면 나중에 auth 페이지에서 숨길 수 있음) */}
-      <Footer />
+      {/* ---------- 푸터 ---------- */}
+      {!isAuthPage && <Footer />}
     </>
   );
 }
