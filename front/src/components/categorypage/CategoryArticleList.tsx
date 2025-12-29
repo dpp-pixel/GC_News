@@ -7,7 +7,6 @@ interface Article {
   articleId: number;
   title: string;
   press: string;
-  urlString: string;
   publishedAt: string;
 }
 
@@ -24,7 +23,8 @@ export default function CategoryArticleList({ themeId }: { themeId: number }) {
       .then((res) => {
         setArticles(res.data.content);
         setTotalPages(res.data.totalPages);
-      });
+      })
+      .catch(console.error);
   }, [page, themeId]);
 
   return (

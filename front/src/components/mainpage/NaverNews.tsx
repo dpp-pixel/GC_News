@@ -10,6 +10,7 @@ interface Article {
   press: string;
   urlString: string;
   publishedAt: string;
+  clusterCount: number;
   mediaList?: { url: string; mediaType: string }[];
 }
 
@@ -38,17 +39,16 @@ export default function NaverNews() {
     const fetchNews = async () => {
       try {
         const res = await axios.get<Article[]>(
-          "http://localhost:8081/api/articles/hot",
-          {
-            params: {
-              days: 3,
-              limit: 6, // 메인 + 서브 + 리스트용
-            },
-          }
-        );
+  "http://localhost:8081/api/articles/headline",
+  {
+    params: {
+      limit: 6,
+    },
+  }
+);
         setNews(res.data);
       } catch (e) {
-        console.error("NaverNews /api/articles/hot error:", e);
+        console.error("NaverNews /api/articles/headline error:", e);
         setError(true);
       } finally {
         setLoading(false);
@@ -109,6 +109,9 @@ function MainArticle({ item }: { item: Article }) {
         <p className="meta">
           {item.press} · {new Date(item.publishedAt).toLocaleString()}
         </p>
+          <div className="cluster-count">
+          관련뉴스 {item.clusterCount}개
+        </div>
       </div>
     </article>
   );
@@ -134,7 +137,11 @@ function SubArticle({ item }: { item: Article }) {
         {summary && <p className="summary">{summary}</p>}
         <p className="meta">{item.press}</p>
       </div>
+      <div className="cluster-count">
+          관련뉴스 {item.clusterCount}개
+        </div>
     </article>
+    
   );
 }
 
@@ -152,6 +159,9 @@ function ListArticle({ item }: { item: Article }) {
         <h4>{item.title}</h4>
         <span>{item.press}</span>
       </Link>
+      <div className="cluster-count">
+          관련뉴스 {item.clusterCount}개
+        </div>
     </article>
   );
 }

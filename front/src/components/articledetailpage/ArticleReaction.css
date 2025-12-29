@@ -1,0 +1,30 @@
+.article-reactions {
+  margin-top: 40px;
+  display: flex;
+  gap: 10px;
+}
+
+.article-reactions button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 8px 14px;
+  font-size: 14px;
+
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  background: #fff;
+
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.article-reactions button:hover {
+  background: #f5f5f5;
+  border-color: #bbb;
+}
+
+.article-reactions button:active {
+  background: #eee;
+}

@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -47,9 +48,8 @@ public class Article {
 
     private String press;// 언론사
 
-     @Column(unique = true)
+    @Column(unique = true)
     private String externalJournalistId; // 네이버 기자 ID
-
 
     @ManyToOne
     @JoinColumn(name = "theme_id")
@@ -63,13 +63,20 @@ public class Article {
     @Builder.Default
     private boolean headline = false;
 
-      /** 관련뉴스(클러스터) 개수 */
+    /** 관련뉴스(클러스터) 개수 */
     @Builder.Default
     private int clusterCount = 0;
 
-     @OneToMany(mappedBy = "article", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "article", fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<ArticleMedia> mediaList;
 
-}
+    @OneToMany(mappedBy = "article", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Comment> comments;
 
+    public void increaseViewCount() {
+        this.viewCount = (this.viewCount == null ? 1 : this.viewCount + 1);
+    }
+
+}

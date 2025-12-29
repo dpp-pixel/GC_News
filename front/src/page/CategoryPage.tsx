@@ -5,11 +5,11 @@ import CategoryArticleList from "../components/categorypage/CategoryArticleList"
 export default function CategoryPage() {
   const { themeId } = useParams();
 
-  if (!themeId) return null; // ⭐ 핵심
+  if (!themeId) return null; 
 
   const numericThemeId = Number(themeId);
 
-  if (Number.isNaN(numericThemeId)) return null; // ⭐ 안전장치
+  if (Number.isNaN(numericThemeId)) return null; 
 
   return (
     <main style={{ width: "1100px", margin: "0 auto" }}>

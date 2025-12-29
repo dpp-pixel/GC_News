@@ -1,0 +1,37 @@
+.slider-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+/* 좌우 화살표 */
+.arrow {
+  width: 36px;
+  height: 72px;
+  border-radius: 18px;
+  border: none;
+  background: #d0d0d0;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.arrow.disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* ⭐ 핵심: 보이는 영역 */
+.card-viewport {
+  width: calc(360px * 5 + 24px * 4); /* 카드 5개 기준 */
+  overflow: hidden;
+}
+
+/* 실제 움직이는 레일 */
+.card-track {
+  display: flex;
+  gap: 24px;
+  transition: transform 0.35s ease;
+}

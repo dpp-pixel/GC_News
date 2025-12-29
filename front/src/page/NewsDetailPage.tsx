@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import "./NewsDetailPage.css";
-
+import ArticleReaction from "../components/articledetailpage/ArticleReaction";
+import ArticleComments from "../components/articledetailpage/ArticleComments";
 interface Media {
   url: string;
   mediaType: string;
@@ -104,6 +105,9 @@ export default function NewsDetailPage() {
           __html: article.contentHtml || "",
         }}
       />
+      <ArticleReaction articleId={article.articleId} />
+<ArticleComments articleId={article.articleId} />
     </article>
+    
   );
 }

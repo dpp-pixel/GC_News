@@ -1,14 +1,16 @@
 .card {
-  width: 220px;
-  background: #008c8c; /* 청록색 느낌 */
-  color: #ffffff;
-  border-radius: 8px;
-  padding: 18px 16px 16px;
+  width: 360px;
+  background: #e2e2e2;
+  color: #222;
+  border-radius: 10px;
+  padding: 20px 18px 18px;
   box-sizing: border-box;
   font-size: 13px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  position: relative;
 }
 
+/* 프로필 영역 */
 .profile {
   display: flex;
   flex-direction: column;
@@ -16,29 +18,49 @@
   gap: 6px;
 }
 
+/* 아바타 */
 .avatar {
   width: 76px;
   height: 76px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #ffffff;
+  border: 2px solid #ddd;
+  background: #ccc;
 }
 
+/* ✅ 기자 이름 (hover 핵심 조정) */
 .name {
+  display: inline-block;
+  position: relative;
+  z-index: 2;
+
   font-size: 16px;
   font-weight: 700;
+  color: #222;
+
+  cursor: pointer;
+  transition: color 0.15s ease, opacity 0.15s ease;
 }
 
+/* 🔹 살짝 연해지는 느낌 */
+.name:hover {
+  color: #666;
+  opacity: 0.85;
+}
+
+/* 부서/직책 */
 .position {
   font-size: 12px;
   opacity: 0.85;
 }
 
+/* 구분선 */
 .horizontalLine {
   margin: 10px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.5);
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
 }
 
+/* 요약 */
 .summaryRow {
   display: flex;
   justify-content: center;
@@ -51,6 +73,7 @@
   opacity: 0.8;
 }
 
+/* 태그 */
 .tagsRow {
   display: flex;
   justify-content: center;
@@ -62,16 +85,19 @@
 .tag {
   padding: 2px 8px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  border: 1px solid #bbb;
+  color: #555;
   font-size: 11px;
 }
 
+/* 설명 */
 .desc {
   font-size: 11px;
   line-height: 1.4;
   margin-bottom: 10px;
 }
 
+/* 버튼 */
 .buttonRow {
   display: flex;
   gap: 6px;
@@ -89,16 +115,16 @@
 }
 
 .primaryButton {
-  background: #ffffff;
-  color: #333333;
-  font-weight: 600;
+  background: #222;
+  color: #fff;
 }
 
 .secondaryButton {
-  background: #e6e6e6;
-  color: #333333;
+  background: #e0e0e0;
+  color: #333;
 }
 
+/* 이메일 박스 */
 .emailBox {
   width: 100%;
   height: 26px;
@@ -131,8 +157,8 @@
   height: 16px;
   border-radius: 50%;
   border: none;
-  background: #333333;
-  color: #ffffff;
+  background: #333;
+  color: #fff;
   font-size: 10px;
   cursor: pointer;
 }
@@ -147,7 +173,7 @@
   flex: 1;
   height: 14px;
   border-radius: 999px;
-  background: #ffffff;
+  background: #fff;
   overflow: hidden;
 }
 
@@ -158,4 +184,22 @@
 
 .trustLabel {
   font-size: 11px;
+}
+
+/* 하단 버튼 */
+.bottomButtons {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.fullWidthButton {
+  flex: 1;
+  height: 30px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background: #666;
+  color: #fff;
+  font-size: 12px;
 }
