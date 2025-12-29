@@ -1,0 +1,21 @@
+/* src/page/mycontent/recent/MyRecentSection.css */
+
+/* bookmark-layout 재사용 + 최근 본 보정 */
+.recent-layout {
+  /* 추가 스타일 필요 시 여기에 */
+}
+
+.recent-activity {
+  width: 200px;
+  padding: 24px 16px;
+}
+
+.recent-main {
+  /* 필요 시 확장 */
+}
+.recent-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 14px;
+}

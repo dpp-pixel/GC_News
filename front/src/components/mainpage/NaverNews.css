@@ -60,6 +60,12 @@
   color: #888;
   margin-top: 6px;
 }
+.cluster-count {
+  font-size: 0.8rem;
+  color: gray;
+  text-align: right;
+  margin-top: 4px;
+}
 
 /* ===== 서브 기사 ===== */
 .sub-grid {

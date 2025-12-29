@@ -2,7 +2,6 @@ package gc_news.repository;
 
 import gc_news.entity.Article;
 
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -18,7 +17,17 @@ import org.springframework.data.repository.query.Param;
 public interface ArticleRepository extends JpaRepository<Article, Long> {
 
     boolean existsByUrlString(String urlString); // url 중복 검사
+
     Optional<Article> findByUrlString(String urlString);
+
+    @Query("""
+                SELECT DISTINCT a
+                FROM Article a
+                LEFT JOIN FETCH a.mediaList
+                WHERE a.headline = true
+                ORDER BY a.clusterCount DESC, a.publishedAt DESC
+            """)
+    List<Article> findHeadlineArticles(Pageable pageable);
 
     List<Article> findAllByOrderByViewCountDesc(); // 조회수 높은 순
 
@@ -45,5 +54,18 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
 
     // Page 처리된 카테고리별 기사
     Page<Article> findByTheme_ThemeIdOrderByPublishedAtDesc(Long themeId, Pageable pageable);
+
+    @Query("""
+                SELECT DISTINCT a
+                FROM Article a
+                LEFT JOIN FETCH a.mediaList
+                LEFT JOIN FETCH a.theme
+                WHERE a.headline = true
+                AND a.theme.themeId = :themeId
+                ORDER BY a.clusterCount DESC, a.publishedAt DESC
+            """)
+    List<Article> findHeadlineArticlesByTheme(
+            @Param("themeId") Long themeId,
+            Pageable pageable);
 
 }

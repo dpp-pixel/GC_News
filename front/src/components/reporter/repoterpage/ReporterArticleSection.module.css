@@ -1,0 +1,98 @@
+.section {
+  margin: 0;
+  padding: 0;
+}
+
+
+
+.title {
+  margin: 0;
+  font-size: 20px;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* li */
+.item {
+  border-bottom: 1px solid #e5e5e5;
+}
+
+/* 🔹 Link 스타일 제거 + 레이아웃 */
+.articleLink {
+  display: flex;
+  gap: 16px;
+  padding: 16px 0;
+  width: 100%;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* 썸네일 */
+.thumb {
+  width: 140px;
+  height: 90px;
+  flex-shrink: 0;
+  background: #eee;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.noImage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 12px;
+  color: #999;
+}
+
+/* 기사 내용 */
+.content {
+  flex: 1;
+}
+
+.itemTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 6px;
+  line-height: 1.3;
+}
+
+/* hover 시 제목만 강조 */
+.articleLink:hover .itemTitle {
+  text-decoration: underline;
+}
+
+.summary {
+  font-size: 14px;
+  color: #555;
+  margin: 0 0 8px;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.meta {
+  font-size: 12px;
+  color: #888;
+}
+
+/* 로딩 */
+.loader {
+  padding: 16px;
+  text-align: center;
+  font-size: 13px;
+  color: #888;
+}

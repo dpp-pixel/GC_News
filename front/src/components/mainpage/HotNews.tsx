@@ -6,7 +6,6 @@ import "./HotNews.css";
 interface Article {
   articleId: number;
   title: string;
-  urlString: string;
   press: string;
   viewCount: number;
   mediaList?: { url: string }[];

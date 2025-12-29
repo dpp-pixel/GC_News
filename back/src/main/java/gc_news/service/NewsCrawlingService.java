@@ -179,7 +179,7 @@ public class NewsCrawlingService {
                     .userAgent("Mozilla/5.0")
                     .timeout(5000)
                     .get();
-                    
+
             Element headlineSection = doc.selectFirst("div.section_article.as_headline");
             if (headlineSection == null) {
                 System.out.println("### 헤드라인 섹션을 찾지 못함: " + url);
@@ -295,5 +295,5 @@ public class NewsCrawlingService {
             crawling.set(false);
         }
     }
-
+    
 }
