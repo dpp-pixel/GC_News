@@ -37,6 +37,7 @@ public class Reporter {
     private String profileImageUrl;
     private Float trustScore;
     private String press;
+    private String officeId;
 
      
 }
