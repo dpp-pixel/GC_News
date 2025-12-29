@@ -7,6 +7,7 @@ import gc_news.entity.Article;
 import gc_news.repository.ArticleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,13 +18,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-
-
 import gc_news.entity.Article;
 import gc_news.entity.Reporter;
 import gc_news.repository.ReporterRepository;
 import lombok.RequiredArgsConstructor;
-
 
 @Service
 @RequiredArgsConstructor
@@ -32,14 +30,20 @@ public class ArticleService {
     private final ReporterRepository reporterRepository;
     private final ArticleRepository articleRepository;
 
-    //단일 기사 상세 조회
+    // 단일 기사 상세 조회
     @Transactional(readOnly = true)
     public Article getArticleById(Long articleId) {
         return articleRepository.findById(articleId)
                 .orElseThrow(() -> new RuntimeException("Article not found: " + articleId));
     }
 
-        //상세 조회 시, content 가 비었으면 네이버 원문에서 크롤링해서 채우기
+    @Transactional(readOnly = true)
+    public List<Article> getHeadlineArticles(int limit) {
+        return articleRepository.findHeadlineArticles(
+                PageRequest.of(0, limit));
+    }
+
+    // 상세 조회 시, content 가 비었으면 네이버 원문에서 크롤링해서 채우기
     @Transactional
     public Article loadArticleContentIfNeeded(Long articleId) {
 
@@ -60,14 +64,14 @@ public class ArticleService {
         try {
             // 1) 네이버 기사 페이지 HTML 가져오기
             Document doc = Jsoup.connect(url)
-                    .userAgent("Mozilla/5.0")   // 차단 방지용 UA
+                    .userAgent("Mozilla/5.0") // 차단 방지용 UA
                     .get();
 
             // 2) 본문 영역 선택 (네이버 뉴스 구조에 맞춰 selector 여러 개 시도)
             Element body = doc.selectFirst(
-                    "#newsct_article, " +          // 네이버 뉴스(신규)
-                    "#articleBodyContents, " +     // 네이버 뉴스(구)
-                    ".newsct_article"              // 예비 selector
+                    "#newsct_article, " + // 네이버 뉴스(신규)
+                            "#articleBodyContents, " + // 네이버 뉴스(구)
+                            ".newsct_article" // 예비 selector
             );
 
             String html;
@@ -75,8 +79,8 @@ public class ArticleService {
                 html = body.html();
             } else {
                 html = "<p>기사 본문을 가져오지 못했습니다. "
-                     + "<a href=\"" + url + "\" target=\"_blank\" rel=\"noopener noreferrer\">"
-                     + "원문에서 확인하기</a></p>";
+                        + "<a href=\"" + url + "\" target=\"_blank\" rel=\"noopener noreferrer\">"
+                        + "원문에서 확인하기</a></p>";
             }
 
             // 3) 엔티티에 저장 후 DB 반영
@@ -98,13 +102,13 @@ public class ArticleService {
         return article;
     }
 
-    //전체 기사 (media 포함) - 일단 모든 기사 반환
+    // 전체 기사 (media 포함) - 일단 모든 기사 반환
     @Transactional(readOnly = true)
     public List<Article> getAllArticlesWithMedia() {
         return articleRepository.findAll();
     }
 
-    //인기 뉴스 (최근 days일 기준 + 날짜 내림차순 상위 limit개)
+    // 인기 뉴스 (최근 days일 기준 + 날짜 내림차순 상위 limit개)
     @Transactional(readOnly = true)
     public List<Article> getHotArticles(int days, int limit, Long themeId) {
 
@@ -118,12 +122,10 @@ public class ArticleService {
                 .filter(a -> a.getPublishedAt() != null
                         && !a.getPublishedAt().isBefore(cutoff))
                 // 2) themeId가 넘어온 경우, 해당 테마만 필터
-                .filter(a ->
-                        themeId == null
-                                || (a.getTheme() != null
+                .filter(a -> themeId == null
+                        || (a.getTheme() != null
                                 && a.getTheme().getThemeId() != null
-                                && themeId.equals(a.getTheme().getThemeId()))
-                )
+                                && themeId.equals(a.getTheme().getThemeId())))
                 // 3) 날짜 기준 최신순 정렬 (publishedAt 내림차순)
                 .sorted(Comparator.comparing(Article::getPublishedAt).reversed())
                 // 4) 상위 limit개만 사용
@@ -131,7 +133,7 @@ public class ArticleService {
                 .toList();
     }
 
-    //카테고리별 인기 뉴스 그룹 (테마별로 limitPerTheme개씩)
+    // 카테고리별 인기 뉴스 그룹 (테마별로 limitPerTheme개씩)
     @Transactional(readOnly = true)
     public Map<Long, List<Article>> getHotArticlesGroupedByTheme(int days, int limitPerTheme) {
 
@@ -154,12 +156,17 @@ public class ArticleService {
                                 list -> list.stream()
                                         .sorted(Comparator.comparing(Article::getPublishedAt).reversed())
                                         .limit(limitPerTheme)
-                                        .toList()
-                        )
-                ));
+                                        .toList())));
     }
 
-    //카테고리별 최신 기사 (페이지네이션)
+    @Transactional(readOnly = true)
+    public List<Article> getHeadlineArticlesByTheme(Long themeId, int limit) {
+        return articleRepository.findHeadlineArticlesByTheme(
+                themeId,
+                PageRequest.of(0, limit));
+    }
+
+    // 카테고리별 최신 기사 (페이지네이션)
     @Transactional(readOnly = true)
     public Page<Article> getArticlesByTheme(Long themeId, Pageable pageable) {
         // 이미 CategoryPage 가 잘 뜬다고 했으니,
@@ -167,7 +174,15 @@ public class ArticleService {
         return articleRepository.findByTheme_ThemeIdOrderByPublishedAtDesc(themeId, pageable);
     }
 
-  
+    @Transactional
+    public Article getArticleDetail(Long articleId) {
+        Article article = articleRepository.findById(articleId)
+                .orElseThrow(() -> new RuntimeException("기사 없음"));
+
+        article.increaseViewCount(); // 조회수 +1
+        return article;
+    }
+
     /**
      * 기사 상세 HTML에서 기자를 찾아 Article에 연결
      */
@@ -213,6 +228,3 @@ public class ArticleService {
         return parts[parts.length - 1]; // "81986"
     }
 }
-
-
-
