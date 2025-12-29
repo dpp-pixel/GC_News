@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import apiClient from "@/auth/apiClient";   // ✅ 공통 클라이언트
+import { Loading } from "@/components";
 import "./MyRecentSection.css";
 
 interface Article {
@@ -12,7 +13,7 @@ interface Article {
 }
 
 export default function MyRecentSection() {
-   const DAYS = 3;
+  const DAYS = 3;
   const [recentArticles, setRecentArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,15 +21,23 @@ export default function MyRecentSection() {
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        const res = await axios.get<Article[]>(
-          "http://localhost:8081/api/users/me/view-history",
+        setLoading(true);
+        setError(null);
+
+        const res = await apiClient.get<Article[]>(
+          "/api/users/me/view-history",
           {
             params: { days: DAYS },
           }
         );
+
         setRecentArticles(res.data);
-      } catch (e) {
-        console.error("최근 본 기사 로딩 실패:", e);
+      } catch (e: any) {
+        console.error(
+          "최근 본 기사 로딩 실패:",
+          e?.response?.status,
+          e?.response?.data
+        );
         setError("최근 본 기사 로딩에 실패했습니다.");
       } finally {
         setLoading(false);
@@ -38,16 +47,24 @@ export default function MyRecentSection() {
     fetchArticles();
   }, []);
 
-  if (loading) return <p>최근 본 기사 불러오는 중...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  // ✅ 로딩 상태
+  if (loading) {
+    return <Loading text="최신 기사 불러오는 중" />;
+  }
+
+  // ✅ 에러 상태
+  if (error) {
+    return <p style={{ color: "red" }}>{error}</p>;
+  }
 
   return (
     <div className="bookmark-layout recent-layout">
       <section className="bookmark-main recent-main">
-        <div className="recent-title">
-          최근 {DAYS}일간의 기사입니다
-        </div>
-        {recentArticles.length === 0 && <div>최근 본 기사가 없습니다.</div>}
+        <div className="recent-title">최근 {DAYS}일간의 기사입니다</div>
+
+        {recentArticles.length === 0 && (
+          <div>최근 본 기사가 없습니다.</div>
+        )}
 
         <ul className="bookmark-list">
           {recentArticles.map((article) => (

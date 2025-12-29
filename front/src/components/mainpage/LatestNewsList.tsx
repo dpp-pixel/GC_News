@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { Loading } from "@/components";
 import "./LatestNewsList.css";
 
 interface Article {
@@ -30,10 +31,10 @@ export default function LatestNewsList() {
         );
 
         if (!cancelled) {
-          // 날짜 기준으로 최신순 정렬 후 최대 16개
           const sortedNews = res.data.sort(
             (a, b) =>
-              new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+              new Date(b.publishedAt).getTime() -
+              new Date(a.publishedAt).getTime()
           );
           setNews(sortedNews.slice(0, 16));
         }
@@ -56,9 +57,18 @@ export default function LatestNewsList() {
     };
   }, []);
 
-  if (loading) return <p>최신 기사 불러오는 중...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
-  if (news.length === 0) return <p>표시할 최신 기사가 없습니다.</p>;
+  /* ✅ 여기만 핵심 변경 */
+  if (loading) {
+    return <Loading text="최신 기사 불러오는 중" />;
+  }
+
+  if (error) {
+    return <p style={{ color: "red" }}>{error}</p>;
+  }
+
+  if (news.length === 0) {
+    return <p>표시할 최신 기사가 없습니다.</p>;
+  }
 
   const leftNews = news.slice(0, 3);
   const centerNews = news.slice(3);
@@ -93,14 +103,14 @@ export default function LatestNewsList() {
           <ul>
             {centerNews.map((item) => (
               <li key={item.articleId}>
-                <Link to={`/news/${item.articleId}`}>{item.title}</Link>
+                <Link to={`/news/{item.articleId}`}>{item.title}</Link>
               </li>
             ))}
           </ul>
         </div>
 
         {/* 오른쪽: 예약 영역 */}
-        <div className="latest-right">{/* 나중에 칼럼/오피니언 */}</div>
+        <div className="latest-right" />
       </div>
     </section>
   );
