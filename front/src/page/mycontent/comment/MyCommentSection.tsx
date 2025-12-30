@@ -1,7 +1,7 @@
 // src/page/mycontent/comment/MyCommentSection.tsx
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { api } from "../../../api/client";
+import { api } from "../../../api/client"; // axios 인스턴스
 import "./MyCommentSection.css";
 
 interface CommentItem {
@@ -10,11 +10,9 @@ interface CommentItem {
   createdAt: string;
   likeCount: number;
   dislikeCount: number;
-  article?: {
-    articleId: number;
-    title: string;
-    mediaList?: { url: string }[];
-  };
+  articleId: number;
+  articleTitle: string;
+  articleImageUrl?: string;
 }
 
 type CommentSortKey = "created" | "reaction";
@@ -23,69 +21,33 @@ export default function MyCommentSection() {
   const [comments, setComments] = useState<CommentItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [commentSort, setCommentSort] = useState<CommentSortKey>("created");
-  const navigate = useNavigate();
-  const observer = useRef<IntersectionObserver | null>(null);
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
   const [totalComments, setTotalComments] = useState(0);
+  const navigate = useNavigate();
 
-  // 댓글 가져오기
-  const fetchComments = useCallback(async () => {
-    if (loading || !hasMore) return;
+  // 댓글 가져오기 (한 번만)
+  const fetchComments = async () => {
     setLoading(true);
     try {
-      const res = await api.get<CommentItem[]>("/api/users/me/comments", {
-        params: { page, size: 10 },
+      const res = await api.get<CommentItem[]>("/comments", {
+        params: { page: 0, size: 10 }, // 첫 페이지만 가져오기
       });
-      setComments((prev) => [...prev, ...res.data]);
-      setHasMore(res.data.length === 10);
-      setPage((prev) => prev + 1);
+      setComments(res.data);
     } catch (e) {
       console.error("댓글 로딩 실패:", e);
     } finally {
       setLoading(false);
     }
-  }, [loading, hasMore, page]);
+  };
 
   useEffect(() => {
     fetchComments();
   }, []);
 
-  // 무한 스크롤
-  const lastCommentRef = useCallback(
-    (node: HTMLLIElement | null) => {
-      if (loading) return;
-      if (observer.current) observer.current.disconnect();
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-          fetchComments();
-        }
-      });
-      if (node) observer.current.observe(node);
-    },
-    [loading, hasMore, fetchComments]
-  );
-
-  // 댓글 삭제
-  const handleDeleteOneComment = async (id: number) => {
-    try {
-      await api.delete(`/api/comments/${id}`);
-      setComments((prev) => prev.filter((c) => c.commentId !== id));
-    } catch (error) {
-      console.error("댓글 삭제 실패:", error);
-      alert("댓글 삭제에 실패했습니다.");
-    }
-  };
-
-  const handleClickComment = (articleId: number, commentId: number) => {
-    navigate(`/news/${articleId}#comment-${commentId}`);
-  };
-
   // 총 댓글 수
   useEffect(() => {
     const fetchTotalComments = async () => {
       try {
-        const res = await api.get<number>("/api/users/me/comments/count");
+        const res = await api.get<number>("/comments/count");
         setTotalComments(res.data);
       } catch (error) {
         console.error("총 댓글 수 로딩 실패", error);
@@ -94,24 +56,38 @@ export default function MyCommentSection() {
     fetchTotalComments();
   }, []);
 
+  // 댓글 삭제
+  const handleDeleteOneComment = async (id: number) => {
+    try {
+      await api.delete(`/comments/${id}`);
+      setComments((prev) => prev.filter((c) => c.commentId !== id));
+    } catch (error) {
+      console.error("댓글 삭제 실패:", error);
+      alert("댓글 삭제에 실패했습니다.");
+    }
+  };
+
+  // 댓글 클릭 시 본문 이동
+  const handleClickComment = (articleId: number, commentId: number) => {
+    navigate(`/news/${articleId}#comment-${commentId}`);
+  };
+
   // 정렬
-  const sortedComments = [...comments]
-    .filter((c) => c.article)
-    .sort((a, b) => {
-      if (commentSort === "created") {
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      }
-      const aScore = a.likeCount + a.dislikeCount;
-      const bScore = b.likeCount + b.dislikeCount;
-      return bScore - aScore;
-    });
+  const sortedComments = [...comments].sort((a, b) => {
+    if (commentSort === "created") {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    }
+    const aScore = a.likeCount + a.dislikeCount;
+    const bScore = b.likeCount + b.dislikeCount;
+    return bScore - aScore;
+  });
 
   return (
     <section className="comment-section">
       <div className="comment-header-row">
         <div className="comment-title-block">
           <h2 className="comment-title">
-            작성한 댓글 <span>{comments.length}개</span>
+            작성한 댓글 <span>{totalComments}개</span>
           </h2>
 
           <div className="comment-sort-tabs">
@@ -146,53 +122,46 @@ export default function MyCommentSection() {
       )}
 
       <ul className="bookmark-list comment-list">
-        {sortedComments.map((item, idx) => {
-          const isLast = idx === sortedComments.length - 1;
-          const imageUrl = item.article?.mediaList?.[0]?.url || null;
+        {sortedComments.map((item) => {
+  const imageUrl = item.articleImageUrl || null;
 
-          return (
-            <li
-              key={item.commentId}
-              ref={isLast ? lastCommentRef : null}
-              className="bookmark-item comment-item"
-            >
-              <div className="bookmark-thumb">
-                {imageUrl ? (
-                  <img src={imageUrl} alt={item.article?.title || "기사"} />
-                ) : (
-                  <div className="no-image-box">이미지 없음</div>
-                )}
-              </div>
+  return (
+    <li key={item.commentId} className="bookmark-item comment-item">
+      <div className="bookmark-thumb">
+        {imageUrl ? (
+          <img src={imageUrl} alt={item.articleTitle || "기사"} />
+        ) : (
+          <div className="no-image-box">이미지 없음</div>
+        )}
+      </div>
 
-              <div className="bookmark-info">
-                <div
-                  className="bookmark-title"
-                  onClick={() => handleClickComment(item.article!.articleId, item.commentId)}
-                  style={{ cursor: "pointer" }}
-                >
-                  {item.article?.title || "제목 없음"}
-                </div>
+      <div className="bookmark-info">
+        <div
+          className="bookmark-title"
+          onClick={() => handleClickComment(item.articleId, item.commentId)}
+          style={{ cursor: "pointer" }}
+        >
+          {item.articleTitle || "제목 없음"}
+        </div>
 
-                <div className="comment-text">{item.content}</div>
-                <div className="bookmark-meta">
-                  {new Date(item.createdAt).toLocaleString()}
-                </div>
+        <div className="comment-text">{item.content}</div>
+        <div className="bookmark-meta">{new Date(item.createdAt).toLocaleString()}</div>
 
-                <div className="bookmark-stats">
-                  <span>좋아요 {item.likeCount}</span>
-                  <span>싫어요 {item.dislikeCount}</span>
-                  <button
-                    type="button"
-                    className="bookmark-delete"
-                    onClick={() => handleDeleteOneComment(item.commentId)}
-                  >
-                    삭제
-                  </button>
-                </div>
-              </div>
-            </li>
-          );
-        })}
+        <div className="bookmark-stats">
+          <span>좋아요 {item.likeCount}</span>
+          <span>싫어요 {item.dislikeCount}</span>
+          <button
+            type="button"
+            className="bookmark-delete"
+            onClick={() => handleDeleteOneComment(item.commentId)}
+          >
+            삭제
+          </button>
+        </div>
+      </div>
+    </li>
+  );
+})}
       </ul>
 
       {loading && <div>로딩 중...</div>}

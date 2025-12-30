@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import gc_news.dto.CommentResponseDto;
 import gc_news.entity.Article;
 import gc_news.entity.Comment;
 import gc_news.entity.User;
@@ -43,7 +44,7 @@ public class CommentService {
         return commentRepository.save(comment);
     }
 
-    /** 베스트 댓글 */
+    // /** 베스트 댓글 */
     @Transactional(readOnly = true)
     public List<Comment> getBestComments(Long articleId) {
         return commentRepository.findBestComments(
@@ -71,7 +72,7 @@ public class CommentService {
         commentRepository.delete(comment);
     }
 
-    /** 로그인 사용자 댓글 최신순 조회 (무한 스크롤용) */
+    // /** 로그인 사용자 댓글 최신순 조회 (무한 스크롤용) */
     @Transactional(readOnly = true)
     public List<Comment> getUserComments(User user, int page, int size) {
         return commentRepository.findByUserOrderByCreatedAtDesc(
@@ -84,4 +85,25 @@ public class CommentService {
     public Long countUserComments(User user) {
         return commentRepository.countByUser(user);
     }
+
+    @Transactional(readOnly = true)
+    public List<CommentResponseDto> getUserCommentsForDto(User user, int page, int size) {
+        List<Comment> comments = commentRepository.findByUserOrderByCreatedAtDesc(user, PageRequest.of(page, size));
+
+        return comments.stream().map(c -> {
+            CommentResponseDto dto = new CommentResponseDto();
+            dto.setCommentId(c.getCommentId());
+            dto.setContent(c.getContent());
+            dto.setCreatedAt(c.getCreatedAt());
+            dto.setLikeCount(c.getLikeCount());
+            dto.setDislikeCount(c.getDislikeCount());
+            dto.setArticleId(c.getArticle().getArticleId());
+            dto.setArticleTitle(c.getArticle().getTitle());
+            if (c.getArticle().getMediaList() != null && !c.getArticle().getMediaList().isEmpty()) {
+                dto.setArticleImageUrl(c.getArticle().getMediaList().get(0).getUrl());
+            }
+            return dto;
+        }).toList();
+    }
+
 }

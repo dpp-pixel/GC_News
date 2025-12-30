@@ -37,5 +37,8 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
   // 사용자별 댓글 최신순 조회
   List<Comment> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
 
+  // 사용자별 댓글 최신순 조회 (페이징 없는 버전)
+  List<Comment> findByUserOrderByCreatedAtDesc(User user);
+
   Long countByUser(User user);
 }

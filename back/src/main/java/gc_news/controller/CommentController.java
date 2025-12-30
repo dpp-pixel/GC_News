@@ -2,11 +2,13 @@ package gc_news.controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import gc_news.dto.CommentRequest;
+import gc_news.dto.CommentResponseDto;
 import gc_news.entity.Comment;
 import gc_news.entity.User;
 import gc_news.service.CommentService;
@@ -56,18 +58,17 @@ public class CommentController {
 
     // 로그인 유저 댓글 조회 (페이징 가능)
     @GetMapping
-    public List<Comment> getMyComments(
+    public List<CommentResponseDto> getMyComments(
             @AuthenticationPrincipal User user,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
         if (user == null) {
-            throw new ResponseStatusException(
-                    org.springframework.http.HttpStatus.UNAUTHORIZED,
-                    "로그인이 필요합니다.");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다.");
         }
 
-        return commentService.getUserComments(user, page, size);
+        // 서비스에서 DTO 리스트 반환
+        return commentService.getUserCommentsForDto(user, page, size);
     }
 
     // 댓글 삭제
@@ -97,4 +98,5 @@ public class CommentController {
 
         return commentService.countUserComments(user);
     }
+
 }
