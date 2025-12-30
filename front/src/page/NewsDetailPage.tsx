@@ -56,6 +56,26 @@ export default function NewsDetailPage() {
     fetchDetail();
   }, [id]);
 
+   useEffect(() => {
+    if (!article || !isLoggedIn()) return;
+
+    const fetchBookmarkStatus = async () => {
+      try {
+        const res = await api.get<boolean>(
+          `/bookmarks/status/${article.articleId}`
+        );
+
+        setArticle((prev) =>
+          prev ? { ...prev, bookmarked: res.data } : prev
+        );
+      } catch (e) {
+        console.error("북마크 상태 조회 실패:", e);
+      }
+    };
+
+    fetchBookmarkStatus();
+  }, [article?.articleId]);
+
   // 북마크 토글
    const toggleBookmark = async () => {
     if (!article) return;
@@ -64,26 +84,28 @@ export default function NewsDetailPage() {
       return;
     }
 
-    try {
-      setBookmarkLoading(true);
+    const prevBookmarked = article.bookmarked;
 
-      // 서버 호출 전 UI 바로 반영 (optimistic update)
-      setArticle((prev) => prev && { ...prev, bookmarked: !prev.bookmarked });
+  try {
+    setBookmarkLoading(true);
 
-      if (article.bookmarked) {
-        await api.delete(`/bookmarks/toggle/${article.articleId}`);
-      } else {
-        await api.post(`/bookmarks/toggle/${article.articleId}`);
-      }
-    } catch (e) {
-      console.error("북마크 토글 실패:", e);
+    // optimistic update
+    setArticle((prev) =>
+      prev ? { ...prev, bookmarked: !prev.bookmarked } : prev
+    );
 
-      // 실패 시 원래 상태로 롤백
-      setArticle((prev) => prev && { ...prev, bookmarked: article.bookmarked });
-    } finally {
-      setBookmarkLoading(false);
-    }
-  };
+    await api.post(`/bookmarks/toggle/${article.articleId}`);
+  } catch (e) {
+    console.error("북마크 토글 실패:", e);
+
+    // 실패 시 롤백
+    setArticle((prev) =>
+      prev ? { ...prev, bookmarked: prevBookmarked } : prev
+    );
+  } finally {
+    setBookmarkLoading(false);
+  }
+};
 
   if (loading) return <div className="news-loading">기사 불러오는 중...</div>;
   if (error) return <div className="news-loading">{error}</div>;

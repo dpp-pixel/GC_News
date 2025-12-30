@@ -25,7 +25,7 @@ public class ArticleReactionController {
             @RequestParam Long articleId,
             @RequestParam String type,
             @AuthenticationPrincipal User user) {
-
+        System.out.println("현재 로그인 유저: " + user);// 로그인 확인
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
         }

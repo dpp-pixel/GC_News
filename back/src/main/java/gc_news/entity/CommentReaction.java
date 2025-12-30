@@ -27,6 +27,9 @@ public class CommentReaction {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Column(name = "user_key", nullable = false)
+    private String userKey;
+
     /** like / dislike */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

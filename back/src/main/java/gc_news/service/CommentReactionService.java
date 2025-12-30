@@ -51,6 +51,7 @@ public class CommentReactionService {
             CommentReaction reaction = CommentReaction.builder()
                     .comment(comment)
                     .user(user)
+                    .userKey(user.getUserId())
                     .type(type)
                     .build();
 

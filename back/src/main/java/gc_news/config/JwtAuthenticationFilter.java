@@ -3,9 +3,7 @@ package gc_news.config;
 import gc_news.entity.User;
 import gc_news.repository.UserRepository;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,28 +44,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
 
         try {
-            // jjwt 0.12.5 기준 안전하게 Claims 파싱
-            Jws<Claims> jwsClaims = Jwts.parserBuilder()
-                    .setSigningKey(jwtProvider.getKey())
+            Claims claims = Jwts.parser()
+                    .verifyWith(jwtProvider.getKey())
                     .build()
-                    .parseClaimsJws(token);
+                    .parseSignedClaims(token)
+                    .getPayload();
 
-            Claims claims = jwsClaims.getBody();
             String userId = claims.getSubject();
 
-            // DB에 없는 유저면 SecurityContext에 넣지 않고 바로 통과
             User user = userRepository.findById(userId).orElse(null);
             if (user == null) {
                 filterChain.doFilter(request, response);
                 return;
             }
 
-            List<GrantedAuthority> authorities = List.of(
-                    new SimpleGrantedAuthority("ROLE_" + user.getRole().name().toUpperCase()));
+            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_user"));
 
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user, null,
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    user,
+                    null,
                     authorities);
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+            authentication.setDetails(
+                    new WebAuthenticationDetailsSource().buildDetails(request));
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
