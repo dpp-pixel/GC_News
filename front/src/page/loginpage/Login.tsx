@@ -1,3 +1,4 @@
+// src/page/loginpage/Login.tsx
 import { useState } from "react";
 import type { FormEvent } from "react";
 import axios from "axios";
@@ -6,6 +7,7 @@ import styles from "./Login.module.css";
 
 type LoginResponse = {
   accessToken: string;
+  role: "admin" | "user"; // 어드민 / 일반 유저
 };
 
 export default function Login() {
@@ -14,7 +16,6 @@ export default function Login() {
   const navigate = useNavigate();
 
   // ⚠ 소셜 로그인은 아직 미구현: 디자인만, 기능 없음
-  // 나중에 연동할 때 여기 핸들러 추가
   // const handleSocialLogin = (provider: "naver" | "kakao" | "google" | "apple") => { ... };
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -32,10 +33,14 @@ export default function Login() {
         }
       );
 
-      const token = res.data.accessToken;
+      const { accessToken, role } = res.data;
 
-      // ✅ 토큰 로컬스토리지에 직접 저장
-      localStorage.setItem("accessToken", token);
+      // ✅ 토큰 + 역할 로컬스토리지에 저장
+      localStorage.setItem("accessToken", accessToken);
+
+      // 혹시 대소문자 섞여 올 수 있으니 소문자로 정규화
+      const normalizedRole = role.toLowerCase() === "admin" ? "admin" : "user";
+      localStorage.setItem("userRole", normalizedRole);
 
       alert("로그인 성공!");
       navigate("/"); // window.location.href 대신 라우터 사용

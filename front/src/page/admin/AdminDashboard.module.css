@@ -1,0 +1,136 @@
+/* 페이지 전체 래퍼 */
+.page {
+  width: 100%;
+}
+
+/* 가운데 정렬된 관리자 영역 */
+.inner {
+  max-width: 1040px;
+  margin: 40px auto 80px;
+  padding: 0 24px;
+}
+
+/* ===== 상단 탭(관리자 카테고리바) ===== */
+.adminNav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 탭 목록 */
+.tabList {
+  display: flex;
+  gap: 64px;
+  margin-bottom: 8px;
+}
+
+/* 개별 탭 버튼 */
+.tab {
+  background: none;
+  border: none;
+  padding: 4px 0;
+  cursor: pointer;
+
+  font-size: 18px;
+  font-weight: 400;
+  color: #666;
+}
+
+.tabActive {
+  color: #000;
+  font-weight: 700;
+}
+
+/* 탭 아래 검은 라인 */
+.tabUnderline {
+  width: 55%;
+  height: 3px;
+  border-radius: 2px;
+  background: #000;
+}
+
+/* ===== 카드 레이아웃 ===== */
+.grid {
+  margin-top: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* 한 행(카드 2개) */
+.row {
+  display: flex;
+  gap: 24px;
+}
+
+/* 행 사이 회색선 */
+.rowDivider {
+  height: 2px;
+  width: 100%;
+  background: #d0d0d0;
+}
+
+/* 개별 카드 */
+.card {
+  flex: 1;
+  background: #4f4f4f;
+  color: #fff;
+  border-radius: 10px;
+  padding: 18px 22px;
+}
+
+/* 카드 상단(타이틀 + 배지) */
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.cardTitleArea {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cardLabel {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* 배지 기본 */
+.badge {
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: #cfcfcf;
+  color: #333;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* 메인 뉴스 배지 색감 조금 다르게 */
+.badgeMain {
+  background: #e0e0e0;
+}
+
+/* 카드 본문 전체 박스 */
+.cardBody {
+  background: #555;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+/* 기사 제목 */
+.articleTitle {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+/* 요약 리스트 */
+.summaryList {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 14px;
+  line-height: 1.7;
+}

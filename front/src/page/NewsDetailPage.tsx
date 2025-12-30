@@ -1,9 +1,11 @@
+// src/page/NewsDetailPage.tsx
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import "./NewsDetailPage.css";
 import ArticleReaction from "../components/articledetailpage/ArticleReaction";
 import ArticleComments from "../components/articledetailpage/ArticleComments";
+
 interface Media {
   url: string;
   mediaType: string;
@@ -82,8 +84,7 @@ export default function NewsDetailPage() {
             <span className="reporter">{article.reporterName} 기자</span>
           )}
           <span className="date">
-            입력{" "}
-            {new Date(article.publishedAt).toLocaleString()}
+            입력 {new Date(article.publishedAt).toLocaleString()}
           </span>
         </div>
       </header>
@@ -91,10 +92,7 @@ export default function NewsDetailPage() {
       {/* 대표 이미지 */}
       {article.mediaList?.[0]?.url && (
         <figure className="article-image">
-          <img
-            src={article.mediaList[0].url}
-            alt={article.title}
-          />
+          <img src={article.mediaList[0].url} alt={article.title} />
         </figure>
       )}
 
@@ -105,9 +103,10 @@ export default function NewsDetailPage() {
           __html: article.contentHtml || "",
         }}
       />
+
+      {/* 반응 / 댓글 컴포넌트 */}
       <ArticleReaction articleId={article.articleId} />
-<ArticleComments articleId={article.articleId} />
+      <ArticleComments articleId={article.articleId} />
     </article>
-    
   );
 }
