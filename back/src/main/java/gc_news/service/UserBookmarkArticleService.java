@@ -41,4 +41,20 @@ public class UserBookmarkArticleService {
     public List<UserBookmarkArticle> getBookmarks(User user) {
         return repository.findByUserOrderByUbaIdDesc(user);
     }
+
+    @Transactional
+    public void removeAllBookmarks(User user) {
+        List<UserBookmarkArticle> bookmarks = repository.findByUser(user);
+        if (!bookmarks.isEmpty()) {
+            repository.deleteAll(bookmarks);
+        }
+    }
+
+    @Transactional
+    public void deleteBookmark(User user, Long articleId) {
+        var bookmark = repository.findByUserAndArticle_ArticleId(user, articleId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 북마크입니다."));
+        repository.delete(bookmark);
+    }
+
 }

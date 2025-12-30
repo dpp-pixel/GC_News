@@ -17,4 +17,6 @@ public interface UserBookmarkArticleRepository extends JpaRepository<UserBookmar
     void deleteByUserAndArticle_ArticleId(User user, Long articleId);
 
     List<UserBookmarkArticle> findByUserOrderByUbaIdDesc(User user);
+
+    List<UserBookmarkArticle> findByUser(User user);
 }

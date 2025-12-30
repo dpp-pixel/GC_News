@@ -1,7 +1,7 @@
 // src/page/mycontent/bookmark/MyBookmarkSection.tsx
 import { useEffect, useState } from "react";
 import { api } from "../../../api/client"; // client.ts 경로 반영
-import apiClient from "@/auth/apiClient";
+import { useNavigate } from "react-router-dom";
 import { Loading } from "@/components";
 import "./MyBookmarkSection.css";
 
@@ -27,6 +27,7 @@ export default function MyBookmarkSection() {
   const [selectedFilter, setSelectedFilter] = useState<string>("전체");
   const [loadingBookmarks, setLoadingBookmarks] = useState(false);
   const [error, setError] = useState<string | null>(null);
+   const navigate = useNavigate();
 
   /** 로그인 유저 북마크 조회 */
   const fetchBookmarks = async () => {
@@ -57,19 +58,14 @@ export default function MyBookmarkSection() {
           (a) => getArticleCategory(a) === selectedFilter
         );
 
-  /** 단일 북마크 삭제 */
+   /** 단일 북마크 삭제 */
   const handleDeleteOneBookmark = async (articleId: number) => {
+    if (!window.confirm("이 북마크를 삭제하시겠습니까?")) return;
     try {
       await api.delete(`/bookmarks/${articleId}`);
-      setBookmarkArticles((prev) =>
-        prev.filter((a) => a.articleId !== articleId)
-      );
+      setBookmarkArticles((prev) => prev.filter((a) => a.articleId !== articleId));
     } catch (e: any) {
-      console.error(
-        "북마크 삭제 실패:",
-        e?.response?.status,
-        e?.response?.data ?? e
-      );
+      console.error("북마크 삭제 실패:", e?.response?.status, e?.response?.data ?? e);
       alert("북마크 삭제에 실패했습니다.");
     }
   };
@@ -80,14 +76,10 @@ export default function MyBookmarkSection() {
     if (!window.confirm("북마크를 모두 삭제하시겠습니까?")) return;
 
     try {
-      await api.delete(`/bookmarks`);
+      await api.delete("/bookmarks/all"); // 서버 DELETE /all 엔드포인트와 매칭
       setBookmarkArticles([]);
     } catch (e: any) {
-      console.error(
-        "전체 북마크 삭제 실패:",
-        e?.response?.status,
-        e?.response?.data ?? e
-      );
+      console.error("전체 북마크 삭제 실패:", e?.response?.status, e?.response?.data ?? e);
       alert("전체 북마크 삭제에 실패했습니다.");
     }
   };
@@ -151,37 +143,44 @@ export default function MyBookmarkSection() {
                       alt={article.title}
                       onError={(e) => {
                         e.currentTarget.style.display = "none";
-                        e.currentTarget.parentElement?.classList.add(
-                          "no-image"
-                        );
+                        e.currentTarget.parentElement?.classList.add("no-image");
                       }}
+                      onClick={() => navigate(`/news/${article.articleId}`)} // 클릭 이동
+                      style={{ cursor: "pointer" }} // 클릭 가능 표시
                     />
                   ) : (
-                    <div className="no-image-box">이미지 없음</div>
+                    <div
+                      className="no-image-box"
+                      onClick={() => navigate(`/news/${article.articleId}`)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      이미지 없음
+                    </div>
                   )}
                 </div>
 
-                <div className="bookmark-info">
+                <div
+                  className="bookmark-info"
+                  onClick={() => navigate(`/news/${article.articleId}`)} // 제목/메타 클릭 이동
+                  style={{ cursor: "pointer" }}
+                >
                   <div className="bookmark-title">{article.title}</div>
-
                   <div className="bookmark-meta">
                     <span>{article.press}</span>
                     <span>
                       · {new Date(article.publishedAt).toLocaleString()}
                     </span>
                   </div>
+                </div>
 
-                  <div className="bookmark-stats">
-                    <button
-                      type="button"
-                      className="bookmark-delete"
-                      onClick={() =>
-                        handleDeleteOneBookmark(article.articleId)
-                      }
-                    >
-                      삭제
-                    </button>
-                  </div>
+                <div className="bookmark-stats">
+                  <button
+                    type="button"
+                    className="bookmark-delete"
+                    onClick={() => handleDeleteOneBookmark(article.articleId)}
+                  >
+                    삭제
+                  </button>
                 </div>
               </li>
             ))}

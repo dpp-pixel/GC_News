@@ -86,4 +86,41 @@ public class UserBookmarkArticleController {
                     .body("북마크 리스트 조회 실패: " + e.getMessage());
         }
     }
+
+    @DeleteMapping("/all")
+    public ResponseEntity<String> deleteAllBookmarks(@AuthenticationPrincipal User user) {
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+
+        try {
+            bookmarkService.removeAllBookmarks(user);
+            return ResponseEntity.ok("모든 북마크 삭제 완료");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("북마크 전체 삭제 실패: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{articleId}")
+    public ResponseEntity<String> deleteBookmark(
+            @PathVariable Long articleId,
+            @AuthenticationPrincipal User user) {
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+
+        try {
+            bookmarkService.deleteBookmark(user, articleId);
+            return ResponseEntity.ok("북마크 삭제 완료");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("북마크 삭제 실패: " + e.getMessage());
+        }
+    }
 }
