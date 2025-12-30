@@ -23,20 +23,23 @@ export default function MyCommentSection() {
   const [comments, setComments] = useState<CommentItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [commentSort, setCommentSort] = useState<CommentSortKey>("created");
-  const navigate = useNavigate();
-  const observer = useRef<IntersectionObserver | null>(null);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [totalComments, setTotalComments] = useState(0);
 
-  // 댓글 가져오기
+  const navigate = useNavigate();
+  const observer = useRef<IntersectionObserver | null>(null);
+
+  /* ---------------- 댓글 목록 ---------------- */
   const fetchComments = useCallback(async () => {
     if (loading || !hasMore) return;
     setLoading(true);
+
     try {
-      const res = await api.get<CommentItem[]>("/api/users/me/comments", {
+      const res = await api.get<CommentItem[]>("/comments", {
         params: { page, size: 10 },
       });
+
       setComments((prev) => [...prev, ...res.data]);
       setHasMore(res.data.length === 10);
       setPage((prev) => prev + 1);
@@ -51,28 +54,44 @@ export default function MyCommentSection() {
     fetchComments();
   }, []);
 
-  // 무한 스크롤
+  /* ---------------- 총 댓글 수 ---------------- */
+  useEffect(() => {
+    const fetchTotalComments = async () => {
+      try {
+        const res = await api.get<number>("/comments/count");
+        setTotalComments(res.data);
+      } catch (e) {
+        console.error("총 댓글 수 로딩 실패:", e);
+      }
+    };
+    fetchTotalComments();
+  }, []);
+
+  /* ---------------- 무한 스크롤 ---------------- */
   const lastCommentRef = useCallback(
     (node: HTMLLIElement | null) => {
       if (loading) return;
       if (observer.current) observer.current.disconnect();
+
       observer.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && hasMore) {
           fetchComments();
         }
       });
+
       if (node) observer.current.observe(node);
     },
     [loading, hasMore, fetchComments]
   );
 
-  // 댓글 삭제
+  /* ---------------- 댓글 삭제 ---------------- */
   const handleDeleteOneComment = async (id: number) => {
     try {
-      await api.delete(`/api/comments/${id}`);
+      await api.delete(`/comments/${id}`);
       setComments((prev) => prev.filter((c) => c.commentId !== id));
-    } catch (error) {
-      console.error("댓글 삭제 실패:", error);
+      setTotalComments((prev) => prev - 1);
+    } catch (e) {
+      console.error("댓글 삭제 실패:", e);
       alert("댓글 삭제에 실패했습니다.");
     }
   };
@@ -81,29 +100,14 @@ export default function MyCommentSection() {
     navigate(`/news/${articleId}#comment-${commentId}`);
   };
 
-  // 총 댓글 수
-  useEffect(() => {
-    const fetchTotalComments = async () => {
-      try {
-        const res = await api.get<number>("/api/users/me/comments/count");
-        setTotalComments(res.data);
-      } catch (error) {
-        console.error("총 댓글 수 로딩 실패", error);
-      }
-    };
-    fetchTotalComments();
-  }, []);
-
-  // 정렬
+  /* ---------------- 정렬 ---------------- */
   const sortedComments = [...comments]
     .filter((c) => c.article)
     .sort((a, b) => {
       if (commentSort === "created") {
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       }
-      const aScore = a.likeCount + a.dislikeCount;
-      const bScore = b.likeCount + b.dislikeCount;
-      return bScore - aScore;
+      return b.likeCount + b.dislikeCount - (a.likeCount + a.dislikeCount);
     });
 
   return (
@@ -111,7 +115,7 @@ export default function MyCommentSection() {
       <div className="comment-header-row">
         <div className="comment-title-block">
           <h2 className="comment-title">
-            작성한 댓글 <span>{comments.length}개</span>
+            작성한 댓글 <span>{totalComments}개</span>
           </h2>
 
           <div className="comment-sort-tabs">
@@ -131,10 +135,6 @@ export default function MyCommentSection() {
             </button>
           </div>
         </div>
-
-        <button type="button" className="comment-clear" onClick={() => setComments([])}>
-          전체 삭제
-        </button>
       </div>
 
       {sortedComments.length === 0 && !loading && (
@@ -148,7 +148,7 @@ export default function MyCommentSection() {
       <ul className="bookmark-list comment-list">
         {sortedComments.map((item, idx) => {
           const isLast = idx === sortedComments.length - 1;
-          const imageUrl = item.article?.mediaList?.[0]?.url || null;
+          const imageUrl = item.article?.mediaList?.[0]?.url;
 
           return (
             <li
@@ -157,20 +157,15 @@ export default function MyCommentSection() {
               className="bookmark-item comment-item"
             >
               <div className="bookmark-thumb">
-                {imageUrl ? (
-                  <img src={imageUrl} alt={item.article?.title || "기사"} />
-                ) : (
-                  <div className="no-image-box">이미지 없음</div>
-                )}
+                {imageUrl ? <img src={imageUrl} /> : <div className="no-image-box">이미지 없음</div>}
               </div>
 
               <div className="bookmark-info">
                 <div
                   className="bookmark-title"
                   onClick={() => handleClickComment(item.article!.articleId, item.commentId)}
-                  style={{ cursor: "pointer" }}
                 >
-                  {item.article?.title || "제목 없음"}
+                  {item.article?.title}
                 </div>
 
                 <div className="comment-text">{item.content}</div>
@@ -181,13 +176,7 @@ export default function MyCommentSection() {
                 <div className="bookmark-stats">
                   <span>좋아요 {item.likeCount}</span>
                   <span>싫어요 {item.dislikeCount}</span>
-                  <button
-                    type="button"
-                    className="bookmark-delete"
-                    onClick={() => handleDeleteOneComment(item.commentId)}
-                  >
-                    삭제
-                  </button>
+                  <button onClick={() => handleDeleteOneComment(item.commentId)}>삭제</button>
                 </div>
               </div>
             </li>

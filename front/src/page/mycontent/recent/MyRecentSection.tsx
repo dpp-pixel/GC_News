@@ -42,12 +42,12 @@ export default function MyRecentSection() {
     fetchArticles();
   }, []);
 
-  // ✅ 로딩 상태
+  // 로딩 상태
   if (loading) {
     return <Loading text="최신 기사 불러오는 중" />;
   }
 
-  // ✅ 에러 상태
+  // 에러 상태
   if (error) {
     return <p style={{ color: "red" }}>{error}</p>;
   }
