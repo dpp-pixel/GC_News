@@ -6,6 +6,7 @@ import Header from "./components/layout/Header";
 import CategoryBar from "./components/layout/categorybar/CategoryBar";
 import Footer from "./components/layout/footer/Footer";
 import ReporterPage from "./components/reporter/repoterpage/ReporterPage";
+import SearchPage from "./page/SearchPage";
 
 import MainContent from "./page/MainContent";
 import CategoryPage from "./page/CategoryPage";
@@ -103,6 +104,8 @@ function AppShell() {
 
             {/* 관리자 페이지 */}
             <Route path="/admin" element={<AdminDashboard />} />
+            {/* 검색 페이지  */}
+  <Route path="/search" element={<SearchPage />} />
           </Routes>
         </div>
       </main>

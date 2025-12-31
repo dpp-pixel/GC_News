@@ -209,7 +209,7 @@ public class ArticleService {
         String journalistUrl = reporterElement.attr("href");
         // 예: https://media.naver.com/journalist/655/81986
         String externalJournalistId = extractJournalistId(journalistUrl); // "81986"
-        String officeId = extractOfficeId(journalistUrl);                 // "655"
+        String officeId = extractOfficeId(journalistUrl); // "655"
 
         if (externalJournalistId == null) {
             return; // 이상한 URL이면 그냥 기자 연결 안 함
@@ -218,7 +218,7 @@ public class ArticleService {
         String rawReporterName = reporterElement.text().trim(); // 초기 이름
         // "기자", "특파원" 등 제거
         String reporterName = rawReporterName.replaceAll("\\s*(기자|특파원|논설위원|편집위원)\\s*$", "").trim();
-        String press = article.getPress();                   // 기사에 이미 저장된 한글 언론사 이름
+        String press = article.getPress(); // 기사에 이미 저장된 한글 언론사 이름
 
         // 2) DB에서 기자 찾거나 신규 생성
         Reporter reporter = reporterRepository
@@ -255,9 +255,15 @@ public class ArticleService {
     }
 
     private String extractOfficeId(String journalistUrl) {
-    // 예: https://media.naver.com/journalist/655/81986
-    if (journalistUrl == null || journalistUrl.isBlank()) return null;
-    String[] parts = journalistUrl.split("/");
-    return parts[parts.length - 2]; // "655"
-}
+        // 예: https://media.naver.com/journalist/655/81986
+        if (journalistUrl == null || journalistUrl.isBlank())
+            return null;
+        String[] parts = journalistUrl.split("/");
+        return parts[parts.length - 2]; // "655"
+    }
+
+    public Page<Article> searchArticles(String keyword, Pageable pageable) {
+        return articleRepository.findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(
+                keyword, keyword, pageable);
+    }
 }

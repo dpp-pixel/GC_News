@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -74,11 +75,6 @@ public class ArticleController {
         return articleService.getHotArticlesGroupedByTheme(days, limit);
     }
 
-    // 모든 기사 조회 (media 포함)
-    // @GetMapping
-    // public List<Article> getAll() {
-    // return articleService.getAllArticlesWithMedia();
-    // }
     // 최신 기사 조회 (limit 개수)
     @GetMapping("/latest")
     public List<Article> getLatestArticles(
@@ -116,5 +112,15 @@ public class ArticleController {
             @RequestParam(defaultValue = "false") boolean force) {
         Summary summary = aiService.summarizeArticleFromDbAndSave(articleId, force);
         return ResponseEntity.ok(summary);
+    }
+
+    @GetMapping("/search")
+    public Page<Article> searchArticles(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        // 서비스 레이어에서 Repository 호출
+        return articleService.searchArticles(keyword, PageRequest.of(page, size));
     }
 }
