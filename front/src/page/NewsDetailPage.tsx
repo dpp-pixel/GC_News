@@ -4,20 +4,32 @@ import axios from "axios";
 import "./NewsDetailPage.css";
 import ArticleReaction from "../components/articledetailpage/ArticleReaction";
 import ArticleComments from "../components/articledetailpage/ArticleComments";
+import ReporterAssetm from "@/components/reporter/ReporterAssetm";
+
 interface Media {
   url: string;
   mediaType: string;
+}
+
+interface ReporterSummary {
+  reporterId: number;
+  name: string;
+  profileImageUrl?: string | null;
+  press: string;
 }
 
 interface ArticleDetail {
   articleId: number;
   title: string;
   press: string;
-  reporterName?: string | null;
   publishedAt: string;
   contentHtml?: string | null;
   mediaList?: Media[];
+  reporterName?: string | null;          // 백엔드가 아직 이 문자열을 줄 수도 있으니까 남겨두고
+  reporter?: ReporterSummary | null;     //  새로 추가된 기자 객체
 }
+
+
 
 export default function NewsDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -69,7 +81,19 @@ export default function NewsDetailPage() {
     );
   }
 
+  
+  
+
   return (
+  <div className="article-detail-layout">
+    {/* 왼쪽: 기자 에셋 */}
+    {article.reporter && (
+      <aside style={{ marginBottom: 24 }}>
+        <ReporterAssetm reporter={article.reporter} />
+      </aside>
+    )}
+
+    {/* 오른쪽: 기사 본문 */}
     <article className="news-detail">
       {/* 상단 헤더 영역 */}
       <header className="article-header">
@@ -78,12 +102,16 @@ export default function NewsDetailPage() {
         <h1 className="title">{article.title}</h1>
 
         <div className="meta">
-          {article.reporterName && (
+          {/* 우선순위: reporter 객체 > reporterName 문자열 */}
+          {article.reporter?.name && (
+            <span className="reporter">{article.reporter.name} 기자</span>
+          )}
+          {!article.reporter?.name && article.reporterName && (
             <span className="reporter">{article.reporterName} 기자</span>
           )}
+
           <span className="date">
-            입력{" "}
-            {new Date(article.publishedAt).toLocaleString()}
+            입력 {new Date(article.publishedAt).toLocaleString()}
           </span>
         </div>
       </header>
@@ -91,10 +119,7 @@ export default function NewsDetailPage() {
       {/* 대표 이미지 */}
       {article.mediaList?.[0]?.url && (
         <figure className="article-image">
-          <img
-            src={article.mediaList[0].url}
-            alt={article.title}
-          />
+          <img src={article.mediaList[0].url} alt={article.title} />
         </figure>
       )}
 
@@ -105,9 +130,10 @@ export default function NewsDetailPage() {
           __html: article.contentHtml || "",
         }}
       />
+
       <ArticleReaction articleId={article.articleId} />
-<ArticleComments articleId={article.articleId} />
+      <ArticleComments articleId={article.articleId} />
     </article>
-    
-  );
+  </div>
+);
 }

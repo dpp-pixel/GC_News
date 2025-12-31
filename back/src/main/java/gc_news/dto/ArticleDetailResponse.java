@@ -1,19 +1,39 @@
 package gc_news.dto;
 
 import gc_news.entity.Article;
+import gc_news.entity.Reporter;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+// 기자 정보를 담는 DTO
+record ReporterSummary(
+        Long reporterId,
+        String name,
+        String profileImageUrl,
+        String press
+) {
+    static ReporterSummary from(Reporter reporter) {
+        if (reporter == null) return null;
+        return new ReporterSummary(
+                reporter.getReporterId(),
+                reporter.getName(),
+                reporter.getProfileImageUrl(),
+                reporter.getPress()
+        );
+    }
+}
+
 public record ArticleDetailResponse(
         Long articleId,
         String title,
         String press,
-        String reporterName,              // 기자 이름(문자열)
+        String reporterName,              // 기자 이름(문자열) - 하위 호환성 유지
         LocalDateTime publishedAt,
         String contentHtml,               // 실제로는 Article.content를 사용
-        List<Map<String, String>> mediaList
+        List<Map<String, String>> mediaList,
+        ReporterSummary reporter          // 기자 객체 추가
 ) {
 
     public static ArticleDetailResponse from(Article article) {
@@ -32,10 +52,11 @@ public record ArticleDetailResponse(
         //기자 이름 만들기 (Reporter 엔티티에서 꺼내기)
         String reporterName = null;
         if (article.getReporter() != null) {
-            // Reporter 엔티티에 필드명이 name 이라고 가정
             reporterName = article.getReporter().getName();
-            // 만약 필드명이 다르면 여기 한 줄만 바꿔주면 됩니다.
         }
+
+        // 기자 객체 만들기
+        ReporterSummary reporterSummary = ReporterSummary.from(article.getReporter());
 
         //DB에 저장된 content 를 그대로 본문 HTML로 사용
         String contentHtml = article.getContent();
@@ -50,7 +71,8 @@ public record ArticleDetailResponse(
                 reporterName,
                 article.getPublishedAt(),
                 contentHtml,
-                mediaList
+                mediaList,
+                reporterSummary
         );
     }
 }

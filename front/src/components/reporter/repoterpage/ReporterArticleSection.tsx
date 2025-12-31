@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 
+
 interface Article {
   articleId?: number; // 기자 페이지용 크롤링 데이터에는 없을 수도 있으니 optional
   title: string;

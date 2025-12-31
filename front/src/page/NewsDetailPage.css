@@ -1,7 +1,23 @@
-.news-detail {
-  max-width: 720px;
+/* 기사 상세 레이아웃 */
+.article-detail-layout {
+  max-width: 1200px;
   margin: 0 auto;
   padding: 24px 16px 80px;
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.article-detail-layout aside {
+  flex-shrink: 0;
+  width: 200px;
+  position: sticky;
+  top: 24px;
+}
+
+.news-detail {
+  flex: 1;
+  max-width: 720px;
 }
 
 /* 로딩 / 에러 메시지 */
