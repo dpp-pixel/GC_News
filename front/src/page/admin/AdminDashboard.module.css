@@ -1,85 +1,85 @@
 /* 페이지 전체 래퍼 */
 .page {
   width: 100%;
+  /* 🔽 기존: padding: 40px 0 80px; */
+  padding: 20px 0 80px;  /* 위 여백을 40 → 20으로 줄여서 전체를 위로 올림 */
+  display: flex;
+  justify-content: center;
+  background: #ffffff;
 }
 
-/* 가운데 정렬된 관리자 영역 */
+/* 가운데 정렬 컨테이너 */
 .inner {
-  max-width: 1040px;
-  margin: 40px auto 80px;
-  padding: 0 24px;
+  width: 100%;
+  max-width: 900px;
+  padding: 0 24px 40px;
 }
 
-/* ===== 상단 탭(관리자 카테고리바) ===== */
+/* ===== 상단 관리자 전용 탭 영역 ===== */
+
 .adminNav {
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin-bottom: 32px;
 }
 
-/* 탭 목록 */
 .tabList {
   display: flex;
-  gap: 64px;
+  gap: 40px;
   margin-bottom: 8px;
 }
 
-/* 개별 탭 버튼 */
 .tab {
   background: none;
   border: none;
   padding: 4px 0;
+  font-size: 16px;
   cursor: pointer;
-
-  font-size: 18px;
-  font-weight: 400;
   color: #666;
 }
 
 .tabActive {
-  color: #000;
   font-weight: 700;
+  color: #000;
 }
 
-/* 탭 아래 검은 라인 */
 .tabUnderline {
-  width: 55%;
-  height: 3px;
-  border-radius: 2px;
-  background: #000;
+  width: 60%;
+  height: 2px;
+  background: #333;
 }
 
-/* ===== 카드 레이아웃 ===== */
-.grid {
-  margin-top: 40px;
+/* ===== 세로 카드 리스트 ===== */
+
+.cardList {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 0; /* 카드 사이 여백은 cardBlock에서 처리 */
 }
 
-/* 한 행(카드 2개) */
-.row {
-  display: flex;
-  gap: 24px;
+/* 카드 + 아래 구분선까지 하나의 블록 */
+.cardBlock {
+  margin-bottom: 24px;
 }
 
-/* 행 사이 회색선 */
-.rowDivider {
-  height: 2px;
-  width: 100%;
+/* 🔹 카드들 사이 회색 가로선 */
+.cardDivider {
+  height: 1px;
   background: #d0d0d0;
+  margin: 18px 4px 0;
 }
 
-/* 개별 카드 */
+/* ===== 카드 공통 스타일 (AdminSummaryCard에서 사용) ===== */
+
 .card {
-  flex: 1;
-  background: #4f4f4f;
+  background: #4d4d4d;
+  border-radius: 8px;
+  padding: 16px 20px 18px;
   color: #fff;
-  border-radius: 10px;
-  padding: 18px 22px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* 카드 상단(타이틀 + 배지) */
 .cardHeader {
   display: flex;
   justify-content: space-between;
@@ -94,43 +94,40 @@
 }
 
 .cardLabel {
-  font-size: 18px;
-  font-weight: 700;
-}
-
-/* 배지 기본 */
-.badge {
-  padding: 6px 14px;
-  border-radius: 8px;
-  background: #cfcfcf;
-  color: #333;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-/* 메인 뉴스 배지 색감 조금 다르게 */
-.badgeMain {
-  background: #e0e0e0;
-}
-
-/* 카드 본문 전체 박스 */
-.cardBody {
-  background: #555;
-  border-radius: 8px;
-  padding: 14px 16px;
-}
-
-/* 기사 제목 */
-.articleTitle {
   font-size: 16px;
   font-weight: 700;
-  margin-bottom: 10px;
 }
 
-/* 요약 리스트 */
+/* 오른쪽 카테고리 뱃지 공통 */
+.badge {
+  padding: 6px 16px;
+  border-radius: 6px;
+  background: #e5e5e5;
+  color: #333;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* 메인 뉴스용 뱃지 강조 */
+.badgeMain {
+  background: #cfd2ff;
+}
+
+/* 카드 본문 */
+.cardBody {
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  padding-top: 12px;
+}
+
+.articleTitle {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
 .summaryList {
   margin: 0;
-  padding-left: 20px;
+  padding-left: 18px;
   font-size: 14px;
-  line-height: 1.7;
+  line-height: 1.6;
 }
