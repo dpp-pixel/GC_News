@@ -9,11 +9,13 @@ import lombok.Setter;
 @Builder
 public class ReporterRequest {
     private Long reporterId;
+    private String externalJournalistId;
     private String name;
-    private String press;
     private String email;
     private String profileImageUrl;
     private Float trustScore;
-    private boolean headline;
-    private int clusterCount;
+    private String press;
+    private String officeId;
+    private Integer subscriberCount;
+    private Integer recommendationCount;
 }
