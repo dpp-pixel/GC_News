@@ -1,0 +1,133 @@
+/* 페이지 전체 래퍼 */
+.page {
+  width: 100%;
+  /* 🔽 기존: padding: 40px 0 80px; */
+  padding: 20px 0 80px;  /* 위 여백을 40 → 20으로 줄여서 전체를 위로 올림 */
+  display: flex;
+  justify-content: center;
+  background: #ffffff;
+}
+
+/* 가운데 정렬 컨테이너 */
+.inner {
+  width: 100%;
+  max-width: 900px;
+  padding: 0 24px 40px;
+}
+
+/* ===== 상단 관리자 전용 탭 영역 ===== */
+
+.adminNav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.tabList {
+  display: flex;
+  gap: 40px;
+  margin-bottom: 8px;
+}
+
+.tab {
+  background: none;
+  border: none;
+  padding: 4px 0;
+  font-size: 16px;
+  cursor: pointer;
+  color: #666;
+}
+
+.tabActive {
+  font-weight: 700;
+  color: #000;
+}
+
+.tabUnderline {
+  width: 60%;
+  height: 2px;
+  background: #333;
+}
+
+/* ===== 세로 카드 리스트 ===== */
+
+.cardList {
+  display: flex;
+  flex-direction: column;
+  gap: 0; /* 카드 사이 여백은 cardBlock에서 처리 */
+}
+
+/* 카드 + 아래 구분선까지 하나의 블록 */
+.cardBlock {
+  margin-bottom: 24px;
+}
+
+/* 🔹 카드들 사이 회색 가로선 */
+.cardDivider {
+  height: 1px;
+  background: #d0d0d0;
+  margin: 18px 4px 0;
+}
+
+/* ===== 카드 공통 스타일 (AdminSummaryCard에서 사용) ===== */
+
+.card {
+  background: #4d4d4d;
+  border-radius: 8px;
+  padding: 16px 20px 18px;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.cardTitleArea {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cardLabel {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* 오른쪽 카테고리 뱃지 공통 */
+.badge {
+  padding: 6px 16px;
+  border-radius: 6px;
+  background: #e5e5e5;
+  color: #333;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* 메인 뉴스용 뱃지 강조 */
+.badgeMain {
+  background: #cfd2ff;
+}
+
+/* 카드 본문 */
+.cardBody {
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  padding-top: 12px;
+}
+
+.articleTitle {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.summaryList {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 14px;
+  line-height: 1.6;
+}

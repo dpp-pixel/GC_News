@@ -1,4 +1,4 @@
-// src/page/news/NewsDetailPage.tsx
+// src/page/NewsDetailPage.tsx
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { api } from "../api/client";
@@ -149,10 +149,7 @@ export default function NewsDetailPage() {
       {/* 대표 이미지 */}
       {article.mediaList?.[0]?.url && (
         <figure className="article-image">
-          <img
-            src={article.mediaList[0].url}
-            alt={article.title}
-          />
+          <img src={article.mediaList[0].url} alt={article.title} />
         </figure>
       )}
 
@@ -164,7 +161,7 @@ export default function NewsDetailPage() {
         }}
       />
 
-      {/* 반응 + 댓글 */}
+      {/* 반응 / 댓글 컴포넌트 */}
       <ArticleReaction articleId={article.articleId} />
       <ArticleComments articleId={article.articleId} />
     </article>

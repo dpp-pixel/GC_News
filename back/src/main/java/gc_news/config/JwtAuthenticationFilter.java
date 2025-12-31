@@ -17,7 +17,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.util.List;
 
@@ -44,6 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
 
         try {
+            // JWT 검증
             Claims claims = Jwts.parser()
                     .verifyWith(jwtProvider.getKey())
                     .build()
@@ -58,8 +58,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
 
-            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_user"));
+            // 고정 ROLE_USER 권한
+            List<GrantedAuthority> authorities = List.of(
+                    new SimpleGrantedAuthority("ROLE_user"));
 
+            // SecurityContext에 User 엔티티 넣기
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                     user,
                     null,

@@ -22,10 +22,10 @@ interface Article {
   }[];
 }
 
-/** ✅ 필터 목록 */
+
 const BOOKMARK_FILTERS = ["전체", "정치", "경제", "사회", "생활/문화", "세계", "IT/과학"];
 
-/** ✅ 필터 ↔ DB theme.name 매핑 (핵심) */
+
 const FILTER_THEME_MAP: Record<string, string[]> = {
   전체: [],
   정치: ["정치"],
@@ -44,7 +44,7 @@ export default function MyBookmarkSection() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  /** 🔹 북마크 조회 */
+  
   const fetchBookmarks = async () => {
     try {
       setLoading(true);
@@ -62,7 +62,7 @@ export default function MyBookmarkSection() {
     fetchBookmarks();
   }, []);
 
-  /** 🔹 필터 적용 */
+ 
   const filteredBookmarks =
     selectedFilter === "전체"
       ? bookmarkArticles
@@ -70,7 +70,7 @@ export default function MyBookmarkSection() {
           FILTER_THEME_MAP[selectedFilter]?.includes(a.theme?.name ?? "")
         );
 
-  /** 🔹 단일 북마크 삭제 */
+ 
   const handleDeleteOneBookmark = async (articleId: number) => {
     if (!window.confirm("이 북마크를 삭제하시겠습니까?")) return;
 
@@ -85,7 +85,7 @@ export default function MyBookmarkSection() {
     }
   };
 
-  /** 🔹 전체 북마크 삭제 */
+
   const handleClearAllBookmarks = async () => {
     if (bookmarkArticles.length === 0) return;
     if (!window.confirm("북마크를 모두 삭제하시겠습니까?")) return;
@@ -99,13 +99,13 @@ export default function MyBookmarkSection() {
     }
   };
 
-  /** ✅ 로딩 / 에러 처리 */
+
   if (loading) return <Loading text="북마크 불러오는 중..." />;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
 
   return (
     <div className="bookmark-layout">
-      {/* 🔹 필터 영역 */}
+
       <aside className="bookmark-filter">
         <h3>북마크 콘텐츠</h3>
         <ul className="filter-list">
@@ -123,7 +123,6 @@ export default function MyBookmarkSection() {
         </ul>
       </aside>
 
-      {/* 🔹 리스트 영역 */}
       <section className="bookmark-main">
         <div className="bookmark-header">
           <span>총 {filteredBookmarks.length}개</span>
@@ -142,7 +141,7 @@ export default function MyBookmarkSection() {
           <ul className="bookmark-list">
             {filteredBookmarks.map((article) => (
               <li key={article.articleId} className="bookmark-item">
-                {/* 썸네일 */}
+  
                 <div className="bookmark-thumb">
                   {article.mediaList?.[0]?.url ? (
                     <img
@@ -169,7 +168,7 @@ export default function MyBookmarkSection() {
                   )}
                 </div>
 
-                {/* 정보 */}
+
                 <div
                   className="bookmark-info"
                   onClick={() =>
@@ -187,7 +186,7 @@ export default function MyBookmarkSection() {
                   </div>
                 </div>
 
-                {/* 삭제 버튼 */}
+
                 <div className="bookmark-stats">
                   <button
                     className="bookmark-delete"

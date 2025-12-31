@@ -7,10 +7,23 @@ import searchIcon from "/src/assets/icons/search.svg";
 import userIcon from "/src/assets/icons/user4.svg";
 
 export default function Header() {
-  // 로그인 상태: localStorage의 토큰을 기준으로
+  // [추가] 로그인 여부: accessToken 존재 여부
+  //    - 예전에는 isLoggedIn 정도만 있었고 role은 없었음
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
     return !!localStorage.getItem("accessToken");
   });
+
+  // [추가] userRole 상태
+  //   - "admin" | "user" | null
+  //    - 로그인 시 localStorage.setItem("userRole", role) 저장해둔 값 읽음
+  const [userRole, setUserRole] = useState<"admin" | "user" | null>(() => {
+    const role = localStorage.getItem("userRole");
+    if (role === "admin" || role === "user") return role;
+    return null;
+  });
+
+  /** ✅ [추가] 관리자 여부 플래그 */
+  const isAdmin = userRole === "admin";
 
   // 드롭다운 / 검색창 열림 상태
   const [isUserOpen, setIsUserOpen] = useState(false);
@@ -18,16 +31,25 @@ export default function Header() {
 
   // 바깥 클릭용 ref
   const userAreaRef = useRef<HTMLDivElement | null>(null);
-  const searchWrapperRef = useRef<HTMLDivElement | null>(null);
+  const searchDrawerRef = useRef<HTMLDivElement | null>(null);
+  const searchIconRef = useRef<HTMLButtonElement | null>(null);
 
   // 라우터 이동 / 현재 경로
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 라우트가 바뀔 때마다 토큰 다시 확인해서 isLoggedIn 동기화
+  // [변경] 라우트가 바뀔 때마다 토큰/role 다시 확인해서 동기화
+  //    - 기존에는 accessToken만 보던 부분에 userRole까지 함께 반영
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
+    const role = localStorage.getItem("userRole");
+
     setIsLoggedIn(!!token);
+    if (role === "admin" || role === "user") {
+      setUserRole(role);
+    } else {
+      setUserRole(null);
+    }
   }, [location.pathname]);
 
   // 바깥 클릭 시 메뉴/검색창 닫기
@@ -44,12 +66,15 @@ export default function Header() {
         setIsUserOpen(false);
       }
 
-      // 검색창 (아이콘 + 인풋을 감싼 wrapper 기준)
-      if (
-        isSearchOpen &&
-        searchWrapperRef.current &&
-        !searchWrapperRef.current.contains(target)
-      ) {
+      // 검색창 (아이콘 + 드로어)
+      const inSearchIcon =
+        searchIconRef.current &&
+        searchIconRef.current.contains(target);
+      const inSearchDrawer =
+        searchDrawerRef.current &&
+        searchDrawerRef.current.contains(target);
+
+      if (isSearchOpen && !inSearchIcon && !inSearchDrawer) {
         setIsSearchOpen(false);
       }
     };
@@ -62,29 +87,44 @@ export default function Header() {
     setIsUserOpen((prev) => !prev);
   };
 
-  // ===================== 내 정보 기능들 =====================
+  // ===================== 내 정보 관련 이동 함수 =====================
 
+  // 내 콘텐츠로 이동 (일반 회원용)
   const handleMyContents = () => {
     navigate("/my-contents");
     setIsUserOpen(false);
   };
 
+  // 회원정보로 이동 (일반 회원용)
   const handleProfile = () => {
     navigate("/profile");
     setIsUserOpen(false);
   };
 
+  // [추가] 관리자 페이지로 이동 (관리자용)
+  //    - 실제 관리자 라우트(/admin 등)에 연결
+   
+  const handleAdmin = () => {
+    navigate("/admin");
+    setIsUserOpen(false);
+  };
+
+  // [변경] 로그아웃 시 role도 함께 제거
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
+    localStorage.removeItem("userRole");
+
     setIsLoggedIn(false);
+    setUserRole(null);
     setIsUserOpen(false);
+
     navigate("/");
   };
 
+  // 로그인 화면 이동 (비로그인 상태)
   const handleGoLoginPage = () => {
     navigate("/login");
   };
-  // =======================================================
 
   return (
     <header className={styles.header}>
@@ -93,12 +133,13 @@ export default function Header() {
         <Link to="/">Insight News</Link>
       </h1>
 
-      {/* 오른쪽 아이콘들 */}
+      {/* 오른쪽 아이콘 영역 */}
       <div className={styles.icons}>
-        {/* 검색 아이콘 + 검색창 래퍼 */}
-        <div ref={searchWrapperRef} className={styles.searchWrapper}>
-          {/* 검색창: 검색 아이콘 바로 왼쪽에 애니메이션으로 펼쳐짐 */}
+        {/* 🔍 검색 아이콘 + 검색창 */}
+        <div className={styles.searchWrapper}>
+          {/* 아이콘 왼쪽에 슬라이드되는 검색창 */}
           <div
+            ref={searchDrawerRef}
             className={`${styles.searchDrawer} ${
               isSearchOpen ? styles.searchOpen : ""
             }`}
@@ -113,8 +154,9 @@ export default function Header() {
             </button>
           </div>
 
-          {/* 검색 아이콘 */}
+          {/* 검색 아이콘 버튼 */}
           <button
+            ref={searchIconRef}
             type="button"
             className={styles.iconButton}
             onClick={(e) => {
@@ -125,12 +167,12 @@ export default function Header() {
             <img
               src={searchIcon}
               alt="검색"
-              className={`${styles.icon} ${styles.searchIcon}`}
+              className={`${styles.icon} styles.searchIcon`}
             />
           </button>
         </div>
 
-        {/* 유저 아이콘 + 드롭다운 */}
+        {/* 👤 유저 아이콘 + 드롭다운 */}
         <div ref={userAreaRef} className={styles.userWrapper}>
           <button
             type="button"
@@ -150,23 +192,46 @@ export default function Header() {
             )}
           </button>
 
-          {/* 유저 드롭다운 */}
+          {/* 드롭다운 */}
           <div
             className={`${styles.dropdown} ${
               isUserOpen ? styles.open : ""
             }`}
           >
-            {!isLoggedIn ? (
+            {/* 1) 비로그인 상태 */}
+            {!isLoggedIn && (
+              <button
+                type="button"
+                className={styles.userMenuItem}
+                onClick={handleGoLoginPage}
+              >
+                로그인
+              </button>
+            )}
+
+            {/* 2) 로그인 + 관리자 계정 */}
+            {isLoggedIn && isAdmin && (
               <>
+                {/* ✅ [추가] 관리자만 보이는 메뉴 */}
                 <button
                   type="button"
                   className={styles.userMenuItem}
-                  onClick={handleGoLoginPage}
+                  onClick={handleAdmin}
                 >
-                  로그인
+                  관리자 모드
+                </button>
+                <button
+                  type="button"
+                  className={styles.userMenuItem}
+                  onClick={handleLogout}
+                >
+                  로그아웃
                 </button>
               </>
-            ) : (
+            )}
+
+            {/* 3) 로그인 + 일반 회원 계정 */}
+            {isLoggedIn && !isAdmin && (
               <>
                 <button
                   type="button"
