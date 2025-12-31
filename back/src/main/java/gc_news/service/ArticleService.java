@@ -29,6 +29,7 @@ public class ArticleService {
 
     private final ReporterRepository reporterRepository;
     private final ArticleRepository articleRepository;
+    private final ReporterArticleCrawlingService reporterArticleCrawlingService;
 
     // 단일 기사 상세 조회
     @Transactional(readOnly = true)
@@ -67,7 +68,10 @@ public class ArticleService {
                     .userAgent("Mozilla/5.0") // 차단 방지용 UA
                     .get();
 
-            // 2) 본문 영역 선택 (네이버 뉴스 구조에 맞춰 selector 여러 개 시도)
+            // 2) 기자 연결 + 프로필 크롤링까지 수행
+            attachReporterFromArticlePage(doc, article);
+
+            // 3) 본문 영역 선택 (네이버 뉴스 구조에 맞춰 selector 여러 개 시도)
             Element body = doc.selectFirst(
                     "#newsct_article, " + // 네이버 뉴스(신규)
                             "#articleBodyContents, " + // 네이버 뉴스(구)
@@ -83,7 +87,7 @@ public class ArticleService {
                         + "원문 기사 바로가기</a></p>";
             }
 
-            // 3) 엔티티에 저장 후 DB 반영
+            // 4) 엔티티에 저장 후 DB 반영
             article.setContent(html);
             articleRepository.save(article);
 
@@ -189,11 +193,12 @@ public class ArticleService {
     }
 
     /**
-     * 기사 상세 HTML에서 기자를 찾아 Article에 연결
+     * 기사 상세 HTML에서 기자를 찾아 Article에 연결 + 기자 프로필 크롤링
      */
+    @Transactional
     public void attachReporterFromArticlePage(Document document, Article article) {
 
-        // 네이버 기사 상세에서 기자 링크 or 기자 이름 영역
+        // 1) 기자 링크 찾기
         Element reporterElement = document.selectFirst("a[href*=/journalist/]");
 
         if (reporterElement == null) {
@@ -202,26 +207,42 @@ public class ArticleService {
         }
 
         String journalistUrl = reporterElement.attr("href");
-        // 여기서 ID 추출
-        String externalJournalistId = extractJournalistId(journalistUrl);
+        // 예: https://media.naver.com/journalist/655/81986
+        String externalJournalistId = extractJournalistId(journalistUrl); // "81986"
+        String officeId = extractOfficeId(journalistUrl);                 // "655"
 
         if (externalJournalistId == null) {
             return; // 이상한 URL이면 그냥 기자 연결 안 함
         }
 
-        String reporterName = reporterElement.text().trim();
-        String press = article.getPress(); // 기사에 이미 있음
+        String rawReporterName = reporterElement.text().trim(); // 초기 이름
+        // "기자", "특파원" 등 제거
+        String reporterName = rawReporterName.replaceAll("\\s*(기자|특파원|논설위원|편집위원)\\s*$", "").trim();
+        String press = article.getPress();                   // 기사에 이미 저장된 한글 언론사 이름
 
+        // 2) DB에서 기자 찾거나 신규 생성
         Reporter reporter = reporterRepository
                 .findByExternalJournalistId(externalJournalistId)
-                .orElseGet(() -> reporterRepository.save(
-                        Reporter.builder()
-                                .externalJournalistId(externalJournalistId)
-                                .name(reporterName)
-                                .press(press)
-                                .build()));
+                .orElseGet(() -> Reporter.builder()
+                        .externalJournalistId(externalJournalistId)
+                        .name(reporterName)
+                        .press(press)
+                        .officeId(officeId)
+                        .build());
 
-        article.setReporter(reporter);
+        // 기존 기자인데 officeId 비어 있으면 채우기
+        if (reporter.getOfficeId() == null && officeId != null) {
+            reporter.setOfficeId(officeId);
+        }
+
+        // 3) 기자 카드에서 이름/사진 크롤링 → Reporter 필드 업데이트
+        Reporter enriched = reporterArticleCrawlingService.crawlReporterProfile(reporter);
+
+        // 4) DB에 저장
+        Reporter saved = reporterRepository.save(enriched);
+
+        // 5) 기사에 기자 연결
+        article.setReporter(saved);
     }
 
     private String extractJournalistId(String journalistUrl) {
@@ -232,4 +253,11 @@ public class ArticleService {
         String[] parts = journalistUrl.split("/");
         return parts[parts.length - 1]; // "81986"
     }
+
+    private String extractOfficeId(String journalistUrl) {
+    // 예: https://media.naver.com/journalist/655/81986
+    if (journalistUrl == null || journalistUrl.isBlank()) return null;
+    String[] parts = journalistUrl.split("/");
+    return parts[parts.length - 2]; // "655"
+}
 }
