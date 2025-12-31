@@ -71,20 +71,11 @@ public class UserBookmarkArticleController {
     public ResponseEntity<?> getMyBookmarks(@AuthenticationPrincipal User user) {
 
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("로그인이 필요합니다.");
         }
 
-        try {
-            List<Article> bookmarks = bookmarkService.getBookmarks(user)
-                    .stream()
-                    .map(UserBookmarkArticle::getArticle)
-                    .toList();
-            return ResponseEntity.ok(bookmarks);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("북마크 리스트 조회 실패: " + e.getMessage());
-        }
+        return ResponseEntity.ok(bookmarkService.getBookmarks(user));
     }
 
     @DeleteMapping("/all")

@@ -2,10 +2,13 @@ package gc_news.controller;
 
 import gc_news.dto.ArticleDetailResponse;
 import gc_news.entity.Article;
+import gc_news.entity.User;
 import gc_news.service.ArticleService;
+import gc_news.service.UserViewHistoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +20,21 @@ import java.util.Map;
 public class ArticleController {
 
     private final ArticleService articleService;
+    private final UserViewHistoryService userViewHistoryService;
+
+    @GetMapping("/{articleId}")
+    public ArticleDetailResponse getArticleDetail(
+            @PathVariable Long articleId,
+            @AuthenticationPrincipal User user) {
+
+        Article article = articleService.loadArticleContentIfNeeded(articleId);
+
+        if (user != null) {
+            userViewHistoryService.saveViewHistory(user, article);
+        }
+
+        return ArticleDetailResponse.from(article);
+    }
 
     // 전체 / 테마별 인기 뉴스 (조회수 순, 최근 days일 기준)
     // 예: /api/articles/hot?days=3&limit=10&themeId=1
@@ -56,13 +74,6 @@ public class ArticleController {
             @PathVariable Long themeId,
             Pageable pageable) {
         return articleService.getArticlesByTheme(themeId, pageable);
-    }
-
-    // ✅ 기사 상세 조회 (본문 없으면 크롤링해서 채움)
-    @GetMapping("/{articleId}")
-    public ArticleDetailResponse getArticleDetail(@PathVariable Long articleId) {
-        Article article = articleService.loadArticleContentIfNeeded(articleId);
-        return ArticleDetailResponse.from(article);
     }
 
     @GetMapping("/headline")

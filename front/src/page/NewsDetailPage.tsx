@@ -1,7 +1,7 @@
 // src/page/news/NewsDetailPage.tsx
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { api } from "../api/client"; // client.ts 인스턴스
+import { api } from "../api/client";
 import "./NewsDetailPage.css";
 import ArticleReaction from "../components/articledetailpage/ArticleReaction";
 import ArticleComments from "../components/articledetailpage/ArticleComments";
@@ -20,7 +20,6 @@ interface ArticleDetail {
   publishedAt: string;
   contentHtml?: string | null;
   mediaList?: Media[];
-  bookmarked?: boolean;
 }
 
 export default function NewsDetailPage() {
@@ -29,9 +28,14 @@ export default function NewsDetailPage() {
   const [article, setArticle] = useState<ArticleDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // ✅ 북마크 상태 전용 state
+  const [isBookmarked, setIsBookmarked] = useState<boolean | null>(null);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
 
-  // 기사 상세 가져오기
+  /* ===============================
+     기사 상세 조회
+  =============================== */
   useEffect(() => {
     if (!id) {
       setError("잘못된 기사 주소입니다.");
@@ -46,7 +50,7 @@ export default function NewsDetailPage() {
         const res = await api.get<ArticleDetail>(`/articles/${id}`);
         setArticle(res.data);
       } catch (e) {
-        console.error("detail API error:", e);
+        console.error("기사 상세 조회 실패:", e);
         setError("기사 정보를 불러오는 데 실패했습니다.");
       } finally {
         setLoading(false);
@@ -56,96 +60,111 @@ export default function NewsDetailPage() {
     fetchDetail();
   }, [id]);
 
-   useEffect(() => {
-    if (!article || !isLoggedIn()) return;
+  /* ===============================
+     북마크 상태 조회
+  =============================== */
+  useEffect(() => {
+    if (!id || !isLoggedIn()) {
+      setIsBookmarked(false);
+      return;
+    }
 
     const fetchBookmarkStatus = async () => {
       try {
-        const res = await api.get<boolean>(
-          `/bookmarks/status/${article.articleId}`
-        );
-
-        setArticle((prev) =>
-          prev ? { ...prev, bookmarked: res.data } : prev
-        );
+        const res = await api.get<boolean>(`/bookmarks/status/${id}`);
+        setIsBookmarked(res.data);
       } catch (e) {
         console.error("북마크 상태 조회 실패:", e);
+        setIsBookmarked(false);
       }
     };
 
     fetchBookmarkStatus();
-  }, [article?.articleId]);
+  }, [id]);
 
-  // 북마크 토글
-   const toggleBookmark = async () => {
-    if (!article) return;
+  /* ===============================
+     북마크 토글
+  =============================== */
+  const toggleBookmark = async () => {
     if (!isLoggedIn()) {
       alert("로그인이 필요합니다.");
       return;
     }
 
-    const prevBookmarked = article.bookmarked;
+    const prev = isBookmarked;
 
-  try {
-    setBookmarkLoading(true);
+    try {
+      setBookmarkLoading(true);
 
-    // optimistic update
-    setArticle((prev) =>
-      prev ? { ...prev, bookmarked: !prev.bookmarked } : prev
-    );
+      // optimistic update
+      setIsBookmarked((prev) => !prev);
 
-    await api.post(`/bookmarks/toggle/${article.articleId}`);
-  } catch (e) {
-    console.error("북마크 토글 실패:", e);
+      await api.post(`/bookmarks/toggle/${id}`);
+    } catch (e) {
+      console.error("북마크 토글 실패:", e);
+      setIsBookmarked(prev ?? false); // rollback
+    } finally {
+      setBookmarkLoading(false);
+    }
+  };
 
-    // 실패 시 롤백
-    setArticle((prev) =>
-      prev ? { ...prev, bookmarked: prevBookmarked } : prev
-    );
-  } finally {
-    setBookmarkLoading(false);
-  }
-};
-
+  /* ===============================
+     렌더링 분기
+  =============================== */
   if (loading) return <div className="news-loading">기사 불러오는 중...</div>;
   if (error) return <div className="news-loading">{error}</div>;
-  if (!article) return <div className="news-loading">기사 데이터를 찾을 수 없습니다.</div>;
+  if (!article)
+    return <div className="news-loading">기사 데이터를 찾을 수 없습니다.</div>;
 
   return (
     <article className="news-detail">
-      {/* 상단 헤더 영역 */}
+      {/* 헤더 */}
       <header className="article-header">
         <div className="press">{article.press}</div>
         <h1 className="title">{article.title}</h1>
-        <div className="meta">
-          {article.reporterName && <span className="reporter">{article.reporterName} 기자</span>}
-          <span className="date">입력 {new Date(article.publishedAt).toLocaleString()}</span>
 
-          {/* 북마크 버튼 */}
-          <button
-            className={`bookmark-btn ${article.bookmarked ? "active" : ""}`}
-            onClick={toggleBookmark}
-            disabled={bookmarkLoading}
-          >
-            {article.bookmarked ? "북마크 취소" : "북마크"}
-          </button>
+        <div className="meta">
+          {article.reporterName && (
+            <span className="reporter">
+              {article.reporterName} 기자
+            </span>
+          )}
+          <span className="date">
+            입력 {new Date(article.publishedAt).toLocaleString()}
+          </span>
+
+          {/* ✅ 북마크 버튼 */}
+          {isBookmarked !== null && (
+            <button
+              className={`bookmark-btn ${isBookmarked ? "active" : ""}`}
+              onClick={toggleBookmark}
+              disabled={bookmarkLoading}
+            >
+              {isBookmarked ? "북마크 취소" : "북마크"}
+            </button>
+          )}
         </div>
       </header>
 
       {/* 대표 이미지 */}
       {article.mediaList?.[0]?.url && (
         <figure className="article-image">
-          <img src={article.mediaList[0].url} alt={article.title} />
+          <img
+            src={article.mediaList[0].url}
+            alt={article.title}
+          />
         </figure>
       )}
 
       {/* 본문 */}
       <section
         className="article-body"
-        dangerouslySetInnerHTML={{ __html: article.contentHtml || "" }}
+        dangerouslySetInnerHTML={{
+          __html: article.contentHtml || "",
+        }}
       />
 
-      {/* 감정 반응 + 댓글 */}
+      {/* 반응 + 댓글 */}
       <ArticleReaction articleId={article.articleId} />
       <ArticleComments articleId={article.articleId} />
     </article>

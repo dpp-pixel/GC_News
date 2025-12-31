@@ -1,7 +1,7 @@
 // src/page/mycontent/bookmark/MyBookmarkSection.tsx
 import { useEffect, useState } from "react";
-import { api } from "../../../api/client"; // client.ts 경로 반영
 import { useNavigate } from "react-router-dom";
+import { api } from "../../../api/client";
 import { Loading } from "@/components";
 import "./MyBookmarkSection.css";
 
@@ -12,38 +12,49 @@ interface Article {
   publishedAt: string;
   urlString: string;
   viewCount: number | null;
-  theme?: { themeId: number; name: string } | null;
-  mediaList?: { url: string; mediaType: string }[];
+  theme?: {
+    themeId: number;
+    name: string;
+  } | null;
+  mediaList?: {
+    url: string;
+    mediaType: string;
+  }[];
 }
 
-const BOOKMARK_FILTERS = ["전체", "정치", "경제", "사회", "세계", "IT/과학"];
+/** ✅ 필터 목록 */
+const BOOKMARK_FILTERS = ["전체", "정치", "경제", "사회", "생활/문화", "세계", "IT/과학"];
 
-function getArticleCategory(a: Article): string {
-  return a.theme?.name ?? "기타";
-}
+/** ✅ 필터 ↔ DB theme.name 매핑 (핵심) */
+const FILTER_THEME_MAP: Record<string, string[]> = {
+  전체: [],
+  정치: ["정치"],
+  경제: ["경제"],
+  사회: ["사회"],
+  "생활/문화": ["생활/문화"], 
+  세계: ["세계"],
+  "IT/과학": ["IT", "과학", "IT/과학"],
+};
 
 export default function MyBookmarkSection() {
-  const [bookmarkArticles, setBookmarkArticles] = useState<Article[]>([]);
-  const [selectedFilter, setSelectedFilter] = useState<string>("전체");
-  const [loadingBookmarks, setLoadingBookmarks] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-   const navigate = useNavigate();
+  const navigate = useNavigate();
 
-  /** 로그인 유저 북마크 조회 */
+  const [bookmarkArticles, setBookmarkArticles] = useState<Article[]>([]);
+  const [selectedFilter, setSelectedFilter] = useState("전체");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  /** 🔹 북마크 조회 */
   const fetchBookmarks = async () => {
     try {
-      setLoadingBookmarks(true);
+      setLoading(true);
       const res = await api.get<Article[]>("/bookmarks/my");
       setBookmarkArticles(res.data);
     } catch (e: any) {
-      console.error(
-        "북마크 로딩 실패:",
-        e?.response?.status,
-        e?.response?.data ?? e
-      );
+      console.error("북마크 조회 실패", e);
       setError("북마크 기사 로딩에 실패했습니다.");
     } finally {
-      setLoadingBookmarks(false);
+      setLoading(false);
     }
   };
 
@@ -51,53 +62,52 @@ export default function MyBookmarkSection() {
     fetchBookmarks();
   }, []);
 
+  /** 🔹 필터 적용 */
   const filteredBookmarks =
     selectedFilter === "전체"
       ? bookmarkArticles
-      : bookmarkArticles.filter(
-          (a) => getArticleCategory(a) === selectedFilter
+      : bookmarkArticles.filter((a) =>
+          FILTER_THEME_MAP[selectedFilter]?.includes(a.theme?.name ?? "")
         );
 
-   /** 단일 북마크 삭제 */
+  /** 🔹 단일 북마크 삭제 */
   const handleDeleteOneBookmark = async (articleId: number) => {
     if (!window.confirm("이 북마크를 삭제하시겠습니까?")) return;
+
     try {
       await api.delete(`/bookmarks/${articleId}`);
-      setBookmarkArticles((prev) => prev.filter((a) => a.articleId !== articleId));
+      setBookmarkArticles((prev) =>
+        prev.filter((a) => a.articleId !== articleId)
+      );
     } catch (e: any) {
-      console.error("북마크 삭제 실패:", e?.response?.status, e?.response?.data ?? e);
+      console.error("북마크 삭제 실패", e);
       alert("북마크 삭제에 실패했습니다.");
     }
   };
 
-  /** 전체 북마크 삭제 */
+  /** 🔹 전체 북마크 삭제 */
   const handleClearAllBookmarks = async () => {
     if (bookmarkArticles.length === 0) return;
     if (!window.confirm("북마크를 모두 삭제하시겠습니까?")) return;
 
     try {
-      await api.delete("/bookmarks/all"); // 서버 DELETE /all 엔드포인트와 매칭
+      await api.delete("/bookmarks/all");
       setBookmarkArticles([]);
     } catch (e: any) {
-      console.error("전체 북마크 삭제 실패:", e?.response?.status, e?.response?.data ?? e);
+      console.error("전체 삭제 실패", e);
       alert("전체 북마크 삭제에 실패했습니다.");
     }
   };
 
-  /** ✅ 로딩 / 에러 상태 우선 처리 */
-  if (loadingBookmarks) {
-    return <Loading text="최신 기사 불러오는 중" />;
-  }
-
-  if (error) {
-    return <p style={{ color: "red" }}>{error}</p>;
-  }
+  /** ✅ 로딩 / 에러 처리 */
+  if (loading) return <Loading text="북마크 불러오는 중..." />;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
 
   return (
     <div className="bookmark-layout">
-      {/* 왼쪽 필터 */}
+      {/* 🔹 필터 영역 */}
       <aside className="bookmark-filter">
-        <h3>북마크 콘텐츠 (필터)</h3>
+        <h3>북마크 콘텐츠</h3>
         <ul className="filter-list">
           {BOOKMARK_FILTERS.map((f) => (
             <li
@@ -113,12 +123,10 @@ export default function MyBookmarkSection() {
         </ul>
       </aside>
 
-      {/* 오른쪽 리스트 */}
+      {/* 🔹 리스트 영역 */}
       <section className="bookmark-main">
         <div className="bookmark-header">
-          <span className="bookmark-count">
-            총 {filteredBookmarks.length}개 북마크
-          </span>
+          <span>총 {filteredBookmarks.length}개</span>
           <button
             type="button"
             className="bookmark-clear"
@@ -128,30 +136,32 @@ export default function MyBookmarkSection() {
           </button>
         </div>
 
-        {loadingBookmarks ? (
-          <div className="bookmark-empty">북마크 기사 불러오는 중...</div>
-        ) : filteredBookmarks.length === 0 ? (
+        {filteredBookmarks.length === 0 ? (
           <div className="bookmark-empty">북마크된 기사가 없습니다.</div>
         ) : (
           <ul className="bookmark-list">
             {filteredBookmarks.map((article) => (
               <li key={article.articleId} className="bookmark-item">
+                {/* 썸네일 */}
                 <div className="bookmark-thumb">
                   {article.mediaList?.[0]?.url ? (
                     <img
                       src={article.mediaList[0].url}
                       alt={article.title}
+                      onClick={() =>
+                        navigate(`/news/${article.articleId}`)
+                      }
                       onError={(e) => {
                         e.currentTarget.style.display = "none";
-                        e.currentTarget.parentElement?.classList.add("no-image");
                       }}
-                      onClick={() => navigate(`/news/${article.articleId}`)} // 클릭 이동
-                      style={{ cursor: "pointer" }} // 클릭 가능 표시
+                      style={{ cursor: "pointer" }}
                     />
                   ) : (
                     <div
                       className="no-image-box"
-                      onClick={() => navigate(`/news/${article.articleId}`)}
+                      onClick={() =>
+                        navigate(`/news/${article.articleId}`)
+                      }
                       style={{ cursor: "pointer" }}
                     >
                       이미지 없음
@@ -159,25 +169,31 @@ export default function MyBookmarkSection() {
                   )}
                 </div>
 
+                {/* 정보 */}
                 <div
                   className="bookmark-info"
-                  onClick={() => navigate(`/news/${article.articleId}`)} // 제목/메타 클릭 이동
+                  onClick={() =>
+                    navigate(`/news/${article.articleId}`)
+                  }
                   style={{ cursor: "pointer" }}
                 >
                   <div className="bookmark-title">{article.title}</div>
                   <div className="bookmark-meta">
                     <span>{article.press}</span>
                     <span>
-                      · {new Date(article.publishedAt).toLocaleString()}
+                      ·{" "}
+                      {new Date(article.publishedAt).toLocaleString()}
                     </span>
                   </div>
                 </div>
 
+                {/* 삭제 버튼 */}
                 <div className="bookmark-stats">
                   <button
-                    type="button"
                     className="bookmark-delete"
-                    onClick={() => handleDeleteOneBookmark(article.articleId)}
+                    onClick={() =>
+                      handleDeleteOneBookmark(article.articleId)
+                    }
                   >
                     삭제
                   </button>
@@ -188,7 +204,7 @@ export default function MyBookmarkSection() {
         )}
 
         <div className="bookmark-footer">
-          북마크 기사가 10개를 넘으면 페이지를 나눠서 보여줄 예정입니다
+          북마크가 많아지면 페이지네이션 예정
         </div>
       </section>
     </div>

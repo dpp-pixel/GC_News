@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import gc_news.entity.UserViewHistory;
 
 @Repository
-public interface UserViewHistoryRepository extends JpaRepository<UserViewHistory, Long> {
+public interface UserViewHistoryRepository extends JpaRepository<UserViewHistory, Long> {// 타입 주의
 
     List<UserViewHistory> findByUser_UserIdAndViewedAtAfterOrderByViewedAtDesc(
             String userId,

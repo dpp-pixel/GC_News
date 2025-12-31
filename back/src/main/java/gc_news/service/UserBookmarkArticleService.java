@@ -20,6 +20,7 @@ public class UserBookmarkArticleService {
     @Transactional
     public boolean toggleBookmark(User user, Article article) {
         var existing = repository.findByUserAndArticle_ArticleId(user, article.getArticleId());
+
         if (existing.isPresent()) {
             repository.delete(existing.get());
             return false; // 북마크 해제
@@ -38,16 +39,13 @@ public class UserBookmarkArticleService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserBookmarkArticle> getBookmarks(User user) {
-        return repository.findByUserOrderByUbaIdDesc(user);
+    public List<Article> getBookmarks(User user) {
+        return repository.findBookmarkedArticles(user);
     }
 
     @Transactional
     public void removeAllBookmarks(User user) {
-        List<UserBookmarkArticle> bookmarks = repository.findByUser(user);
-        if (!bookmarks.isEmpty()) {
-            repository.deleteAll(bookmarks);
-        }
+        repository.deleteAll(repository.findByUser(user));
     }
 
     @Transactional
@@ -56,5 +54,4 @@ public class UserBookmarkArticleService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 북마크입니다."));
         repository.delete(bookmark);
     }
-
 }
