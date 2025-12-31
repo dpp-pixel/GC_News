@@ -49,17 +49,19 @@ public class ReporterArticleCrawlingService {
 
             Document doc = Jsoup.parse(response.body());
 
-            // 이름 크롤링
+            // 이름 크롤링 - 프로필 페이지의 정확한 이름
             Element nameEl = doc.selectFirst(
+                    "div.media_reporter_basic_text, " +
                     "em.media_journalistcard_summary_name_text, " +
                     "span.media_journalistcard_summary_name_inner"
             );
-            String rawName = nameEl != null ? nameEl.text().trim() : null;
-            String name = normalizeReporterName(rawName);
-            System.out.println("[DEBUG] 크롤링된 이름 - 원본: " + rawName + " → 정제: " + name);
+            String name = nameEl != null ? nameEl.text().trim() : null;
+            System.out.println("[DEBUG] 프로필 페이지 이름 (정제 안 함): " + name);
 
-            // 사진 크롤링
+            // 사진 크롤링 - 여러 선택자 시도
             Element imgEl = doc.selectFirst(
+                    "img[src*='mimgnews.pstatic.net'], " +  // 실제 이미지 URL 패턴
+                    "div.media_reporter_basic_photo img, " +
                     "div.media_journalistcard_summary_photo_inner img, " +
                     "a.media_journalistcard_summary_photo img"
             );
@@ -71,9 +73,9 @@ public class ReporterArticleCrawlingService {
                         imgEl.attr("data-lazy-src")
                 );
                 photoUrl = normalizeUrl(photoUrl);
-                System.out.println("[DEBUG] 크롤링된 사진 URL: " + photoUrl);
+                System.out.println("[DEBUG] 프로필 페이지 사진 URL: " + photoUrl);
             } else {
-                System.out.println("[DEBUG] 사진 엘리먼트를 찾지 못함");
+                System.out.println("[DEBUG] 프로필 페이지에서 사진 엘리먼트를 찾지 못함");
             }
 
             if (name != null && !name.isBlank()) {
@@ -135,16 +137,6 @@ public class ReporterArticleCrawlingService {
         } catch (Exception e) {
             throw new RuntimeException("기자 기사 크롤링 실패", e);
         }
-    }
-
-    private static String normalizeReporterName(String raw) {
-        if (raw == null) return null;
-        String s = raw.trim();
-        // "OOO 기자" 같은 꼬리 제거
-        s = s.replaceAll("\\s*기자\\s*$", "").trim();
-        // 혹시 "홍길동 특파원" 같은 케이스도 같이 정리하고 싶으면:
-        s = s.replaceAll("\\s*(특파원|논설위원|편집위원)\\s*$", "").trim();
-        return s.isBlank() ? null : s;
     }
 
     private static String firstNonBlank(String... candidates) {
