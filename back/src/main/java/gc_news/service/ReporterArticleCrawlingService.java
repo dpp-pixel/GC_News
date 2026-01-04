@@ -112,8 +112,7 @@ public class ReporterArticleCrawlingService {
             String journalistPageUrl = String.format(
                     "https://media.naver.com/journalist/%s/%s",
                     reporter.getOfficeId(),
-                    reporter.getExternalJournalistId()
-            );
+                    reporter.getExternalJournalistId());
 
             System.out.println("[DEBUG] 기자 기사 목록 크롤링 시작: " + journalistPageUrl);
 
@@ -128,21 +127,50 @@ public class ReporterArticleCrawlingService {
 
             List<Article> articles = new ArrayList<>();
 
-            // 기자 페이지의 기사 목록 선택자
-            var articleElements = doc.select("div.press_edit_news_item, li.press_article_item");
+            // 기자 페이지의 기사 목록 li
+            var articleElements = doc.select("li.press_edit_news_item");
 
             System.out.println("[DEBUG] 찾은 기사 수: " + articleElements.size());
 
             for (Element elem : articleElements) {
                 try {
+                    String liClass = elem.className(); // as_thumb / as_no_thumb 확인용
+
                     // 제목과 링크 추출
-                    Element linkEl = elem.selectFirst("a.press_edit_news_link, a");
-                    if (linkEl == null) continue;
+                    Element linkEl = elem.selectFirst("a.press_edit_news_link");
+                    if (linkEl == null) {
+                        System.out.println("[DEBUG] linkEl 없음: " + elem.outerHtml());
+                        continue;
+                    }
 
                     String title = linkEl.text().trim();
                     String articleUrl = linkEl.attr("href");
 
-                    if (title.isBlank() || articleUrl.isBlank()) continue;
+                    if (title.isBlank() || articleUrl.isBlank())
+                        continue;
+
+                    // 썸네일 추출
+                    Element thumbImgEl = elem.selectFirst("span.press_edit_news_thumb img");
+                    String thumbUrl = null;
+                    if (thumbImgEl != null) {
+                        // data-src / data-lazy-src 를 먼저 보고, 없으면 src 사용
+                        thumbUrl = firstNonBlank(
+                                thumbImgEl.attr("data-src"),
+                                thumbImgEl.attr("data-lazy-src"),
+                                thumbImgEl.attr("data-srcset"),
+                                thumbImgEl.attr("src"));
+
+                        // placeholder(data:image...)면 버리기
+                        if (thumbUrl != null && thumbUrl.startsWith("data:image")) {
+                            System.out.println("[DEBUG] placeholder 썸네일이라 무시: " + thumbUrl);
+                            thumbUrl = null;
+                        }
+
+                        thumbUrl = normalizeUrl(thumbUrl); // // 로 시작하면 https: 붙이는 너 기존 함수
+                        System.out.println("[DEBUG] 썸네일 최종 URL: " + thumbUrl);
+                    } else {
+                        System.out.println("[DEBUG] 썸네일 img 태그 없음: " + elem.outerHtml());
+                    }
 
                     // 상대 경로면 절대 경로로 변환
                     if (articleUrl.startsWith("/")) {
@@ -156,11 +184,11 @@ public class ReporterArticleCrawlingService {
                                     .publishedAt(LocalDateTime.now()) // TODO: 실제 발행일 파싱
                                     .press(reporter.getPress())
                                     .reporter(reporter)
+                                    .thumbnailUrl(thumbUrl) // 엔티티에 이 필드 있어야 함
                                     .build());
 
                 } catch (Exception e) {
                     System.err.println("[WARN] 기사 항목 파싱 실패: " + e.getMessage());
-                    continue;
                 }
             }
 

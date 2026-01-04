@@ -33,6 +33,7 @@ public record ArticleDetailResponse(
         LocalDateTime publishedAt,
         String contentHtml,               // 실제로는 Article.content를 사용
         List<Map<String, String>> mediaList,
+        String thumbnailUrl,  
         ReporterSummary reporter          // 기자 객체 추가
 ) {
 
@@ -72,6 +73,7 @@ public record ArticleDetailResponse(
                 article.getPublishedAt(),
                 contentHtml,
                 mediaList,
+                article.getThumbnailUrl(),
                 reporterSummary
         );
     }

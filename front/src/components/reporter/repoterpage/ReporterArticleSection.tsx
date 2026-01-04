@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
-
+import "./ReporterArticleSection.module.css"; // CSS 추가
 
 interface Article {
   articleId?: number; // 기자 페이지용 크롤링 데이터에는 없을 수도 있으니 optional
@@ -13,6 +13,7 @@ interface Article {
   urlString: string;
   viewCount?: number | null;
   mediaList?: { url: string; mediaType: string }[];
+  thumbnailUrl?: string | null;
 }
 
 const PAGE_SIZE = 10;
@@ -43,7 +44,7 @@ export default function ReporterArticleSection() {
           `http://localhost:8081/api/reporters/${reporterId}`
         );
 
-        // 백엔드에서 Map.of("reporter", ..., "articles", ...) 구조라고 가정
+        // 백엔드에서 Map.of("reporter", ..., "articles", ...) 구조
         const articles: Article[] = res.data.articles ?? [];
 
         setAllArticles(articles);
@@ -90,33 +91,36 @@ export default function ReporterArticleSection() {
 
   // 로딩/에러/빈 데이터 처리
   if (loading) {
-    return <div>기자 기사 불러오는 중...</div>;
+    return <div className="loader">기자 기사 불러오는 중...</div>;
   }
 
   if (error) {
-    return <div style={{ color: "red" }}>{error}</div>;
+    return <div className="loader" style={{ color: "red" }}>{error}</div>;
   }
 
   if (visibleArticles.length === 0) {
-    return <div>이 기자의 기사가 없습니다.</div>;
+    return <div className="loader">이 기자의 기사가 없습니다.</div>;
   }
 
   // 3) 실제 렌더링
   return (
-    <section>
-      <ul>
+    <section className="section">
+      <ul className="list">
         {visibleArticles.map((article) => {
           const key = article.articleId ?? article.urlString;
-          const imageUrl = article.mediaList?.[0]?.url;
 
-          // articleId가 있으면 우리 서비스 상세 페이지로,
-          // 없으면 원문 링크로 보내는 예시
+          // 1순위: 우리 DB mediaList, 2순위: 기자 페이지 썸네일
+          const imageUrl =
+            article.mediaList?.[0]?.url ??
+            article.thumbnailUrl ??
+            null;
+
           const internalLink =
             article.articleId !== undefined && article.articleId !== null;
 
           const content = (
-            <>
-              <div>
+            <div className="articleLink">
+              <div className="thumb">
                 {imageUrl ? (
                   <img
                     src={imageUrl}
@@ -126,34 +130,38 @@ export default function ReporterArticleSection() {
                     }}
                   />
                 ) : (
-                  <div>이미지 없음</div>
+                  <div className="noImage">이미지 없음</div>
                 )}
               </div>
 
-              <div>
-                <h3>{article.title}</h3>
-                <p>{article.summary ?? "요약 정보가 없습니다."}</p>
-                <div>
+              <div className="content">
+                <h3 className="itemTitle">{article.title}</h3>
+                <p className="summary">
+                  {article.summary ?? "요약 정보가 없습니다."}
+                </p>
+                <div className="meta">
                   <span>{article.press}</span>
                   <span>
                     {" · "}
-                    {new Date(article.publishedAt).toLocaleString()}
+                    {new Date(article.publishedAt).toLocaleDateString()}
                   </span>
                 </div>
               </div>
-            </>
+            </div>
           );
 
           return (
-            <li key={key}>
+            <li key={key} className="item">
               {internalLink ? (
-                <Link to={`/news/${article.articleId}`}>{content}</Link>
+                <Link to={`/news/${article.articleId}`} className="articleLinkWrapper">
+                  {content}
+                </Link>
               ) : (
-                // DB에 없는 기사라면 네이버 원문으로 이동
                 <a
                   href={article.urlString}
                   target="_blank"
                   rel="noopener noreferrer"
+                  className="articleLinkWrapper"
                 >
                   {content}
                 </a>
@@ -164,7 +172,7 @@ export default function ReporterArticleSection() {
       </ul>
 
       {hasMore && (
-        <div ref={loaderRef} style={{ padding: "16px", textAlign: "center" }}>
+        <div ref={loaderRef} className="loader">
           더 불러오는 중...
         </div>
       )}
