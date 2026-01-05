@@ -108,9 +108,9 @@ export default function MyCommentSection() {
           </div>
         </div>
 
-        <button type="button" className="comment-clear" onClick={() => setComments([])}>
+        {/* <button type="button" className="comment-clear" onClick={() => setComments([])}>
           전체 삭제
-        </button>
+        </button> */}
       </div>
 
       {sortedComments.length === 0 && !loading && (

@@ -29,7 +29,7 @@ public class YoutubeService {
 
         } catch (Exception e) {
             log.error(" YouTube API ERROR! channelId = {}", channelId, e); // 빨간 로그 출력됨
-            throw e; // 프론트로 500 던짐
+            throw e;
         }
     }
 }

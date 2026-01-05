@@ -79,18 +79,56 @@ export default function SearchPage() {
     </ul>
 
     {totalPages > 1 && (
-      <div className="search-pagination">
-        <button onClick={() => goPage(page - 1)} disabled={page === 1}>
-          이전
+  <div className="pagination">
+    {/* 이전 버튼 */}
+    <button onClick={() => goPage(page - 1)} disabled={page === 1}>
+      이전
+    </button>
+
+    {/* 항상 첫 페이지 */}
+    <button
+      className={page === 1 ? "active" : ""}
+      onClick={() => goPage(1)}
+    >
+      1
+    </button>
+
+    {/* 시작 … */}
+    {page > 4 && <span>…</span>}
+
+    {/* 현재 페이지 주변 ±2 페이지 표시 */}
+    {Array.from({ length: totalPages }, (_, i) => i + 1)
+      .filter((p) => p > 1 && p < totalPages && Math.abs(p - page) <= 2)
+      .map((p) => (
+        <button
+          key={p}
+          className={p === page ? "active" : ""}
+          onClick={() => goPage(p)}
+        >
+          {p}
         </button>
-        <span>
-          {page} / {totalPages}
-        </span>
-        <button onClick={() => goPage(page + 1)} disabled={page === totalPages}>
-          다음
-        </button>
-      </div>
+      ))}
+
+    {/* 끝 … */}
+    {page < totalPages - 3 && <span>…</span>}
+
+    {/* 항상 마지막 페이지 */}
+    {totalPages > 1 && (
+      <button
+        className={page === totalPages ? "active" : ""}
+        onClick={() => goPage(totalPages)}
+      >
+        {totalPages}
+      </button>
     )}
+
+    {/* 다음 버튼 */}
+    <button onClick={() => goPage(page + 1)} disabled={page === totalPages}>
+      다음
+    </button>
+  </div>
+)}
+
   </div>
 );
 }

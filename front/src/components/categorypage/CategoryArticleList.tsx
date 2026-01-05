@@ -47,19 +47,57 @@ export default function CategoryArticleList({ themeId }: { themeId: number }) {
       </ul>
 
       <div className="pagination">
-        <button disabled={page === 0} onClick={() => setPage((p) => p - 1)}>
-          이전
-        </button>
-        <span>
-          {page + 1} / {totalPages}
-        </span>
-        <button
-          disabled={page + 1 === totalPages}
-          onClick={() => setPage((p) => p + 1)}
-        >
-          다음
-        </button>
-      </div>
+  {/* 이전 버튼 */}
+  <button disabled={page === 0} onClick={() => setPage((p) => p - 1)}>
+    이전
+  </button>
+
+  {/* 항상 첫 페이지 */}
+  <button
+    className={page === 0 ? "active" : ""}
+    onClick={() => setPage(0)}
+  >
+    1
+  </button>
+
+  {/* 시작 … */}
+  {page > 3 && <span>…</span>}
+
+  {/* 현재 페이지 주변 페이지 ±2 표시 */}
+  {Array.from({ length: totalPages }, (_, i) => i)
+    .filter(i => i > 0 && i < totalPages - 1 && Math.abs(i - page) <= 2)
+    .map(i => (
+      <button
+        key={i}
+        className={i === page ? "active" : ""}
+        onClick={() => setPage(i)}
+      >
+        {i + 1}
+      </button>
+    ))}
+
+  {/* 끝 … */}
+  {page < totalPages - 4 && <span>…</span>}
+
+  {/* 항상 마지막 페이지 */}
+  {totalPages > 1 && (
+    <button
+      className={page === totalPages - 1 ? "active" : ""}
+      onClick={() => setPage(totalPages - 1)}
+    >
+      {totalPages}
+    </button>
+  )}
+
+  {/* 다음 버튼 */}
+  <button
+    disabled={page + 1 === totalPages}
+    onClick={() => setPage((p) => p + 1)}
+  >
+    다음
+  </button>
+</div>
+
     </section>
   );
 }
