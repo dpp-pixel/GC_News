@@ -2,12 +2,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
-import "./ReporterArticleSection.module.css"; // CSS 추가
+import "./ReporterArticleSection.css"; // CSS 추가
 
 interface Article {
   articleId?: number; // 기자 페이지용 크롤링 데이터에는 없을 수도 있으니 optional
   title: string;
-  summary?: string;
   press: string;
   publishedAt: string;
   urlString: string;
@@ -136,9 +135,6 @@ export default function ReporterArticleSection() {
 
               <div className="content">
                 <h3 className="itemTitle">{article.title}</h3>
-                <p className="summary">
-                  {article.summary ?? "요약 정보가 없습니다."}
-                </p>
                 <div className="meta">
                   <span>{article.press}</span>
                   <span>

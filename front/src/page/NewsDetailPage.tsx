@@ -190,6 +190,11 @@ export default function NewsDetailPage() {
       <ArticleReaction articleId={article.articleId} />
       <ArticleComments articleId={article.articleId} />
     </article>
+<<<<<<< HEAD
   </div>
 );
+=======
+     </div>
+  );
+>>>>>>> fc80d5068c3b3a446fbf612ed5873a4a5ec775a0
 }

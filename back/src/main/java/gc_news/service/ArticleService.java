@@ -352,6 +352,7 @@ public class ArticleService {
         return parts[parts.length - 2]; // "655"
     }
 
+<<<<<<< HEAD
     // 이름 정제
     private static String normalizeReporterName(String raw) {
         if (raw == null)
@@ -379,4 +380,17 @@ public class ArticleService {
             return "https:" + u;
         return u;
     }
+=======
+// //로 시작하는 URL 처리
+private static String normalizeUrl(String url) {
+    if (url == null) return null;
+    String u = url.trim();
+    if (u.startsWith("//")) return "https:" + u;
+    return u;
+}
+ public Page<Article> searchArticles(String keyword, Pageable pageable) {
+        return articleRepository.findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(
+                keyword, keyword, pageable);
+        }
+>>>>>>> fc80d5068c3b3a446fbf612ed5873a4a5ec775a0
 }
