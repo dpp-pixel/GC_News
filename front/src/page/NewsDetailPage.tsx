@@ -5,8 +5,8 @@ import { api } from "../api/client";
 import "./NewsDetailPage.css";
 import ArticleReaction from "../components/articledetailpage/ArticleReaction";
 import ArticleComments from "../components/articledetailpage/ArticleComments";
-import { isLoggedIn } from "../auth/auth";
 import ReporterAssetm from "@/components/reporter/ReporterAssetm";
+import { isLoggedIn } from "../auth/auth";
 
 interface Media {
   url: string;
