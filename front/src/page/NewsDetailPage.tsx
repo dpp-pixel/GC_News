@@ -191,5 +191,6 @@ export default function NewsDetailPage() {
       <ArticleReaction articleId={article.articleId} />
       <ArticleComments articleId={article.articleId} />
     </article>
+     </div>
   );
 }

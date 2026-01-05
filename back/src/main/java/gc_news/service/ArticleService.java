@@ -363,4 +363,8 @@ private static String normalizeUrl(String url) {
     if (u.startsWith("//")) return "https:" + u;
     return u;
 }
+ public Page<Article> searchArticles(String keyword, Pageable pageable) {
+        return articleRepository.findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(
+                keyword, keyword, pageable);
+        }
 }
