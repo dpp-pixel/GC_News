@@ -49,21 +49,40 @@
 }
 
 /* 페이징 */
-.search-pagination {
+.pagination {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 4px; /* 버튼 사이 간격 */
   margin-top: 20px;
+  flex-wrap: wrap; /* 화면 좁아지면 줄 바꿈 */
 }
 
-.search-pagination button {
+.pagination button {
   padding: 6px 12px;
-  border: 1px solid #ddd;
-  background: #fff;
+  border: 1px solid #ccc;
+  background-color: #fff;
   cursor: pointer;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: all 0.2s;
 }
 
-.search-pagination button:disabled {
-  opacity: 0.4;
+.pagination button:hover:not(:disabled) {
+  background-color: #f0f0f0;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
+
+.pagination button.active {
+  background-color: #007bff;
+  color: #fff;
+  border-color: #007bff;
+}
+
+.pagination span {
+  padding: 6px 8px;
+  font-size: 14px;
+} 

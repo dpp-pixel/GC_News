@@ -65,6 +65,11 @@ export default function NewsDetailPage() {
   const [isBookmarked, setIsBookmarked] = useState<boolean | null>(null);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
 
+
+  //기사 이동시 최 상단으로 이동
+    useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [id]);
   /* ===============================
      기사 상세 조회
   =============================== */
@@ -74,6 +79,7 @@ export default function NewsDetailPage() {
       setLoading(false);
       return;
     }
+    
 
     const fetchDetail = async () => {
       try {

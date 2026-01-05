@@ -10,7 +10,8 @@
 /* 3등분 */
 .latest-grid {
   display: grid;
-  grid-template-columns: 0.8fr 1.4fr 0.8fr;
+  grid-template-columns: 1.5fr 3.5fr;
+  gap: 16px;
 }
 
 .latest-left,
@@ -84,11 +85,4 @@
 
 .latest-center a:hover {
   text-decoration: underline;
-}
-
-/* ================== 오른쪽 ================== */
-
-.latest-right {
-  padding-left: 16px;
-  color: #999;
 }
