@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { api } from "../../api/client"; 
 import "./ArticleComments.css";
+import { isLoggedIn } from "../../auth/auth";
 
 interface Comment {
   commentId: number;
@@ -14,35 +15,31 @@ interface Props {
   articleId: number;
 }
 
-/* 임시 유저 키 (로그인 전) */
-const getUserKey = () => {
-  let key = localStorage.getItem("userKey");
-  if (!key) {
-    key = crypto.randomUUID();
-    localStorage.setItem("userKey", key);
-  }
-  return key;
-};
-
 export default function ArticleComments({ articleId }: Props) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [bestComments, setBestComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
+  const [loading, setLoading] = useState(false);
 
   /* 댓글 목록 */
-  const fetchComments = () => {
-    axios
-      .get<Comment[]>(`http://localhost:8081/api/comments/article/${articleId}`)
-      .then(res => setComments(res.data));
+  const fetchComments = async () => {
+    try {
+      const res = await api.get<Comment[]>(`/comments/article/${articleId}`);
+      setComments(res.data);
+    } catch (e: any) {
+      console.error("댓글 조회 실패:", e);
+      alert(e.response?.data || "댓글 조회 실패");
+    }
   };
 
   /* 베스트 댓글 */
-  const fetchBestComments = () => {
-    axios
-      .get<Comment[]>(
-        `http://localhost:8081/api/comments/article/${articleId}/best`
-      )
-      .then(res => setBestComments(res.data));
+  const fetchBestComments = async () => {
+    try {
+      const res = await api.get<Comment[]>(`/comments/article/${articleId}/best`);
+      setBestComments(res.data);
+    } catch (e: any) {
+      console.error("베스트 댓글 조회 실패:", e);
+    }
   };
 
   useEffect(() => {
@@ -52,47 +49,61 @@ export default function ArticleComments({ articleId }: Props) {
 
   /* 댓글 작성 */
   const submitComment = async () => {
+    if (!isLoggedIn()) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
     if (!newComment.trim()) return;
 
-    await axios.post(
-      `http://localhost:8081/api/comments?articleId=${articleId}`,
-      { content: newComment },
-      { headers: { "Content-Type": "application/json" } }
-    );
-
-    setNewComment("");
-    fetchComments();
-    fetchBestComments();
+    try {
+      setLoading(true);
+      await api.post(`/comments?articleId=${articleId}`, { content: newComment });
+      setNewComment("");
+      fetchComments();
+      fetchBestComments();
+    } catch (e: any) {
+      console.error("댓글 작성 실패:", e);
+      alert(e.response?.data || "댓글 작성에 실패했습니다.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   /* 댓글 삭제 */
   const deleteComment = async (commentId: number) => {
     if (!window.confirm("삭제 하시겠습니까?")) return;
 
-    await axios.delete(`http://localhost:8081/api/comments/${commentId}`);
-
-    setComments(prev =>
-      prev.filter(comment => comment.commentId !== commentId)
-    );
+    try {
+      await api.delete(`/comments/${commentId}`);
+      setComments(prev => prev.filter(c => c.commentId !== commentId));
+      fetchBestComments();
+    } catch (e: any) {
+      console.error("댓글 삭제 실패:", e);
+      alert(e.response?.data || "댓글 삭제에 실패했습니다.");
+    }
   };
 
   /* 댓글 좋아요 / 싫어요 */
-  const reactComment = async (
-    commentId: number,
-    type: "like" | "dislike"
-  ) => {
-    const userKey = getUserKey();
+  const reactComment = async (commentId: number, type: "like" | "dislike") => {
+    if (!isLoggedIn()) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
 
-    await axios.post(
-      "http://localhost:8081/api/comments/reactions",
-      null,
-      {
-        params: { commentId, userKey, type },
-      }
-    );
+    // 댓글에서 like/dislike만 허용
+    if (type !== "like" && type !== "dislike") {
+      alert("댓글에서는 like 또는 dislike만 가능합니다.");
+      return;
+    }
 
-    fetchComments();
-    fetchBestComments();
+    try {
+      await api.post(`/comments/reactions`, null, { params: { commentId, type } });
+      fetchComments();
+      fetchBestComments();
+    } catch (e: any) {
+      console.error("댓글 반응 실패:", e);
+      alert(e.response?.data || "댓글 반응 실패");
+    }
   };
 
   return (
@@ -101,12 +112,10 @@ export default function ArticleComments({ articleId }: Props) {
       {bestComments.length > 0 && (
         <section className="best-comments">
           <h3>베스트 댓글</h3>
-
           <ul className="comment-list best">
             {bestComments.map(c => (
               <li key={c.commentId}>
                 <p className="comment-content">{c.content}</p>
-
                 <div className="comment-footer">
                   <span className="comment-date">
                     {new Date(c.createdAt).toLocaleString()}
@@ -121,14 +130,15 @@ export default function ArticleComments({ articleId }: Props) {
 
       {/* 댓글 작성 */}
       <h3>댓글 {comments.length}</h3>
-
       <div className="comment-form">
         <textarea
           placeholder="댓글을 입력하세요"
           value={newComment}
           onChange={e => setNewComment(e.target.value)}
         />
-        <button onClick={submitComment}>등록</button>
+        <button onClick={submitComment} disabled={loading}>
+          등록
+        </button>
       </div>
 
       {/* 댓글 목록 */}
@@ -136,21 +146,17 @@ export default function ArticleComments({ articleId }: Props) {
         {comments.map(c => (
           <li key={c.commentId}>
             <p className="comment-content">{c.content}</p>
-
             <div className="comment-footer">
               <span className="comment-date">
                 {new Date(c.createdAt).toLocaleString()}
               </span>
-
               <div className="comment-actions">
                 <button onClick={() => reactComment(c.commentId, "like")}>
                   👍 {c.likeCount}
                 </button>
-
                 <button onClick={() => reactComment(c.commentId, "dislike")}>
                   👎 {c.dislikeCount}
                 </button>
-
                 <button
                   className="comment-delete"
                   onClick={() => deleteComment(c.commentId)}

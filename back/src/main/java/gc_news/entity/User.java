@@ -11,6 +11,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Table;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import java.util.Collection;
+import java.util.List;
 
 @Entity
 @Getter
@@ -18,11 +22,11 @@ import jakarta.persistence.Table;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "users")
+@Table(name = "user")
 public class User {
 
     @Id
-    @Column(name="user_id")
+    @Column(name = "user_id")
     private String userId;
 
     private String name;
@@ -37,5 +41,10 @@ public class User {
 
     public enum Role {
         user, admin
+    }
+
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        // role enum을 기반으로 SimpleGrantedAuthority 생성
+        return List.of(new SimpleGrantedAuthority("ROLE_" + this.role.name().toUpperCase()));
     }
 }

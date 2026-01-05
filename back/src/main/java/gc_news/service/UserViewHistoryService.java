@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import gc_news.entity.Article;
+import gc_news.entity.User;
 import gc_news.entity.UserViewHistory;
 import gc_news.repository.UserViewHistoryRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,20 @@ import lombok.RequiredArgsConstructor;
 public class UserViewHistoryService {
 
     private final UserViewHistoryRepository repository;
+
+    @Transactional
+    public void saveViewHistory(User user, Article article) {
+        if (user == null || article == null)
+            return;
+
+        UserViewHistory history = UserViewHistory.builder()
+                .user(user)
+                .article(article)
+                .viewedAt(LocalDateTime.now())
+                .build();
+
+        repository.save(history);
+    }
 
     @Transactional(readOnly = true)
     public List<Article> getRecentViewedArticles(String userId, int days) {

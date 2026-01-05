@@ -7,49 +7,57 @@ import searchIcon from "/src/assets/icons/search.svg";
 import userIcon from "/src/assets/icons/user4.svg";
 
 export default function Header() {
-  // 로그인 상태: localStorage의 토큰을 기준으로
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
-    return !!localStorage.getItem("accessToken");
-  });
-
-  // 드롭다운 / 검색창 열림 상태
-  const [isUserOpen, setIsUserOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-
-  // 바깥 클릭용 ref
-  const userAreaRef = useRef<HTMLDivElement | null>(null);
-  const searchWrapperRef = useRef<HTMLDivElement | null>(null);
-
-  // 라우터 이동 / 현재 경로
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 라우트가 바뀔 때마다 토큰 다시 확인해서 isLoggedIn 동기화
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => !!localStorage.getItem("accessToken"));
+  const [userRole, setUserRole] = useState<"admin" | "user" | null>(() => {
+    const role = localStorage.getItem("userRole");
+    return role === "admin" || role === "user" ? role : null;
+  });
+  const isAdmin = userRole === "admin";
+
+  const [isUserOpen, setIsUserOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  
+  // 검색 기능 추가
+ 
+  const [searchKeyword, setSearchKeyword] = useState(""); // 검색어 상태
+
+  const handleSearchSubmit = () => {
+    const trimmed = searchKeyword.trim();
+    if (!trimmed) return;
+
+    navigate(`/search?keyword=${encodeURIComponent(trimmed)}`);
+    setIsSearchOpen(false);
+    setSearchKeyword("");
+  };
+
+  const userAreaRef = useRef<HTMLDivElement | null>(null);
+  const searchDrawerRef = useRef<HTMLDivElement | null>(null);
+  const searchIconRef = useRef<HTMLButtonElement | null>(null);
+
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
+    const role = localStorage.getItem("userRole");
+
     setIsLoggedIn(!!token);
+    setUserRole(role === "admin" || role === "user" ? role : null);
   }, [location.pathname]);
 
-  // 바깥 클릭 시 메뉴/검색창 닫기
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as Node;
 
-      // 유저 드롭다운
-      if (
-        isUserOpen &&
-        userAreaRef.current &&
-        !userAreaRef.current.contains(target)
-      ) {
+      if (isUserOpen && userAreaRef.current && !userAreaRef.current.contains(target)) {
         setIsUserOpen(false);
       }
 
-      // 검색창 (아이콘 + 인풋을 감싼 wrapper 기준)
-      if (
-        isSearchOpen &&
-        searchWrapperRef.current &&
-        !searchWrapperRef.current.contains(target)
-      ) {
+      const inSearchIcon = searchIconRef.current && searchIconRef.current.contains(target);
+      const inSearchDrawer = searchDrawerRef.current && searchDrawerRef.current.contains(target);
+
+      if (isSearchOpen && !inSearchIcon && !inSearchDrawer) {
         setIsSearchOpen(false);
       }
     };
@@ -58,137 +66,79 @@ export default function Header() {
     return () => document.removeEventListener("click", handleClickOutside);
   }, [isUserOpen, isSearchOpen]);
 
-  const handleUserIconClick = () => {
-    setIsUserOpen((prev) => !prev);
-  };
-
-  // ===================== 내 정보 기능들 =====================
-
-  const handleMyContents = () => {
-    navigate("/my-contents");
-    setIsUserOpen(false);
-  };
-
-  const handleProfile = () => {
-    navigate("/profile");
-    setIsUserOpen(false);
-  };
-
+  const handleUserIconClick = () => setIsUserOpen((prev) => !prev);
+  const handleMyContents = () => { navigate("/my-contents"); setIsUserOpen(false); };
+  const handleProfile = () => { navigate("/profile"); setIsUserOpen(false); };
+  const handleAdmin = () => { navigate("/admin"); setIsUserOpen(false); };
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
+    localStorage.removeItem("userRole");
     setIsLoggedIn(false);
+    setUserRole(null);
     setIsUserOpen(false);
     navigate("/");
   };
-
-  const handleGoLoginPage = () => {
-    navigate("/login");
-  };
-  // =======================================================
+  const handleGoLoginPage = () => navigate("/login");
 
   return (
     <header className={styles.header}>
-      {/* 로고: 클릭하면 항상 홈(/) */}
-      <h1 className={styles.title}>
-        <Link to="/">Insight News</Link>
-      </h1>
+      <h1 className={styles.title}><Link to="/">Insight News</Link></h1>
 
-      {/* 오른쪽 아이콘들 */}
       <div className={styles.icons}>
-        {/* 검색 아이콘 + 검색창 래퍼 */}
-        <div ref={searchWrapperRef} className={styles.searchWrapper}>
-          {/* 검색창: 검색 아이콘 바로 왼쪽에 애니메이션으로 펼쳐짐 */}
+        {/* 검색창 */}
+        <div className={styles.searchWrapper}>
           <div
-            className={`${styles.searchDrawer} ${
-              isSearchOpen ? styles.searchOpen : ""
-            }`}
+            ref={searchDrawerRef}
+            className={`${styles.searchDrawer} ${isSearchOpen ? styles.searchOpen : ""}`}
           >
+            {/* 검색어 상태 + 엔터 이벤트 추가 */}
             <input
               type="text"
               placeholder="검색어를 입력하세요"
               className={styles.searchInput}
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") handleSearchSubmit(); }}
             />
-            <button type="button" className={styles.searchSubmit}>
+            <button type="button" className={styles.searchSubmit} onClick={handleSearchSubmit}>
               검색
             </button>
           </div>
 
-          {/* 검색 아이콘 */}
           <button
+            ref={searchIconRef}
             type="button"
             className={styles.iconButton}
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsSearchOpen((prev) => !prev);
-            }}
+            onClick={(e) => { e.stopPropagation(); setIsSearchOpen((prev) => !prev); }}
           >
-            <img
-              src={searchIcon}
-              alt="검색"
-              className={`${styles.icon} ${styles.searchIcon}`}
-            />
+            <img src={searchIcon} alt="검색" className={`${styles.icon} styles.searchIcon`} />
           </button>
         </div>
 
-        {/* 유저 아이콘 + 드롭다운 */}
+        {/* 👤 유저 드롭다운 */}
         <div ref={userAreaRef} className={styles.userWrapper}>
-          <button
-            type="button"
-            className={styles.iconButton}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleUserIconClick();
-            }}
-          >
-            <img
-              src={userIcon}
-              alt="유저"
-              className={`${styles.icon} ${styles.userIcon}`}
-            />
-            {isLoggedIn && (
-              <span className={styles.checkBadge}>✓</span>
-            )}
+          <button type="button" className={styles.iconButton} onClick={(e) => { e.stopPropagation(); handleUserIconClick(); }}>
+            <img src={userIcon} alt="유저" className={`${styles.icon} ${styles.userIcon}`} />
+            {isLoggedIn && <span className={styles.checkBadge}>✓</span>}
           </button>
 
-          {/* 유저 드롭다운 */}
-          <div
-            className={`${styles.dropdown} ${
-              isUserOpen ? styles.open : ""
-            }`}
-          >
-            {!isLoggedIn ? (
+          <div className={`${styles.dropdown} ${isUserOpen ? styles.open : ""}`}>
+            {!isLoggedIn && (
+              <button type="button" className={styles.userMenuItem} onClick={handleGoLoginPage}>
+                로그인
+              </button>
+            )}
+            {isLoggedIn && isAdmin && (
               <>
-                <button
-                  type="button"
-                  className={styles.userMenuItem}
-                  onClick={handleGoLoginPage}
-                >
-                  로그인
-                </button>
+                <button type="button" className={styles.userMenuItem} onClick={handleAdmin}>관리자 모드</button>
+                <button type="button" className={styles.userMenuItem} onClick={handleLogout}>로그아웃</button>
               </>
-            ) : (
+            )}
+            {isLoggedIn && !isAdmin && (
               <>
-                <button
-                  type="button"
-                  className={styles.userMenuItem}
-                  onClick={handleMyContents}
-                >
-                  내 콘텐츠
-                </button>
-                <button
-                  type="button"
-                  className={styles.userMenuItem}
-                  onClick={handleProfile}
-                >
-                  회원정보
-                </button>
-                <button
-                  type="button"
-                  className={styles.userMenuItem}
-                  onClick={handleLogout}
-                >
-                  로그아웃
-                </button>
+                <button type="button" className={styles.userMenuItem} onClick={handleMyContents}>내 콘텐츠</button>
+                <button type="button" className={styles.userMenuItem} onClick={handleProfile}>회원정보</button>
+                <button type="button" className={styles.userMenuItem} onClick={handleLogout}>로그아웃</button>
               </>
             )}
           </div>

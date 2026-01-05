@@ -39,7 +39,7 @@ public class LoginService {
                 // password 필드에는 bcrypt 해시를 저장
                 .password(passwordEncoder.encode(req.getPassword()))
                 .role(User.Role.user) // admin은 네가 따로 부여
-                .name(name) 
+                .name(name)
                 .build();
 
         userRepository.save(user);
@@ -57,6 +57,7 @@ public class LoginService {
         }
 
         String token = jwtProvider.createAccessToken(user);
-        return new AuthResponse(token);
+        return new AuthResponse(token, user.getRole()); // role 포함
     }
+
 }

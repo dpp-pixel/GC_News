@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import gc_news.entity.Comment;
 import gc_news.entity.CommentReaction;
+import gc_news.entity.User;
 import gc_news.entity.Reaction.ReactionType;
 import gc_news.repository.CommentReactionRepository;
 import gc_news.repository.CommentRepository;
@@ -23,14 +24,14 @@ public class CommentReactionService {
     /**
      * 댓글 좋아요 / 싫어요 토글
      */
-    public void toggleReaction(Long commentId, String userKey, ReactionType type) {
+    public void toggleReaction(Long commentId, User user, ReactionType type) {
 
         // 댓글 엔티티 조회
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
 
         // 기존 리액션 조회
-        Optional<CommentReaction> existing = commentReactionRepository.findByCommentAndUserKey(comment, userKey);
+        Optional<CommentReaction> existing = commentReactionRepository.findByCommentAndUser(comment, user);
 
         // 기존 리액션이 있을 경우
         if (existing.isPresent()) {
@@ -49,7 +50,8 @@ public class CommentReactionService {
         else {
             CommentReaction reaction = CommentReaction.builder()
                     .comment(comment)
-                    .userKey(userKey)
+                    .user(user)
+                    .userKey(user.getUserId())
                     .type(type)
                     .build();
 

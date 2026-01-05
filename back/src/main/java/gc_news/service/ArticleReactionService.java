@@ -24,7 +24,7 @@ public class ArticleReactionService {
      * 기사 / 댓글 반응 등록
      */
     public void react(
-            String userKey,
+            User user, // ⭐ userKey → User 객체
             TargetType targetType,
             Long targetId,
             ReactionType reactionType) {
@@ -33,8 +33,7 @@ public class ArticleReactionService {
 
         // 1. 기존 반응 조회
         var existing = reactionRepository
-                .findByUserKeyAndTargetTypeAndTargetId(
-                        userKey, targetType, targetId);
+                .findByUserAndTargetTypeAndTargetId(user, targetType, targetId);
 
         // 2. 같은 반응이면 → 취소
         if (existing.isPresent()) {
@@ -51,7 +50,7 @@ public class ArticleReactionService {
 
         // 4. 새 반응 저장
         Reaction reaction = Reaction.builder()
-                .userKey(userKey)
+                .user(user)
                 .targetType(targetType)
                 .targetId(targetId)
                 .reactionType(reactionType)
@@ -72,7 +71,6 @@ public class ArticleReactionService {
     }
 
     private void validateReaction(TargetType t, ReactionType r) {
-
         if (t == TargetType.article &&
                 (r == ReactionType.happy ||
                         r == ReactionType.sad ||
@@ -81,5 +79,4 @@ public class ArticleReactionService {
         }
         throw new IllegalArgumentException("사용불가");
     }
-
 }
