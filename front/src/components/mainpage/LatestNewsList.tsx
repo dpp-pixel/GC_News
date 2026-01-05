@@ -26,20 +26,15 @@ export default function LatestNewsList() {
         setLoading(true);
         setError(null);
 
-        const res = await axios.get<Article[]>(
-          "http://localhost:8081/api/articles"
+         const res = await axios.get<Article[]>(
+          "http://localhost:8081/api/articles/latest?limit=16"
         );
 
         if (!cancelled) {
-          const sortedNews = res.data.sort(
-            (a, b) =>
-              new Date(b.publishedAt).getTime() -
-              new Date(a.publishedAt).getTime()
-          );
-          setNews(sortedNews.slice(0, 16));
+          setNews(res.data); // 이미 최신순으로 반환됨
         }
       } catch (e: any) {
-        console.error("LatestNewsList /api/articles error:", e);
+        console.error("LatestNewsList /api/articles/latest error:", e);
         if (!cancelled) {
           setError("최신 기사 목록을 불러오는 데 실패했습니다.");
         }

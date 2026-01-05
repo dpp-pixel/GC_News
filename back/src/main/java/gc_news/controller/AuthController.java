@@ -5,6 +5,9 @@ import gc_news.dto.UserLoginRequest;
 import gc_news.dto.UserSignupRequest;
 import gc_news.service.LoginService;
 import lombok.RequiredArgsConstructor;
+
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +27,18 @@ public class AuthController {
 
     // 로그인 (JWT 발급)
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody UserLoginRequest req) {
-        return ResponseEntity.ok(loginService.login(req));
+    public ResponseEntity<?> login(@RequestBody UserLoginRequest req) {
+        try {
+            return ResponseEntity.ok(loginService.login(req));
+        } catch (IllegalArgumentException e) {
+            // 인증 실패: 401 Unauthorized
+            return ResponseEntity.status(401)
+                    .body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            // 그 외 서버 오류
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                    .body(Map.of("message", "서버 오류"));
+        }
     }
 }

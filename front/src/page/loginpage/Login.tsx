@@ -1,45 +1,44 @@
+// src/page/loginpage/Login.tsx
 import { useState } from "react";
 import type { FormEvent } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./Login.module.css";
 
-type LoginResponse = {
-  accessToken: string;
-};
-
 export default function Login() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const navigate = useNavigate();
 
-  // ⚠ 소셜 로그인은 아직 미구현: 디자인만, 기능 없음
-  // 나중에 연동할 때 여기 핸들러 추가
-  // const handleSocialLogin = (provider: "naver" | "kakao" | "google" | "apple") => { ... };
-
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
-      const res = await axios.post<LoginResponse>(
+      // ✅ 타입은 any로 잡아서 구조확인 가능
+      const res = await axios.post<any>(
         "http://localhost:8081/api/auth/login",
-        {
-          email,
-          password,
-        },
-        {
-          withCredentials: true, // 세션/쿠키 기반이면 유지
-        }
+        { email, password },
+        { withCredentials: true }
       );
 
-      const token = res.data.accessToken;
+      console.log("Login response:", res.data); // 실제 데이터 확인
 
-      // ✅ 토큰 로컬스토리지에 직접 저장
-      localStorage.setItem("accessToken", token);
+      // accessToken 없으면 실패 처리
+      if (!res.data.accessToken) {
+        alert(res.data.message ?? "로그인 실패");
+        return;
+      }
+
+      const { accessToken, role } = res.data;
+
+      // 로컬스토리지 저장
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("userRole", role.toLowerCase());
 
       alert("로그인 성공!");
-      navigate("/"); // window.location.href 대신 라우터 사용
+      navigate("/"); // 성공 시 메인 페이지 이동
     } catch (err: unknown) {
+      console.error(err);
       if (axios.isAxiosError(err)) {
         alert(err.response?.data?.message ?? "로그인 실패");
       } else {
@@ -88,7 +87,7 @@ export default function Login() {
           </button>
         </section>
 
-        {/* 이메일/비밀번호 로그인 (실제 동작) */}
+        {/* 이메일/비밀번호 로그인 */}
         <section
           className={`${styles.loginSection} ${styles.loginSectionForm}`}
         >

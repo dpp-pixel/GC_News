@@ -1,6 +1,5 @@
 package gc_news.entity;
 
-
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Column;
@@ -37,6 +36,12 @@ public class Reporter {
     private String profileImageUrl;
     private Float trustScore;
     private String press;
+    private String officeId;
 
-     
+    @Builder.Default
+    private Integer subscriberCount = 0;
+
+    @Builder.Default
+    private Integer recommendationCount = 0;
+
 }

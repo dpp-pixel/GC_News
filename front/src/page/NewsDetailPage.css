@@ -1,7 +1,23 @@
-.news-detail {
-  max-width: 720px;
+/* 기사 상세 레이아웃 */
+.article-detail-layout {
+  max-width: 1200px;
   margin: 0 auto;
   padding: 24px 16px 80px;
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.article-detail-layout aside {
+  flex-shrink: 0;
+  width: 200px;
+  position: sticky;
+  top: 24px;
+}
+
+.news-detail {
+  flex: 1;
+  max-width: 720px;
 }
 
 /* 로딩 / 에러 메시지 */
@@ -64,4 +80,31 @@
 .article-body img {
   max-width: 100%;
   margin: 16px 0;
+}
+/* 북마크 버튼 */
+.bookmark-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 999px;
+  border: 1px solid #00c4ff;
+  background: #fff;
+  color: #00c4ff;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.bookmark-btn:hover {
+  background: #00c4ff;
+  color: #fff;
+  box-shadow: 0 4px 8px rgba(0, 196, 255, 0.3);
+}
+
+.bookmark-btn.active {
+  background: #00c4ff;
+  color: #fff;
+  border-color: #00c4ff;
 }

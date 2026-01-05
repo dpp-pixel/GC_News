@@ -1,10 +1,14 @@
 package gc_news.controller;
 
-import org.springframework.web.bind.annotation.*;
-
+import gc_news.entity.Reaction;
 import gc_news.entity.Reaction.ReactionType;
+import gc_news.entity.User;
 import gc_news.service.CommentReactionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -13,32 +17,52 @@ public class CommentReactionController {
 
     private final CommentReactionService commentReactionService;
 
-    /**
-     * 댓글 좋아요 / 싫어요 토글
-     *
-     * @param commentId 댓글 ID
-     * @param userKey   임시 유저 키 (쿠키 or localStorage)
-     * @param type      LIKE / DISLIKE
-     */
     @PostMapping
-    public void toggleReaction(
+    public ResponseEntity<String> toggleReaction(
             @RequestParam Long commentId,
-            @RequestParam String userKey,
-            @RequestParam ReactionType type) {
-        commentReactionService.toggleReaction(commentId, userKey, type);
+            @RequestParam String type,
+            @AuthenticationPrincipal User user) {
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+
+        Reaction.ReactionType reactionType;
+        try {
+            reactionType = parseCommentReactionType(type);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("댓글에서 지원하지 않는 반응 타입입니다: " + type);
+        }
+
+        try {
+            commentReactionService.toggleReaction(commentId, user, reactionType);
+            return ResponseEntity.ok("댓글 반응 완료");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("댓글 반응 실패: " + e.getMessage());
+        }
     }
 
-    // @PostMapping
-    // public void toggleReaction(
-    // @RequestParam Long commentId,
-    // @AuthenticationPrincipal User user,
-    // @RequestParam ReactionType type
-    // ) {
-    // commentReactionService.toggleReaction(
-    // commentId,
-    // user.getUserId().toString(),
-    // type
-    // );
-    // } 로그인 추가시에 지우고 이거로 변경
+    /**
+     * 댓글에서 허용되는 like/dislike 타입만 안전하게 변환
+     */
+    private Reaction.ReactionType parseCommentReactionType(String type) {
+        if (type == null)
+            throw new IllegalArgumentException("type이 null입니다.");
+        type = type.trim().toLowerCase();
+
+        switch (type) {
+            case "like":
+                return Reaction.ReactionType.like;
+            case "dislike":
+                return Reaction.ReactionType.dislike;
+            default:
+                throw new IllegalArgumentException("댓글에서는 like 또는 dislike만 가능합니다.");
+        }
+    }
 
 }
