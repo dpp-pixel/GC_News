@@ -5,18 +5,42 @@ import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./Login.module.css";
 
+import CenterAlert from "../../components/common/alarm/CenterAlert";
+
 type LoginResponse = {
   accessToken: string;
   role: "admin" | "user"; // 어드민 / 일반 유저
 };
 
+type SuccessState = {
+  open: boolean;
+  nextPath: string;
+  message: string;
+};
+
+type ErrorState = {
+  open: boolean;
+  message: string;
+};
+
 export default function Login() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const navigate = useNavigate();
 
-  // ⚠ 소셜 로그인은 아직 미구현: 디자인만, 기능 없음
-  // const handleSocialLogin = (provider: "naver" | "kakao" | "google" | "apple") => { ... };
+  // ✅ 로그인 성공 모달 상태
+  const [successAlert, setSuccessAlert] = useState<SuccessState>({
+    open: false,
+    nextPath: "/",
+    message: "",
+  });
+
+  // ❌ 로그인 실패 모달 상태
+  const [errorAlert, setErrorAlert] = useState<ErrorState>({
+    open: false,
+    message: "",
+  });
+
+  const navigate = useNavigate();
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -24,33 +48,48 @@ export default function Login() {
     try {
       const res = await axios.post<LoginResponse>(
         "http://localhost:8081/api/auth/login",
-        {
-          email,
-          password,
-        },
-        {
-          withCredentials: true, // 세션/쿠키 기반이면 유지
-        }
+        { email, password },
+        { withCredentials: true }
       );
 
       const { accessToken, role } = res.data;
 
-      // ✅ 토큰 + 역할 로컬스토리지에 저장
+      // ✅ 토큰 + 역할 저장
       localStorage.setItem("accessToken", accessToken);
-
-      // 혹시 대소문자 섞여 올 수 있으니 소문자로 정규화
       const normalizedRole = role.toLowerCase() === "admin" ? "admin" : "user";
       localStorage.setItem("userRole", normalizedRole);
 
-      alert("로그인 성공!");
-      navigate("/"); // window.location.href 대신 라우터 사용
+      // ✅ 성공 모달 띄우기
+      setSuccessAlert({
+        open: true,
+        nextPath: normalizedRole === "admin" ? "/admin" : "/",
+        message:
+          normalizedRole === "admin"
+            ? "관리자 계정으로 로그인되었습니다."
+            : "최신 뉴스를 확인해 보세요.",
+      });
     } catch (err: unknown) {
+      let msg =
+        "로그인에 실패했습니다. 다시 시도해 주세요. 이메일/비밀번호를 확인해 주세요.";
       if (axios.isAxiosError(err)) {
-        alert(err.response?.data?.message ?? "로그인 실패");
-      } else {
-        alert("로그인 실패");
+        msg =
+          err.response?.data?.message ??
+          "이메일/비밀번호를 확인해 주세요.";
       }
+      setErrorAlert({
+        open: true,
+        message: msg,
+      });
     }
+  };
+
+  const handleSuccessClose = () => {
+    setSuccessAlert((prev) => ({ ...prev, open: false }));
+    navigate(successAlert.nextPath);
+  };
+
+  const handleErrorClose = () => {
+    setErrorAlert((prev) => ({ ...prev, open: false }));
   };
 
   return (
@@ -133,13 +172,26 @@ export default function Login() {
           </form>
         </section>
 
-        {/* 회원가입 링크 */}
         <div className={styles.loginFooter}>
           <Link to="/signup" className={styles.loginSignupLink}>
             회원가입
           </Link>
         </div>
       </div>
+
+      {/* ✅ 성공 / 실패 모달 – 공통 컴포넌트 사용 */}
+      <CenterAlert
+        open={successAlert.open}
+        message={successAlert.message}
+        variant="success"
+        onClose={handleSuccessClose}
+      />
+      <CenterAlert
+        open={errorAlert.open}
+        message={errorAlert.message}
+        variant="error"
+        onClose={handleErrorClose}
+      />
     </div>
   );
 }

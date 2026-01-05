@@ -1,3 +1,5 @@
+/* src/App.css */
+
 /* main 전체 레이아웃 */
 .app-main {
   display: flex;
@@ -6,10 +8,16 @@
   padding: 0 100px; /* 좌우 여백 = 사이드바 공간 */
 }
 
-/* 가운데 콘텐츠 영역 */
+/* 가운데 콘텐츠 영역 - 기본 (다른 페이지들) */
 .content-wrapper {
   width: 1100px;      /* 동아일보 메인 폭 느낌 */
   min-width: 1100px;  /* 데스크탑 전용이라 고정 */
+}
+
+/* 내 구독(/my-contents) 전용: 더 넓게 사용 */
+.content-wrapper--wide {
+  width: 1300px;      /* 필요하면 1350 / 1400 등으로 조정 가능 */
+  min-width: 1300px;
 }
 
 /* (나중에 쓸 사이드바 자리) */

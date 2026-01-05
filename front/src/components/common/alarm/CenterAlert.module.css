@@ -1,0 +1,139 @@
+/* src/components/common/alarm/CenterAlert.module.css */
+
+/* 화면 전체 어두운 배경 */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+/* 가운데 흰 박스 */
+.box {
+  position: relative;              /* 상단 줄 위치 잡으려고 relative 추가 */
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 32px 28px 24px;
+  min-width: 320px;
+  max-width: 90vw;
+  text-align: center;
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.35);
+  animation: popup 0.24s ease-out;
+}
+
+/* 🔹 상단 줄 (카드보다 조금 짧게) */
+.topBar {
+  position: absolute;
+  left: 50%;
+  top: 0px;                 /* ← 여기로 “살짝 아래” 내림 */
+  transform: translateX(-50%);  /* Y축 이동 제거 */
+  width: 88%;
+  height: 4px;
+  border-radius: 999px;
+}
+
+/* 성공(로그인/로그아웃)용: 검은 줄 */
+.topBarSuccess,
+.topBarLogout {
+  background: #00a651;  /* 초록색으로 변경 */
+}
+
+
+/* 실패(에러)용: 빨간 줄 */
+.topBarError {
+  background: #e23636;
+}
+
+/* 체크 / X 아이콘 영역 */
+.iconWrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.iconCircle {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border-width: 3px;
+  border-style: solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+}
+
+/* 성공 아이콘: 초록 체크 */
+.iconCircleSuccess {
+  border-color: #00a651;
+  color: #00a651;
+}
+
+/* 실패 아이콘: 빨간 X */
+.iconCircleError {
+  border-color: #e23636;
+  color: #e23636;
+}
+
+/* 제목 */
+.title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #111111;
+}
+
+/* 본문 메시지 */
+.message {
+  margin: 0 0 18px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #333333;
+}
+
+/* 버튼 영역 */
+.buttonRow {
+  display: flex;
+  justify-content: center;
+}
+
+/* 확인 버튼 */
+.confirmButton {
+  min-width: 80px;
+  padding: 8px 22px;
+  border-radius: 999px;
+  border: none;
+  background: #000000;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out,
+    background 0.12s ease-out;
+}
+
+.confirmButton:hover {
+  background: #222222;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+  transform: translateY(-1px);
+}
+
+.confirmButton:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* 팝업 등장 애니메이션 */
+@keyframes popup {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
