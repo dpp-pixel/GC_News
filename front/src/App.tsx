@@ -39,6 +39,9 @@ function AppShell() {
   // ✅ 기사 상세 페이지 여부 (/news/:id)
   const isNewsDetailPage = location.pathname.startsWith("/news/");
 
+  // ✅ 내 구독 페이지 여부 (/my-contents)
+  const isMyContentsPage = location.pathname.startsWith("/my-contents");
+
   // ✅ 카테고리바를 숨길 경로들
   const hideCategoryBar =
     isAuthPage ||
@@ -80,7 +83,17 @@ function AppShell() {
 
       {/* 메인 콘텐츠 */}
       <main className="app-main">
-        <div className="content-wrapper">
+        {/* 
+          기본: content-wrapper
+          /my-contents 에서는 content-wrapper--wide 추가
+        */}
+        <div
+          className={
+            isMyContentsPage
+              ? "content-wrapper content-wrapper--wide"
+              : "content-wrapper"
+          }
+        >
           <Routes>
             {/* 메인 */}
             <Route path="/" element={<MainContent />} />

@@ -5,16 +5,51 @@ import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./Login.module.css";
 
+import CenterAlert from "../../components/common/alarm/CenterAlert";
+
+type LoginResponse = {
+  accessToken: string;
+  role: "admin" | "user"; // 어드민 / 일반 유저
+};
+
+type SuccessState = {
+  open: boolean;
+  nextPath: string;
+  message: string;
+};
+
+type ErrorState = {
+  open: boolean;
+  message: string;
+};
+
+
 export default function Login() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+
+
+  // 로그인 성공 모달 상태
+  const [successAlert, setSuccessAlert] = useState<SuccessState>({
+    open: false,
+    nextPath: "/",
+    message: "",
+  });
+
+  // 로그인 실패 모달 상태
+  const [errorAlert, setErrorAlert] = useState<ErrorState>({
+    open: false,
+    message: "",
+  });
+
   const navigate = useNavigate();
+
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
-      // ✅ 타입은 any로 잡아서 구조확인 가능
+      // 타입은 any로 잡아서 구조확인 가능
       const res = await axios.post<any>(
         "http://localhost:8081/api/auth/login",
         { email, password },
@@ -31,20 +66,44 @@ export default function Login() {
 
       const { accessToken, role } = res.data;
 
-      // 로컬스토리지 저장
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("userRole", role.toLowerCase());
 
-      alert("로그인 성공!");
-      navigate("/"); // 성공 시 메인 페이지 이동
+      // 토큰 + 역할 저장
+      localStorage.setItem("accessToken", accessToken);
+      const normalizedRole = role.toLowerCase() === "admin" ? "admin" : "user";
+      localStorage.setItem("userRole", normalizedRole);
+
+      // 성공 모달 띄우기
+      setSuccessAlert({
+        open: true,
+        nextPath: normalizedRole === "admin" ? "/admin" : "/",
+        message:
+          normalizedRole === "admin"
+            ? "관리자 계정으로 로그인되었습니다."
+            : "최신 뉴스를 확인해 보세요.",
+      });
     } catch (err: unknown) {
-      console.error(err);
+      let msg =
+        "로그인에 실패했습니다. 다시 시도해 주세요. 이메일/비밀번호를 확인해 주세요.";
+
       if (axios.isAxiosError(err)) {
-        alert(err.response?.data?.message ?? "로그인 실패");
-      } else {
-        alert("로그인 실패");
+        msg =
+          err.response?.data?.message ??
+          "이메일/비밀번호를 확인해 주세요.";
       }
+      setErrorAlert({
+        open: true,
+        message: msg,
+      });
     }
+  };
+
+  const handleSuccessClose = () => {
+    setSuccessAlert((prev) => ({ ...prev, open: false }));
+    navigate(successAlert.nextPath);
+  };
+
+  const handleErrorClose = () => {
+    setErrorAlert((prev) => ({ ...prev, open: false }));
   };
 
   return (
@@ -127,13 +186,26 @@ export default function Login() {
           </form>
         </section>
 
-        {/* 회원가입 링크 */}
         <div className={styles.loginFooter}>
           <Link to="/signup" className={styles.loginSignupLink}>
             회원가입
           </Link>
         </div>
       </div>
+
+      {/* 성공 / 실패 모달 – 공통 컴포넌트 사용 */}
+      <CenterAlert
+        open={successAlert.open}
+        message={successAlert.message}
+        variant="success"
+        onClose={handleSuccessClose}
+      />
+      <CenterAlert
+        open={errorAlert.open}
+        message={errorAlert.message}
+        variant="error"
+        onClose={handleErrorClose}
+      />
     </div>
   );
 }

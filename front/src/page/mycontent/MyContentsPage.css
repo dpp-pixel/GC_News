@@ -1,6 +1,14 @@
+/* src/page/mycontent/MyContentsPage.css */
+
+/* 이 페이지에서 사용할 전체 컨텐츠 폭 */
+.content-wrapper {
+  max-width: 1400px;      /* 1200 → 1400 으로 확장 (원하면 1500도 가능) */
+  margin: 0 auto;
+}
+
 /* 페이지 전체 레이아웃 */
 .my-contents-page {
-  max-width: 1200px;
+  max-width: 100%;        /* 부모(.content-wrapper) 폭을 그대로 사용 */
   margin: 40px auto 60px;
   padding: 0 40px;
   box-sizing: border-box;

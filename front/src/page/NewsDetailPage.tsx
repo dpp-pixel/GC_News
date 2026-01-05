@@ -1,12 +1,21 @@
 // src/page/NewsDetailPage.tsx
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+
 import { api } from "../api/client";
+import axios from "axios";
+
 import "./NewsDetailPage.css";
+
 import ArticleReaction from "../components/articledetailpage/ArticleReaction";
 import ArticleComments from "../components/articledetailpage/ArticleComments";
 import ReporterAssetm from "@/components/reporter/ReporterAssetm";
 import { isLoggedIn } from "../auth/auth";
+
+// 기자 카드
+import ReporterCard, {
+  type ReporterInfo,
+} from "../components/reporter/ReporterCard";
 
 interface Media {
   url: string;
@@ -32,6 +41,18 @@ interface ArticleDetail {
 }
 
 
+// 임시 더미 기자 정보 (나중에 API 연동 시 교체)
+const DUMMY_REPORTER: ReporterInfo = {
+  id: 1,
+  name: "김기덕 기자",
+  email: "reporter1@news.com",
+  subscribers: 80,
+  recommends: 3,
+  tags: ["정치부", "분석"],
+  trustScore: 70,
+  imageUrl: "https://picsum.photos/150",
+};
+
 
 export default function NewsDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -40,7 +61,7 @@ export default function NewsDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // ✅ 북마크 상태 전용 state
+  // 북마크 상태 전용 state
   const [isBookmarked, setIsBookmarked] = useState<boolean | null>(null);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
 
@@ -131,65 +152,55 @@ export default function NewsDetailPage() {
   
 
   return (
-  <div className="article-detail-layout">
-    {/* 왼쪽: 기자 에셋 */}
-    {article.reporter && (
-      <aside style={{ marginBottom: 24 }}>
-        <ReporterAssetm reporter={article.reporter} />
-      </aside>
-    )}
 
-    {/* 오른쪽: 기사 본문 */}
-    <article className="news-detail">
-      {/* 헤더 */}
-      <header className="article-header">
-        <div className="press">{article.press}</div>
-        <h1 className="title">{article.title}</h1>
+    <div className="news-detail-page-wrapper">
+      <div className="news-detail-main-wrapper">
+        {/* ✅ 왼쪽 기자 카드 (기사 페이지 전용) */}
+        <aside className="reporter-card-column">
+          <ReporterCard info={DUMMY_REPORTER} />
+        </aside>
 
-        <div className="meta">
-          {/* 우선순위: reporter 객체 > reporterName 문자열 */}
-          {article.reporter?.name && (
-            <span className="reporter">{article.reporter.name} 기자</span>
+        {/* ✅ 오른쪽 기사 영역 */}
+        <article className="news-detail">
+          {/* 상단 헤더 영역 */}
+          <header className="article-header">
+            <div className="press">{article.press}</div>
+
+            <h1 className="title">{article.title}</h1>
+
+            <div className="meta">
+              {article.reporterName && (
+                <span className="reporter">{article.reporterName} 기자</span>
+              )}
+              <span className="date">
+                입력 {new Date(article.publishedAt).toLocaleString()}
+              </span>
+            </div>
+          </header>
+
+          {/* 대표 이미지 */}
+          {article.mediaList?.[0]?.url && (
+            <figure className="article-image">
+              <img src={article.mediaList[0].url} alt={article.title} />
+            </figure>
           )}
-          {!article.reporter?.name && article.reporterName && (
-            <span className="reporter">{article.reporterName} 기자</span>
-          )}
 
-          <span className="date">
-            입력 {new Date(article.publishedAt).toLocaleString()}
-          </span>
 
-          {/* ✅ 북마크 버튼 */}
-          {isBookmarked !== null && (
-            <button
-              className={`bookmark-btn ${isBookmarked ? "active" : ""}`}
-              onClick={toggleBookmark}
-              disabled={bookmarkLoading}
-            >
-              {isBookmarked ? "북마크 취소" : "북마크"}
-            </button>
-          )}
-        </div>
-      </header>
+          {/* 본문 */}
+          <section
+            className="article-body"
+            dangerouslySetInnerHTML={{
+              __html: article.contentHtml || "",
+            }}
+          />
 
-      {/* 대표 이미지 */}
-      {article.mediaList?.[0]?.url && (
-        <figure className="article-image">
-          <img src={article.mediaList[0].url} alt={article.title} />
-        </figure>
-      )}
 
-      {/* 본문 */}
-      <section
-        className="article-body"
-        dangerouslySetInnerHTML={{
-          __html: article.contentHtml || "",
-        }}
-      />
+          {/* 반응 / 댓글 컴포넌트 */}
+          <ArticleReaction articleId={article.articleId} />
+          <ArticleComments articleId={article.articleId} />
+        </article>
+      </div>
+    </div>
 
-      <ArticleReaction articleId={article.articleId} />
-      <ArticleComments articleId={article.articleId} />
-    </article>
-     </div>
   );
 }

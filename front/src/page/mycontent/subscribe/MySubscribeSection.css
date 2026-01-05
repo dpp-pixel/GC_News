@@ -1,3 +1,5 @@
+/* src/page/mycontent/subscribe/MySubscribeSection.css */
+
 .slider-wrapper {
   width: 100%;
   display: flex;
@@ -23,15 +25,21 @@
   cursor: default;
 }
 
-/* ⭐ 핵심: 보이는 영역 */
+/* 보이는 영역: 가로는 부모(content-wrapper) 기준으로 100% 사용 */
 .card-viewport {
-  width: calc(360px * 5 + 24px * 4); /* 카드 5개 기준 */
-  overflow: hidden;
+  flex: 0 1 auto;
+  width: 100%;
+  overflow: hidden;   /* 👉 4개 밖은 잘라버리기 */
 }
 
 /* 실제 움직이는 레일 */
 .card-track {
   display: flex;
-  gap: 24px;
+  gap: 24px;          /* GAP 값과 동일 */
   transition: transform 0.35s ease;
+}
+
+/* 각 카드가 들어가는 래퍼 */
+.card-item {
+  flex: 0 0 auto;    /* width는 TSX에서 style로 지정 */
 }
