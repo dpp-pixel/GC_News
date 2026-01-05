@@ -202,6 +202,11 @@ public class ArticleService {
         return article;
     }
 
+    @Transactional(readOnly = true)
+    public List<Article> getLatestArticles(int limit) {
+        return articleRepository.findTopLatestArticles(PageRequest.of(0, limit));
+    }
+
     /**
      * 기사 상세 HTML에서 기자를 찾아 Article에 연결 + 기자 프로필 크롤링
      */

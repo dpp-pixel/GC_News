@@ -3,8 +3,16 @@
 .category-bar {
   width: 100%;
   display: flex;
-  flex-direction: column;  /* nav + 검은 줄을 세로로 */
+  flex-direction: column;  /* nav + 검은 줄 세로 정렬 */
   align-items: center;
+
+  /* 🔹 기사 이미지가 비쳐 보이지 않게 흰 배경 지정 */
+  background: #ffffff;
+
+  /* 🔹 살짝 떠 있는 느낌의 그림자 (원하면 줄이거나 없애도 됨) */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+
+  z-index: 20;
 }
 
 /* 메뉴 영역 */
@@ -29,13 +37,13 @@
   cursor: pointer;
 }
 
-/* a 태그 기본 스타일 제거 + 색 */
+/* a 태그 스타일 */
 .nav a {
   text-decoration: none;
   color: #000;
 }
 
-/* 아래 검은 줄 한 줄 */
+/* 아래 검은 줄 */
 .divider {
   width: 65%;
   height: 3px;

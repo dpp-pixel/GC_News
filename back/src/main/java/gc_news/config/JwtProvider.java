@@ -19,10 +19,13 @@ public class JwtProvider {
 
     public JwtProvider(
             @Value("${jwt.secret}") String secret,
-            @Value("${jwt.access-exp-min:60}") long expMinutes
-    ) {
+            @Value("${jwt.access-exp-min:60}") long expMinutes) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.expMinutes = expMinutes;
+    }
+
+    public SecretKey getKey() {
+        return key;
     }
 
     // "가벼운 버전" - 발급만 (검증/필터는 나중에)
@@ -31,9 +34,9 @@ public class JwtProvider {
         Instant exp = now.plusSeconds(expMinutes * 60);
 
         return Jwts.builder()
-                .subject(user.getUserId())                 // sub = userId
-                .claim("email", user.getEmail())           // 선택: 편의용
-                .claim("role", user.getRole().name())      // 선택: 편의용
+                .subject(user.getUserId()) // sub = userId
+                .claim("email", user.getEmail()) // 선택: 편의용
+                .claim("role", user.getRole().name()) // 선택: 편의용
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(exp))
                 .signWith(key)
