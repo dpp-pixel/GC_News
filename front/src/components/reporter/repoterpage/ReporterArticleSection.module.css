@@ -1,19 +1,24 @@
+/* 전체 섹션 */
 .section {
   margin: 0;
   padding: 0;
 }
 
-
-
+/* 제목 필요하면 */
 .title {
-  margin: 0;
+  margin: 0 0 12px;
   font-size: 20px;
 }
 
+/* 리스트를 2열(반응형)로 */
 .list {
   margin: 0;
   padding: 0;
   list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  column-gap: 24px;
+  row-gap: 12px;
 }
 
 /* li */
@@ -21,14 +26,18 @@
   border-bottom: 1px solid #e5e5e5;
 }
 
-/* 🔹 Link 스타일 제거 + 레이아웃 */
+/* a / Link (전체 클릭 영역) */
+.articleLinkWrapper {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* 내부 레이아웃 */
 .articleLink {
   display: flex;
   gap: 16px;
   padding: 16px 0;
   width: 100%;
-  text-decoration: none;
-  color: inherit;
 }
 
 /* 썸네일 */
@@ -69,7 +78,7 @@
 }
 
 /* hover 시 제목만 강조 */
-.articleLink:hover .itemTitle {
+.articleLinkWrapper:hover .itemTitle {
   text-decoration: underline;
 }
 
@@ -89,7 +98,7 @@
   color: #888;
 }
 
-/* 로딩 */
+/* 로딩/에러 영역 공통 */
 .loader {
   padding: 16px;
   text-align: center;

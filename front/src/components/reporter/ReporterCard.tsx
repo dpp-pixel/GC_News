@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import styles from "./ReporterCard.module.css";
 
+
 // ✅ MyContentsPage 등에서 같이 쓸 수 있게 export
 export interface ReporterInfo {
   id: number;
