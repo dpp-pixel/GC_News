@@ -202,7 +202,9 @@ export default function MyBookmarkSection() {
           </ul>
         )}
 
-        
+        <div className="bookmark-footer">
+          북마크가 많아지면 페이지네이션 예정
+        </div>
       </section>
     </div>
   );

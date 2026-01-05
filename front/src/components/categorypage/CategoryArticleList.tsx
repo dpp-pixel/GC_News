@@ -8,6 +8,7 @@ interface Article {
   title: string;
   press: string;
   publishedAt: string;
+  aiScore?: number | null;
 }
 
 export default function CategoryArticleList({ themeId }: { themeId: number }) {
@@ -33,17 +34,25 @@ export default function CategoryArticleList({ themeId }: { themeId: number }) {
 
       <ul>
         {articles.map((a) => (
-          <li key={a.articleId}>
-            {/* ❗️여기가 핵심: 제목 클릭 → 기사 상세 */}
-            <Link to={`/news/${a.articleId}`} className="article-link">
-              <span className="title">{a.title}</span>
-              <span className="meta">
-                {a.press} ·{" "}
-                {new Date(a.publishedAt).toLocaleDateString()}
-              </span>
-            </Link>
-          </li>
-        ))}
+    <li key={a.articleId}>
+      <Link to={`/news/${a.articleId}`} className="article-link">
+        {/* 제목 + 뱃지를 한 줄로 묶기 */}
+        <span className="title-row">
+          <span className="title">{a.title}</span>
+
+          {a.aiScore != null && (
+            <span className="ai-score-badge ai-score-badge-list">
+              AI {a.aiScore}점
+            </span>
+          )}
+        </span>
+
+        <span className="meta">
+          {a.press} · {new Date(a.publishedAt).toLocaleDateString()}
+        </span>
+      </Link>
+    </li>
+  ))}
       </ul>
 
       <div className="pagination">

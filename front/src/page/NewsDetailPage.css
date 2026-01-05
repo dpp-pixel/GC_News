@@ -56,6 +56,57 @@
   gap: 8px;
 }
 
+.ai-summary-box {
+  margin: 24px 0;
+  padding: 16px;
+  border-radius: 8px;
+  background-color: #f5f7fb;
+  border: 1px solid #dde3f0;
+}
+
+.ai-summary-text {
+  white-space: pre-wrap;
+  font-family: inherit;
+  margin-top: 8px;
+}
+
+.ai-summary-error {
+  margin: 16px 0;
+  color: #d9534f;
+}
+
+.ai-summary-meta {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.ai-summary-btn {
+  margin-left: 8px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.ai-summary-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.ai-score-badge {
+  margin-left: 8px;
+  padding: 2px 10px;          
+  font-size: 0.8rem;          
+  border-radius: 999px;       
+  background-color: #4da3ff;  
+  color: #ffffff;             
+  display: inline-flex;
+  align-items: center;
+  font-weight: 600;
+}
+
 /* 대표 이미지 */
 .article-image {
   margin: 24px 0;

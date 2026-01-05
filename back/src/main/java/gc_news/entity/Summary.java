@@ -39,6 +39,8 @@ public class Summary {
 
     private LocalDateTime createdAt;
 
+    private Integer score;
+
     @ManyToOne
     @JoinColumn(name = "theme_id")
     private Theme theme;

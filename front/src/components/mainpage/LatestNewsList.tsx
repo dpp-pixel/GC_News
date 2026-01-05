@@ -98,7 +98,7 @@ export default function LatestNewsList() {
           <ul>
             {centerNews.map((item) => (
               <li key={item.articleId}>
-                <Link to={`/news/${item.articleId}`}>{item.title}</Link>
+                <Link to={`/news/{item.articleId}`}>{item.title}</Link>
               </li>
             ))}
           </ul>
