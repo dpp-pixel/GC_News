@@ -11,5 +11,6 @@ public class ArticleRequest {
     private String title;
     private String content;
     private String urlString;
+    private Integer aiScore;
     private Long themeId;
 }

@@ -79,6 +79,9 @@ public class Article {
     @Transient
     private String thumbnailUrl;
 
+    @Transient
+    private Integer aiScore;
+
 
 
     public void increaseViewCount() {

@@ -15,28 +15,32 @@ interface Article {
 
 export default function LatestNewsList() {
   const [news, setNews] = useState<Article[]>([]);
+  const [columns, setColumns] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
-    const fetchLatest = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
         setError(null);
 
-         const res = await axios.get<Article[]>(
-          "http://localhost:8081/api/articles/latest?limit=16"
-        );
+        // 최신 기사와 칼럼을 병렬로 fetch
+        const [newsRes, columnsRes] = await Promise.all([
+          axios.get<Article[]>("http://localhost:8081/api/articles/latest?limit=16"),
+          axios.get<Article[]>("http://localhost:8081/api/articles/columns?limit=10")
+        ]);
 
         if (!cancelled) {
-          setNews(res.data); // 이미 최신순으로 반환됨
+          setNews(newsRes.data);
+          setColumns(columnsRes.data);
         }
       } catch (e: any) {
-        console.error("LatestNewsList /api/articles/latest error:", e);
+        console.error("LatestNewsList fetch error:", e);
         if (!cancelled) {
-          setError("최신 기사 목록을 불러오는 데 실패했습니다.");
+          setError("기사 목록을 불러오는 데 실패했습니다.");
         }
       } finally {
         if (!cancelled) {
@@ -45,14 +49,14 @@ export default function LatestNewsList() {
       }
     };
 
-    fetchLatest();
+    fetchData();
 
     return () => {
       cancelled = true;
     };
   }, []);
 
-  /* ✅ 여기만 핵심 변경 */
+  /* 여기만 핵심 변경 */
   if (loading) {
     return <Loading text="최신 기사 불러오는 중" />;
   }
@@ -92,17 +96,34 @@ export default function LatestNewsList() {
     ))}
   </div>
 
-  {/* 중앙: 제목 리스트, 오른쪽 영역 제거 후 왼쪽과 동일한 비율 */}
-  <div className="latest-center full-width">
-    <ul>
-      {centerNews.map((item) => (
-        <li key={item.articleId}>
-          <Link to={`/news/${item.articleId}`}>{item.title}</Link>
-        </li>
-      ))}
-    </ul>
-  </div>
-</div>
+
+        {/* 중앙: 제목 리스트 */}
+        <div className="latest-center">
+          <ul>
+            {centerNews.map((item) => (
+              <li key={item.articleId}>
+                <Link to={`/news/{item.articleId}`}>{item.title}</Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* 오른쪽: 칼럼 */}
+        <div className="latest-right">
+          <h3 className="column-title">칼럼</h3>
+          <ul className="column-list">
+            {columns.map((col) => (
+              <li key={col.articleId}>
+                <Link to={`/news/${col.articleId}`}>
+                  <span className="column-press">{col.press}</span>
+                  <span className="column-title-text">{col.title}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
     </section>
   );
 }

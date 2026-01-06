@@ -24,7 +24,7 @@ public class ArticleReactionService {
      * 기사 / 댓글 반응 등록
      */
     public void react(
-            User user, // userKey → User 객체
+            User user, // ⭐ userKey → User 객체
             TargetType targetType,
             Long targetId,
             ReactionType reactionType) {
@@ -41,7 +41,7 @@ public class ArticleReactionService {
 
             if (old.getReactionType() == reactionType) {
                 reactionRepository.delete(old);
-                return;
+                return; // ⭐ 여기서 끝
             }
 
             // 3. 다른 반응이면 기존 반응 삭제

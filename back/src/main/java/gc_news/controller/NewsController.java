@@ -29,4 +29,11 @@ public class NewsController {
         newsCrawlingService.crawlHeadlineSections();
         return "헤드라인 크롤 완료 — 콘솔에서 확인하세요!";
     }
+
+    // 칼럼 크롤링
+    @GetMapping("/news/crawl/columns")
+    public String crawlColumns() {
+        newsCrawlingService.crawlOpinionColumns();
+        return "칼럼 크롤 완료 — 콘솔에서 확인하세요!";
+    }
 }
