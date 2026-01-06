@@ -22,4 +22,10 @@ public class NewsCrawlScheduler {
     public void crawlHeadlinesEvery30Min() {
         newsCrawlingService.crawlHeadlineSections();
     }
+
+    // 매일 12시에 칼럼 전체 크롤링
+    @Scheduled(cron = "0 0 12 * * ?")
+    public void crawlOpinionColumnsDaily() {
+        newsCrawlingService.crawlOpinionColumns();
+    }
 }

@@ -10,27 +10,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import gc_news.dto.ArticleDetailResponse;
-import gc_news.entity.Article;
 import gc_news.entity.Summary;
 import gc_news.service.AiService;
-import gc_news.service.ArticleService;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
@@ -39,6 +27,7 @@ public class ArticleController {
 
     private final ArticleService articleService;
     private final UserViewHistoryService userViewHistoryService;
+    private final AiService aiService;
 
     @GetMapping("/{articleId}")
     public ArticleDetailResponse getArticleDetail(
@@ -53,8 +42,6 @@ public class ArticleController {
 
         return ArticleDetailResponse.from(article);
     }
-
-    private final AiService aiService;
 
     // 전체 / 테마별 인기 뉴스 (조회수 순, 최근 days일 기준)
     // 예: /api/articles/hot?days=3&limit=10&themeId=1
@@ -119,5 +106,60 @@ public class ArticleController {
 
         // 서비스 레이어에서 Repository 호출
         return articleService.searchArticles(keyword, PageRequest.of(page, size));
+    }
+
+    // 헤드라인 뉴스 전체 요약
+    // 예: /api/articles/headline-summary?force=false
+    @GetMapping("/headline-summary")
+    public ResponseEntity<?> getHeadlineSummary(
+            @RequestParam(defaultValue = "false") boolean force) {
+        try {
+            // 헤드라인 뉴스 가져오기
+            List<Article> headlines = articleService.getHeadlineArticles(6);
+
+            if (headlines.isEmpty()) {
+                return ResponseEntity
+                        .status(HttpStatus.NOT_FOUND)
+                        .body("헤드라인 뉴스가 없습니다.");
+            }
+
+            // AI 요약 생성/조회
+            Summary summary = aiService.summarizeHeadlineNews(headlines, force);
+
+            return ResponseEntity.ok(summary);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("요약 생성 중 오류 발생: " + e.getMessage());
+        }
+    }
+
+    // 테마별 헤드라인 뉴스 요약
+    // 예: /api/articles/theme-headline-summary?themeId=1&force=false
+    @GetMapping("/theme-headline-summary")
+    public ResponseEntity<?> getThemeHeadlineSummary(
+            @RequestParam Long themeId,
+            @RequestParam(defaultValue = "false") boolean force) {
+        try {
+            // 테마별 헤드라인 뉴스 가져오기
+            List<Article> headlines = articleService.getHeadlineArticlesByTheme(themeId, 6);
+
+            if (headlines.isEmpty()) {
+                return ResponseEntity
+                        .status(HttpStatus.NOT_FOUND)
+                        .body("테마 헤드라인 뉴스가 없습니다.");
+            }
+
+            // AI 요약 생성/조회
+            Summary summary = aiService.summarizeThemeHeadlineNews(themeId, headlines, force);
+
+            return ResponseEntity.ok(summary);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("요약 생성 중 오류 발생: " + e.getMessage());
+        }
     }
 }
