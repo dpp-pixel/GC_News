@@ -12,11 +12,6 @@ import ArticleComments from "../components/articledetailpage/ArticleComments";
 import ReporterAssetm from "@/components/reporter/ReporterAssetm";
 import { isLoggedIn } from "../auth/auth";
 
-// 기자 카드
-import ReporterCard, {
-  type ReporterInfo,
-} from "../components/reporter/ReporterCard";
-
 interface Media {
   url: string;
   mediaType: string;
@@ -46,21 +41,6 @@ interface ArticleSummary {
   score: number | null;
   createdAt: string;
 }
-
-
-
-// 임시 더미 기자 정보 (나중에 API 연동 시 교체)
-const DUMMY_REPORTER: ReporterInfo = {
-  id: 1,
-  name: "김기덕 기자",
-  email: "reporter1@news.com",
-  subscribers: 80,
-  recommends: 3,
-  tags: ["정치부", "분석"],
-  trustScore: 70,
-  imageUrl: "https://picsum.photos/150",
-};
-
 
 export default function NewsDetailPage() {
   const { id } = useParams<{ id: string }>();

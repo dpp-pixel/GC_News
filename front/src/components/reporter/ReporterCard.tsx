@@ -1,4 +1,6 @@
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { api } from "@/api/client";
 import styles from "./ReporterCard.module.css";
 
 
@@ -22,15 +24,71 @@ export default function ReporterCard({ info }: { info: ReporterInfo }) {
   const {
     id,
     name,
-    email,
-    subscribers,
-    recommends,
-    tags,
+    subscribers: initialSubscribers,
+    recommends: initialRecommends,
     trustScore,
     imageUrl,
   } = info;
 
+  const [subscribers, setSubscribers] = useState(initialSubscribers);
+  const [recommends, setRecommends] = useState(initialRecommends);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isRecommended, setIsRecommended] = useState(false);
+
   const clampedScore = Math.max(0, Math.min(100, trustScore));
+
+  // 컴포넌트 마운트 시 구독/추천 상태 확인
+  useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        const [subRes, recRes] = await Promise.all([
+          api.get(`/reporters/${id}/is-subscribed`),
+          api.get(`/reporters/${id}/is-recommended`)
+        ]);
+        setIsSubscribed(subRes.data.isSubscribed);
+        setIsRecommended(recRes.data.isRecommended);
+      } catch (e) {
+        console.error("상태 조회 실패:", e);
+      }
+    };
+    fetchStatus();
+  }, [id]);
+
+  const handleSubscribe = async () => {
+    try {
+      if (isSubscribed) {
+        await api.post(`/reporters/${id}/unsubscribe`);
+        setSubscribers((prev) => prev - 1);
+        setIsSubscribed(false);
+      } else {
+        await api.post(`/reporters/${id}/subscribe`);
+        setSubscribers((prev) => prev + 1);
+        setIsSubscribed(true);
+      }
+    } catch (e: any) {
+      console.error("구독 처리 실패:", e);
+      console.error("에러 응답:", e.response?.data);
+      alert(`구독 처리 실패: ${e.response?.data?.message || e.message}`);
+    }
+  };
+
+  const handleRecommend = async () => {
+    try {
+      if (isRecommended) {
+        await api.post(`/reporters/${id}/unrecommend`);
+        setRecommends((prev) => prev - 1);
+        setIsRecommended(false);
+      } else {
+        await api.post(`/reporters/${id}/recommend`);
+        setRecommends((prev) => prev + 1);
+        setIsRecommended(true);
+      }
+    } catch (e: any) {
+      console.error("추천 처리 실패:", e);
+      console.error("에러 응답:", e.response?.data);
+      alert(`추천 처리 실패: ${e.response?.data?.message || e.message}`);
+    }
+  };
 
   return (
     <div className={styles.card}>
@@ -55,28 +113,18 @@ export default function ReporterCard({ info }: { info: ReporterInfo }) {
         <span>추천 {recommends}</span>
       </div>
 
-      <div className={styles.tagsRow}>
-        {tags.map((tag) => (
-          <span key={tag} className={styles.tag}>
-            {tag}
-          </span>
-        ))}
-      </div>
-
-      <p className={styles.desc}>
+      {/* <p className={styles.desc}>
         정치/사회 섹션에서 정책 기사를 중심으로 취재하고 있습니다.
-      </p>
+      </p> */}
 
       <div className={styles.buttonRow}>
-        <button type="button" className={styles.primaryButton}>
-          + 구독
+        <button type="button" className={styles.primaryButton} onClick={handleSubscribe}>
+          {isSubscribed ? "구독 취소" : "+ 구독"}
         </button>
-        <button type="button" className={styles.secondaryButton}>
-          추천
+        <button type="button" className={styles.secondaryButton} onClick={handleRecommend}>
+          {isRecommended ? "추천 취소" : "추천"}
         </button>
       </div>
-
-      <div className={styles.emailBox}>{email}</div>
 
       <div className={styles.trustSection}>
         <div className={styles.trustHeader}>
@@ -99,10 +147,7 @@ export default function ReporterCard({ info }: { info: ReporterInfo }) {
 
       <div className={styles.bottomButtons}>
         <button type="button" className={styles.fullWidthButton}>
-          작성한 기사 확인
-        </button>
-        <button type="button" className={styles.fullWidthButton}>
-          날짜 입력
+          신뢰도 분석
         </button>
       </div>
     </div>
