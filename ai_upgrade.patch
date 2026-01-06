@@ -1,0 +1,796 @@
+diff --git a/back/src/main/java/gc_news/config/NewsCrawlScheduler.java b/back/src/main/java/gc_news/config/NewsCrawlScheduler.java
+index 45bf79e..aa3801c 100644
+--- a/back/src/main/java/gc_news/config/NewsCrawlScheduler.java
++++ b/back/src/main/java/gc_news/config/NewsCrawlScheduler.java
+@@ -12,7 +12,7 @@ public class NewsCrawlScheduler {
+     private final NewsCrawlingService newsCrawlingService;
+ 
+     // 3분마다 한 섹션씩
+-    @Scheduled(cron = "0 */3 * * * ?")
++    @Scheduled(cron = "0 */10 * * * ?")
+     public void crawlOneSectionEvery2Min() {
+         newsCrawlingService.crawlNextSection();
+     }
+diff --git a/back/src/main/java/gc_news/controller/ArticleAiController.java b/back/src/main/java/gc_news/controller/ArticleAiController.java
+new file mode 100644
+index 0000000..d79f82f
+--- /dev/null
++++ b/back/src/main/java/gc_news/controller/ArticleAiController.java
+@@ -0,0 +1,46 @@
++package gc_news.controller;
++
++import gc_news.entity.Summary;
++import gc_news.service.AiService;
++import lombok.RequiredArgsConstructor;
++import org.springframework.http.HttpStatus;
++import org.springframework.http.ResponseEntity;
++import org.springframework.web.bind.annotation.*;
++import gc_news.dto.ArticleSummaryDto;
++
++@RestController
++@RequestMapping("/api/articles")
++@RequiredArgsConstructor
++public class ArticleAiController {
++
++    private final AiService aiService;
++
++    @PostMapping("/{articleId}/ai-summary")
++public ResponseEntity<?> summarizeArticle(
++        @PathVariable Long articleId,
++        @RequestParam(defaultValue = "false") boolean force
++) {
++    try {
++        Summary summary = aiService.summarizeArticleFromDbAndSave(articleId, force);
++
++        ArticleSummaryDto dto = new ArticleSummaryDto(
++                summary.getSummaryId(),
++                summary.getSummaryText(),
++                summary.getScore(), 
++                summary.getCreatedAt()
++        );
++
++        return ResponseEntity.ok(dto);
++    } catch (IllegalArgumentException | IllegalStateException e) {
++        e.printStackTrace();
++        return ResponseEntity
++                .status(HttpStatus.BAD_REQUEST)
++                .body(e.getMessage());
++    } catch (Exception e) {
++        e.printStackTrace();
++        return ResponseEntity
++                .status(HttpStatus.INTERNAL_SERVER_ERROR)
++                .body("SERVER_ERROR: " + e.getClass().getSimpleName() + " - " + e.getMessage());
++    }
++}
++}
+\ No newline at end of file
+diff --git a/back/src/main/java/gc_news/controller/ArticleController.java b/back/src/main/java/gc_news/controller/ArticleController.java
+index 536ac3c..d68eeed 100644
+--- a/back/src/main/java/gc_news/controller/ArticleController.java
++++ b/back/src/main/java/gc_news/controller/ArticleController.java
+@@ -105,14 +105,6 @@ public class ArticleController {
+         return articleService.getHeadlineArticlesByTheme(themeId, limit);
+     }
+ 
+-    // ai 요약
+-    @PostMapping("/{articleId}/ai-summary")
+-    public ResponseEntity<Summary> summarize(
+-            @PathVariable Long articleId,
+-            @RequestParam(defaultValue = "false") boolean force) {
+-        Summary summary = aiService.summarizeArticleFromDbAndSave(articleId, force);
+-        return ResponseEntity.ok(summary);
+-    }
+ 
+     @GetMapping("/search")
+     public Page<Article> searchArticles(
+diff --git a/back/src/main/java/gc_news/dto/ArticleRequest.java b/back/src/main/java/gc_news/dto/ArticleRequest.java
+index 2ead0e3..590031c 100644
+--- a/back/src/main/java/gc_news/dto/ArticleRequest.java
++++ b/back/src/main/java/gc_news/dto/ArticleRequest.java
+@@ -11,5 +11,6 @@ public class ArticleRequest {
+     private String title;
+     private String content;
+     private String urlString;
++    private Integer aiScore;
+     private Long themeId;
+ }
+diff --git a/back/src/main/java/gc_news/dto/ArticleSummaryDto.java b/back/src/main/java/gc_news/dto/ArticleSummaryDto.java
+new file mode 100644
+index 0000000..c266790
+--- /dev/null
++++ b/back/src/main/java/gc_news/dto/ArticleSummaryDto.java
+@@ -0,0 +1,10 @@
++package gc_news.dto;
++
++import java.time.LocalDateTime;
++
++public record ArticleSummaryDto(
++        Long summaryId,
++        String summaryText,
++        Integer score, 
++        LocalDateTime createdAt
++) {}
+\ No newline at end of file
+diff --git a/back/src/main/java/gc_news/entity/Summary.java b/back/src/main/java/gc_news/entity/Summary.java
+index ff22505..fb1126d 100644
+--- a/back/src/main/java/gc_news/entity/Summary.java
++++ b/back/src/main/java/gc_news/entity/Summary.java
+@@ -39,6 +39,8 @@ public class Summary {
+ 
+     private LocalDateTime createdAt;
+ 
++    private Integer score;
++
+     @ManyToOne
+     @JoinColumn(name = "theme_id")
+     private Theme theme;
+diff --git a/back/src/main/java/gc_news/service/AiService.java b/back/src/main/java/gc_news/service/AiService.java
+index aa07935..a840259 100644
+--- a/back/src/main/java/gc_news/service/AiService.java
++++ b/back/src/main/java/gc_news/service/AiService.java
+@@ -2,6 +2,8 @@ package gc_news.service;
+ 
+ import java.time.LocalDateTime;
+ import java.util.List;
++import java.util.regex.Matcher;
++import java.util.regex.Pattern;
+ 
+ import org.springframework.ai.chat.messages.SystemMessage;
+ import org.springframework.ai.chat.messages.UserMessage;
+@@ -11,6 +13,7 @@ import org.springframework.ai.openai.OpenAiChatModel;
+ import org.springframework.ai.openai.OpenAiChatOptions;
+ import org.springframework.ai.openai.api.OpenAiApi;
+ import org.springframework.stereotype.Service;
++import org.jsoup.Jsoup;
+ 
+ import gc_news.entity.Article;
+ import gc_news.entity.Summary;
+@@ -27,125 +30,149 @@ public class AiService {
+         private final ArticleRepository articleRepository;
+         private final SummaryRepository summaryRepository;
+ 
+-        // 시스템 프롬프트 + 유저 프롬프트 형태 (조금 더 통제하고 싶을 때)
+-         public String askWithSystem(String systemPrompt, String userPrompt) {
+-        var system = new SystemMessage(systemPrompt);
+-        var user = new UserMessage(userPrompt);
+-
+-        var prompt = new Prompt(
+-                List.of(system, user),
+-                OpenAiChatOptions.builder()
+-                        .model(OpenAiApi.ChatModel.GPT_4_O)
+-                        .temperature(0.3)
+-                        .build()
+-        );
+-
+-        ChatResponse response = chatModel.call(prompt);
+-        return response.getResult().getOutput().getText();
+-    }
+-        // 기사 요약용 헬퍼 예시
+-       public String summarizeArticle(String articleText) {
+-        String userPrompt = "기사를 요약하고 평가해줘.\n\n[기사 본문]\n" + articleText;
+-
+-        var prompt = new Prompt(
+-                List.of(
+-                        new SystemMessage(
+-                                "당신은 뉴스 기사 품질 평가 전문가입니다. 다음 기준에 따라 기사를 평가해주세요. "
+-                                        + "### ⚠️ 평가 원칙 1. 우수한 저널리즘 기준으로 평가 (평범한 기사 = 평범한 점수) 2. 각 항목 최고점은 완벽한 경우에만 부여 3. 문제점 발견 시 즉시 감점 "
+-                                        + "### 평가 배점 (총 100점) - 내용 중심 평가 "
+-                                        + "#### Part A. 제목-본문 정합성 (40점) "
+-                                        + "- **키워드 일치도 (10점)** • 제목의 모든 키워드가 본문에 명확히 등장: 10점 • 대부분 일치하나 일부 불명확: 7점 • 절반 정도 일치: 5점 • 일치도 낮음: 3점 "
+-                                        + "- **주제 반영도 (10점)** • 본문 핵심이 제목에 정확히 요약됨: 10점 • 주요 내용 반영되나 부차적 내용 강조: 7점 • 부분적으로만 반영: 5점 • 제목과 본문 초점 불일치: 3점 "
+-                                        + "- **과장/왜곡 여부 (20점)** ← 강화 • 사실 그대로 전달, 완전 중립적: 20점 • 약간의 강조 표현: 16점 • 경미한 과장 (범위→단일값 등): 12점 • 선정적/모호한 표현: 8점 • 명백한 오도/클릭베이트: 0-4점 "
+-                                        + "#### Part B. 내용 구성 품질 (60점) "
+-                                        + "- **사실/의견 구분 명확성 (35점)** ← 강화 ※ 사실: 검증 가능한 객관적 정보 ※ 의견: 주장, 추측, 감정 표현 "
+-                                        + "• 사실 60% 이상 + 출처 명확: 35점 • 사실 45-59% + 출처 대부분 명확: 28점 • 사실 30-44% 또는 출처 일부 불명확: 20점 • 사실 30% 미만 또는 사실/의견 혼재: 12점 • 대부분 의견이나 추측: 5점 "
+-                                        + "- **내용 균형성 (25점)** ※ 5개 요소: 사실/수치/주장/배경/분석 "
+-                                        + "• 5개 요소 모두 충실히 포함: 25점 • 4개 요소 포함: 20점 • 3개 요소 포함: 15점 • 2개 요소: 10점 • 1개 이하: 5점 "
+-                                        + "### 세부 분석 항목 "
+-                                        + "1. 사실 (Facts): 공식 발표, 실명 인용, 검증 가능한 데이터 "
+-                                        + "2. 수치 (Numbers): 출처가 명확한 구체적 숫자 "
+-                                        + "3. 주장 (Claims): 의견, 추측, 익명 인용, 감정 표현 "
+-                                        + "4. 배경설명 (Context): 과거 경위, 관련 정보 "
+-                                        + "5. 분석 (Analysis): 전문가 실명 견해, 근거 있는 인과관계 "
+-                                        + "### 점수 해석 가이드 "
+-                                        + "- 75점 이상: 우수한 기사 - 60-74점: 평균적 기사 - 45-59점: 미흡한 기사 - 45점 미만: 저품질 기사 "
+-                                        + "### 출력 형식(반드시 준수): "
+-                                        + "1) 요약(5줄):\r\n"
+-                                        + "- ...\r\n"
+-                                        + "- ...\r\n"
+-                                        + "- ...\r\n"
+-                                        + "- ...\r\n"
+-                                        + "- ...\r\n"
+-                                        + "\r\n"
+-                                        + "2) 핵심 포인트(3개):\r\n"
+-                                        + "- ...\r\n"
+-                                        + "- ...\r\n"
+-                                        + "- ...\r\n"
+-                                        + "\r\n"
+-                                        + "3) ━━━━━━━━━━━━━━━━━━━━━━━━\r\n"
+-                                        + " 종합 평가 점수: __/100점 [Part A] 제목-본문 정합성: __/40점 "
+-                                        + "- 키워드 일치도: __/10점 - 주제 반영도: __/10점 - 과장/왜곡: __/20점 "
+-                                        + "[Part B] 내용 구성 품질: __/60점 - 사실/의견 구분: __/35점 - 내용 균형성: __/25점 "
+-                                        + " 내용 구성 비율: - 사실: __% - 수치: __% - 주장/의견: __% - 배경: __% - 분석: __% "
+-                                        + " 평가 등급: [등급]"
+-                        ),
+-                        new UserMessage(userPrompt)
+-                ),
+-                OpenAiChatOptions.builder()
+-                        .model(OpenAiApi.ChatModel.GPT_4_O)
+-                        .temperature(0.2)
+-                        .build()
+-        );
+-
+-        ChatResponse response = chatModel.call(prompt);
+-        return response.getResult().getOutput().getText();
+-    }
+-
+-    // =========================
+-    // 3) ★ 여기 추가: articleId 기반으로 DB에서 가져와 Summary 저장/재사용 (B안)
+-    // =========================
+-    public Summary summarizeArticleFromDbAndSave(Long articleId, boolean force) {
+-
+-        // 3-1) 캐시 조회 (Summary.TargetType.article 기준)
+-        if (!force) {
+-            return summaryRepository
+-                    .findTopByTargetTypeAndTargetIdOrderByCreatedAtDesc(
+-                            Summary.TargetType.article, articleId
+-                    )
+-                    .orElse(null); // 없으면 새로 생성으로 진행
++        // ✅ 1) "점수: 82점" 같은 문장에서 숫자만 뽑아내는 정규식 패턴
++        private static final Pattern SCORE_PATTERN = Pattern.compile("점수:\\s*(\\d+)점");
++
++        // ✅ 2) Summary 전체 텍스트에서 점수만 추출하는 헬퍼 메서드
++        private Integer extractScore(String text) {
++                if (text == null)
++                        return null;
++
++                Matcher m = SCORE_PATTERN.matcher(text);
++                if (m.find()) {
++                        try {
++                                return Integer.parseInt(m.group(1)); // "82" -> 82
++                        } catch (NumberFormatException ignored) {
++                        }
++                }
++                return null; // 점수 못 찾으면 null
+         }
+ 
+-        // 3-2) 기사 조회
+-        Article article = articleRepository.findById(articleId)
+-                .orElseThrow(() -> new IllegalArgumentException("Article not found: " + articleId));
++        // 시스템 프롬프트 + 유저 프롬프트 형태 (조금 더 통제하고 싶을 때)
++        public String askWithSystem(String systemPrompt, String userPrompt) {
++                var system = new SystemMessage(systemPrompt);
++                var user = new UserMessage(userPrompt);
++
++                var prompt = new Prompt(
++                                List.of(system, user),
++                                OpenAiChatOptions.builder()
++                                                .model(OpenAiApi.ChatModel.GPT_4_O)
++                                                .temperature(0.3)
++                                                .build());
++
++                ChatResponse response = chatModel.call(prompt);
++                return response.getResult().getOutput().getText();
++        }
+ 
+-        if (article.getContent() == null || article.getContent().isBlank()) {
+-            throw new IllegalStateException("Article content is empty: " + articleId);
++        // 기사 요약용 헬퍼 예시
++        public String summarizeArticle(String articleText) {
++                String userPrompt = "기사를 요약하고 평가해줘.\n\n[기사 본문]\n" + articleText;
++
++                var prompt = new Prompt(
++                                List.of(
++                                                new SystemMessage(
++                                                                "당신은 뉴스 기사 품질 평가 전문가입니다. 다음 기준에 따라 기사를 평가해주세요. "
++                                                                                + "### ⚠️ 평가 원칙 1. 우수한 저널리즘 기준으로 평가 (평범한 기사 = 평범한 점수) 2. 각 항목 최고점은 완벽한 경우에만 부여 3. 문제점 발견 시 즉시 감점 "
++                                                                                + "### 평가 배점 (총 100점) - 내용 중심 평가 "
++                                                                                + "#### Part A. 제목-본문 정합성 (40점) "
++                                                                                + "- **키워드 일치도 (10점)** • 제목의 모든 키워드가 본문에 명확히 등장: 10점 • 대부분 일치하나 일부 불명확: 7점 • 절반 정도 일치: 5점 • 일치도 낮음: 3점 "
++                                                                                + "- **주제 반영도 (10점)** • 본문 핵심이 제목에 정확히 요약됨: 10점 • 주요 내용 반영되나 부차적 내용 강조: 7점 • 부분적으로만 반영: 5점 • 제목과 본문 초점 불일치: 3점 "
++                                                                                + "- **과장/왜곡 여부 (20점)** ← 강화 • 사실 그대로 전달, 완전 중립적: 20점 • 약간의 강조 표현: 16점 • 경미한 과장 (범위→단일값 등): 12점 • 선정적/모호한 표현: 8점 • 명백한 오도/클릭베이트: 0-4점 "
++                                                                                + "#### Part B. 내용 구성 품질 (60점) "
++                                                                                + "- **사실/의견 구분 명확성 (35점)** ← 강화 ※ 사실: 검증 가능한 객관적 정보 ※ 의견: 주장, 추측, 감정 표현 "
++                                                                                + "• 사실 60% 이상 + 출처 명확: 35점 • 사실 45-59% + 출처 대부분 명확: 28점 • 사실 30-44% 또는 출처 일부 불명확: 20점 • 사실 30% 미만 또는 사실/의견 혼재: 12점 • 대부분 의견이나 추측: 5점 "
++                                                                                + "- **내용 균형성 (25점)** ※ 5개 요소: 사실/수치/주장/배경/분석 "
++                                                                                + "• 5개 요소 모두 충실히 포함: 25점 • 4개 요소 포함: 20점 • 3개 요소 포함: 15점 • 2개 요소: 10점 • 1개 이하: 5점 "
++                                                                                + "### 세부 분석 항목 "
++                                                                                + "1. 사실 (Facts): 공식 발표, 실명 인용, 검증 가능한 데이터 "
++                                                                                + "2. 수치 (Numbers): 출처가 명확한 구체적 숫자 "
++                                                                                + "3. 주장 (Claims): 의견, 추측, 익명 인용, 감정 표현 "
++                                                                                + "4. 배경설명 (Context): 과거 경위, 관련 정보 "
++                                                                                + "5. 분석 (Analysis): 전문가 실명 견해, 근거 있는 인과관계 "
++                                                                                + "### 점수 해석 가이드 "
++                                                                                + "- 75점 이상: 우수한 기사 - 60-74점: 평균적 기사 - 45-59점: 미흡한 기사 - 45점 미만: 저품질 기사 "
++                                                                                + "### 출력 형식(반드시 준수): "
++                                                                                + "1) 요약(3줄):\r\n"
++                                                                                + "- ...\r\n"
++                                                                                + "- ...\r\n"
++                                                                                + "- ...\r\n"
++
++                                                                                + "\r\n"
++                                                                                + "2) 핵심 포인트(1줄):\r\n"
++                                                                                + "- ...\r\n"
++
++                                                                                + "\r\n"
++                                                                                + "3) ━━━━━━━━━━━━━━━━━━━━━━━━\r\n"
++                                                                                + " 평가 등급: [등급]\n [Part A] 제목-본문 정합성: __/40점 "
++                                                                                + "- 키워드 일치도: __/10점 - 주제 반영도: __/10점 - 과장/왜곡: __/20점\n"
++                                                                                + "[Part B] 내용 구성 품질: __/60점 - 사실/의견 구분: __/35점 - 내용 균형성: __/25점 "
++                                                                                + " 내용 구성 비율: - 사실: __% - 수치: __% - 주장/의견: __% - 배경: __% - 분석: __% "
++                                                                                + " \n 점수: __점"),
++                                                new UserMessage(userPrompt)),
++                                OpenAiChatOptions.builder()
++                                                .model(OpenAiApi.ChatModel.GPT_4_O)
++                                                .temperature(0.2)
++                                                .build());
++
++                ChatResponse response = chatModel.call(prompt);
++                return response.getResult().getOutput().getText();
+         }
+ 
+-        // 3-3) 제목 + 본문을 하나의 텍스트로 조합
+-        String input = """
+-                [제목]
+-                %s
+-
+-                [본문]
+-                %s
+-                """.formatted(article.getTitle(), article.getContent());
+-
+-        // 3-4) 위에서 만든 summarizeArticle() 재사용
+-        String resultText = summarizeArticle(input);
+-
+-        // 3-5) Summary 엔티티 구성 후 저장
+-        Summary summary = Summary.builder()
+-                .targetType(Summary.TargetType.article)
+-                .targetId(articleId)
+-                .summaryText(resultText)
+-                .createdAt(LocalDateTime.now())
+-                .article(article)
+-                .theme(article.getTheme())
+-                .build();
+-
+-        return summaryRepository.save(summary);
+-    }
++        // =========================
++        // 3) 여기 추가: articleId 기반으로 DB에서 가져와 Summary 저장/재사용 (B안)
++        // =========================
++        public Summary summarizeArticleFromDbAndSave(Long articleId, boolean force) {
++
++                // 1) 캐시 조회
++                Summary cached = summaryRepository
++                                .findTopByTargetTypeAndTargetIdOrderByCreatedAtDesc(
++                                                Summary.TargetType.article,
++                                                articleId)
++                                .orElse(null);
++
++                if (!force && cached != null) {
++                        return cached;
++                }
++
++                // 2) 기사 조회
++                Article article = articleRepository.findById(articleId)
++                                .orElseThrow(() -> new IllegalArgumentException("Article not found: " + articleId));
++
++                // 3) 본문 텍스트 얻기 (content 기준)
++                String rawContent = article.getContent();
++
++                if (rawContent == null || rawContent.isBlank()) {
++                        throw new IllegalStateException("Article content is empty: " + articleId);
++                }
++
++                // HTML일 수도 있으니 한 번 정리해주기 (태그 제거)
++                String cleanedContent = Jsoup.parse(rawContent).text();
++
++                // 4) 제목 + 본문 합치기
++                String input = """
++                                [제목]
++                                %s
++
++                                [본문]
++                                %s
++                                """.formatted(article.getTitle(), cleanedContent);
++
++                // 5) 실제 요약/평가 호출
++                String resultText = summarizeArticle(input);
++
++                Integer score = extractScore(resultText);
++
++                // 6) Summary 저장
++                Summary summary = Summary.builder()
++                                .targetType(Summary.TargetType.article)
++                                .targetId(articleId)
++                                .summaryText(resultText)
++                                .score(score)
++                                .createdAt(LocalDateTime.now())
++                                .article(article)
++                                .theme(article.getTheme())
++                                .build();
++
++                return summaryRepository.save(summary);
++        }
+ }
+\ No newline at end of file
+diff --git a/front/src/components/categorypage/CategoryArticleList.css b/front/src/components/categorypage/CategoryArticleList.css
+index 8c64a30..7aaa11d 100644
+--- a/front/src/components/categorypage/CategoryArticleList.css
++++ b/front/src/components/categorypage/CategoryArticleList.css
+@@ -35,3 +35,27 @@
+   gap: 10px;
+   justify-content: center;
+ }
++
++.title-row {
++  display: flex;
++  align-items: center;
++  gap: 8px;
++}
++
++
++.ai-score-badge {
++  padding: 2px 10px;
++  border-radius: 999px;
++  background-color: #4da3ff; 
++  color: #ffffff;           
++  font-size: 0.8rem;
++  font-weight: 600;
++  display: inline-flex;
++  align-items: center;
++}
++
++
++.ai-score-badge-list {
++  font-size: 0.7rem;
++  padding: 1px 8px;
++}
+diff --git a/front/src/components/categorypage/CategoryArticleList.tsx b/front/src/components/categorypage/CategoryArticleList.tsx
+index e2705e3..ed874ac 100644
+--- a/front/src/components/categorypage/CategoryArticleList.tsx
++++ b/front/src/components/categorypage/CategoryArticleList.tsx
+@@ -8,6 +8,7 @@ interface Article {
+   title: string;
+   press: string;
+   publishedAt: string;
++  aiScore?: number | null;
+ }
+ 
+ export default function CategoryArticleList({ themeId }: { themeId: number }) {
+@@ -33,17 +34,25 @@ export default function CategoryArticleList({ themeId }: { themeId: number }) {
+ 
+       <ul>
+         {articles.map((a) => (
+-          <li key={a.articleId}>
+-            {/* ❗️여기가 핵심: 제목 클릭 → 기사 상세 */}
+-            <Link to={`/news/${a.articleId}`} className="article-link">
+-              <span className="title">{a.title}</span>
+-              <span className="meta">
+-                {a.press} ·{" "}
+-                {new Date(a.publishedAt).toLocaleDateString()}
+-              </span>
+-            </Link>
+-          </li>
+-        ))}
++    <li key={a.articleId}>
++      <Link to={`/news/${a.articleId}`} className="article-link">
++        {/* 제목 + 뱃지를 한 줄로 묶기 */}
++        <span className="title-row">
++          <span className="title">{a.title}</span>
++
++          {a.aiScore != null && (
++            <span className="ai-score-badge ai-score-badge-list">
++              AI {a.aiScore}점
++            </span>
++          )}
++        </span>
++
++        <span className="meta">
++          {a.press} · {new Date(a.publishedAt).toLocaleDateString()}
++        </span>
++      </Link>
++    </li>
++  ))}
+       </ul>
+ 
+       <div className="pagination">
+diff --git a/front/src/page/NewsDetailPage.css b/front/src/page/NewsDetailPage.css
+index 9b7d46a..4c42eb0 100644
+--- a/front/src/page/NewsDetailPage.css
++++ b/front/src/page/NewsDetailPage.css
+@@ -56,6 +56,57 @@
+   gap: 8px;
+ }
+ 
++.ai-summary-box {
++  margin: 24px 0;
++  padding: 16px;
++  border-radius: 8px;
++  background-color: #f5f7fb;
++  border: 1px solid #dde3f0;
++}
++
++.ai-summary-text {
++  white-space: pre-wrap;
++  font-family: inherit;
++  margin-top: 8px;
++}
++
++.ai-summary-error {
++  margin: 16px 0;
++  color: #d9534f;
++}
++
++.ai-summary-meta {
++  margin-top: 8px;
++  font-size: 0.85rem;
++  color: #666;
++}
++
++.ai-summary-btn {
++  margin-left: 8px;
++  padding: 4px 10px;
++  border-radius: 4px;
++  border: 1px solid #ccc;
++  background: #ffffff;
++  cursor: pointer;
++}
++
++.ai-summary-btn:disabled {
++  opacity: 0.6;
++  cursor: default;
++}
++
++.ai-score-badge {
++  margin-left: 8px;
++  padding: 2px 10px;          
++  font-size: 0.8rem;          
++  border-radius: 999px;       
++  background-color: #4da3ff;  
++  color: #ffffff;             
++  display: inline-flex;
++  align-items: center;
++  font-weight: 600;
++}
++
+ /* 대표 이미지 */
+ .article-image {
+   margin: 24px 0;
+diff --git a/front/src/page/NewsDetailPage.tsx b/front/src/page/NewsDetailPage.tsx
+index be30a1e..cb071f8 100644
+--- a/front/src/page/NewsDetailPage.tsx
++++ b/front/src/page/NewsDetailPage.tsx
+@@ -31,6 +31,14 @@ interface ArticleDetail {
+   reporter?: ReporterSummary | null;     //  새로 추가된 기자 객체
+ }
+ 
++interface ArticleSummary {
++  summaryId: number;
++  summaryText: string;
++  score: number | null;
++  createdAt: string;
++}
++
++
+ 
+ 
+ export default function NewsDetailPage() {
+@@ -44,6 +52,11 @@ export default function NewsDetailPage() {
+   const [isBookmarked, setIsBookmarked] = useState<boolean | null>(null);
+   const [bookmarkLoading, setBookmarkLoading] = useState(false);
+ 
++  // ✅ AI 요약 state
++  const [aiSummary, setAiSummary] = useState<ArticleSummary | null>(null);
++  const [aiLoading, setAiLoading] = useState(false);
++  const [aiError, setAiError] = useState<string | null>(null);
++
+   /* ===============================
+      기사 상세 조회
+   =============================== */
+@@ -88,6 +101,8 @@ export default function NewsDetailPage() {
+         console.error("북마크 상태 조회 실패:", e);
+         setIsBookmarked(false);
+       }
++
++
+     };
+ 
+     fetchBookmarkStatus();
+@@ -118,6 +133,35 @@ export default function NewsDetailPage() {
+       setBookmarkLoading(false);
+     }
+   };
++  const handleAiSummary = async () => {
++    if (!isLoggedIn()) {
++      alert("AI 요약은 로그인 후 이용할 수 있습니다.");
++      // 필요하면 여기서 로그인 페이지로 이동도 가능
++      // window.location.href = "/login";
++      return;
++    }
++
++    if (!id) return;
++
++    try {
++      setAiLoading(true);
++      setAiError(null);
++
++      // force=false -> 기존 요약이 있으면 재사용, 없으면 새로 생성
++      const res = await api.post<ArticleSummary>(
++        `/articles/${id}/ai-summary`,
++        null,
++        { params: { force: false } }
++      );
++
++      setAiSummary(res.data);
++    } catch (e) {
++      console.error("AI 요약 호출 실패:", e);
++      setAiError("AI 요약을 불러오지 못했습니다.");
++    } finally {
++      setAiLoading(false);
++    }
++  };
+ 
+   /* ===============================
+      렌더링 분기
+@@ -127,70 +171,100 @@ export default function NewsDetailPage() {
+   if (!article)
+     return <div className="news-loading">기사 데이터를 찾을 수 없습니다.</div>;
+ 
+-  
+-  
++
++
+ 
+   return (
+-  <div className="article-detail-layout">
+-    {/* 왼쪽: 기자 에셋 */}
+-    {article.reporter && (
+-      <aside style={{ marginBottom: 24 }}>
+-        <ReporterAssetm reporter={article.reporter} />
+-      </aside>
+-    )}
+-
+-    {/* 오른쪽: 기사 본문 */}
+-    <article className="news-detail">
+-      {/* 헤더 */}
+-      <header className="article-header">
+-        <div className="press">{article.press}</div>
+-        <h1 className="title">{article.title}</h1>
+-
+-        <div className="meta">
+-          {/* 우선순위: reporter 객체 > reporterName 문자열 */}
+-          {article.reporter?.name && (
+-            <span className="reporter">{article.reporter.name} 기자</span>
+-          )}
+-          {!article.reporter?.name && article.reporterName && (
+-            <span className="reporter">{article.reporterName} 기자</span>
+-          )}
+-
+-          <span className="date">
+-            입력 {new Date(article.publishedAt).toLocaleString()}
+-          </span>
+-
+-          {/* ✅ 북마크 버튼 */}
+-          {isBookmarked !== null && (
++    <div className="article-detail-layout">
++      {/* 왼쪽: 기자 에셋 */}
++      {article.reporter && (
++        <aside style={{ marginBottom: 24 }}>
++          <ReporterAssetm reporter={article.reporter} />
++        </aside>
++      )}
++
++      {/* 오른쪽: 기사 본문 */}
++      <article className="news-detail">
++        {/* 헤더 */}
++        <header className="article-header">
++          <div className="press">{article.press}</div>
++          <h1 className="title">{article.title}
++
++            {/*AI 점수 뱃지 */}
++            {aiSummary?.score != null && (
++              <span className="ai-score-badge">
++                AI 평가 {aiSummary.score}점
++              </span>
++            )}
++          </h1>
++
++          <div className="meta">
++            {/* 우선순위: reporter 객체 > reporterName 문자열 */}
++            {article.reporter?.name && (
++              <span className="reporter">{article.reporter.name} 기자</span>
++            )}
++            {!article.reporter?.name && article.reporterName && (
++              <span className="reporter">{article.reporterName} 기자</span>
++            )}
++
++            <span className="date">
++              입력 {new Date(article.publishedAt).toLocaleString()}
++            </span>
++
++            {/*  북마크 버튼 */}
++            {isBookmarked !== null && (
++              <button
++                className={`bookmark-btn ${isBookmarked ? "active" : ""}`}
++                onClick={toggleBookmark}
++                disabled={bookmarkLoading}
++              >
++                {isBookmarked ? "북마크 취소" : "북마크"}
++              </button>
++            )}
++
++            {/*  AI 요약 버튼 (로그인 체크는 핸들러에서 함) */}
+             <button
+-              className={`bookmark-btn ${isBookmarked ? "active" : ""}`}
+-              onClick={toggleBookmark}
+-              disabled={bookmarkLoading}
++              className="ai-summary-btn"
++              onClick={handleAiSummary}
++              disabled={aiLoading}
+             >
+-              {isBookmarked ? "북마크 취소" : "북마크"}
++              {aiLoading ? "AI 요약 중..." : "AI 요약"}
+             </button>
+-          )}
+-        </div>
+-      </header>
+-
+-      {/* 대표 이미지 */}
+-      {article.mediaList?.[0]?.url && (
+-        <figure className="article-image">
+-          <img src={article.mediaList[0].url} alt={article.title} />
+-        </figure>
+-      )}
++          </div>
++        </header>
++
++        {/*  여기! 북마크/AI 버튼 바로 아래쪽에 표시 */}
++        {aiError && <div className="ai-summary-error">{aiError}</div>}
++
++        {aiSummary && (
++          <section className="ai-summary-box">
++            <h2>AI 요약</h2>
++            <pre className="ai-summary-text">{aiSummary.summaryText}</pre>
++            <div className="ai-summary-meta">
++              생성 시각: {new Date(aiSummary.createdAt).toLocaleString()}
++            </div>
++          </section>
++        )}
++
++        {/* 대표 이미지 */}
++        {article.mediaList?.[0]?.url && (
++          <figure className="article-image">
++            <img src={article.mediaList[0].url} alt={article.title} />
++          </figure>
++        )}
++
++        {/* 본문 */}
++        <section
++          className="article-body"
++          dangerouslySetInnerHTML={{
++            __html: article.contentHtml || "",
++          }}
++        />
+ 
+-      {/* 본문 */}
+-      <section
+-        className="article-body"
+-        dangerouslySetInnerHTML={{
+-          __html: article.contentHtml || "",
+-        }}
+-      />
+-
+-      {/* 반응 / 댓글 컴포넌트 */}
+-      <ArticleReaction articleId={article.articleId} />
+-      <ArticleComments articleId={article.articleId} />
+-    </article>
+-     </div>
++        {/* 반응 / 댓글 컴포넌트 */}
++        <ArticleReaction articleId={article.articleId} />
++        <ArticleComments articleId={article.articleId} />
++      </article>
++    </div>
+   );
+ }
+diff --git a/git b/git
+deleted file mode 100644
+index e69de29..0000000

@@ -82,6 +82,13 @@ public class ArticleController {
         return articleService.getLatestArticles(limit);
     }
 
+    // 칼럼 조회 (Theme 200)
+    @GetMapping("/columns")
+    public List<Article> getLatestColumns(
+            @RequestParam(defaultValue = "10") int limit) {
+        return articleService.getLatestColumns(limit);
+    }
+
     // 카테고리별 최신 기사 조회 (페이지 처리)
     // 예: /api/articles/category/{themeId}?page=0&size=10
     @GetMapping("/category/{themeId}")

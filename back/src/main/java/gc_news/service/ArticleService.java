@@ -4,7 +4,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import gc_news.entity.Article;
+import gc_news.entity.Summary;
 import gc_news.repository.ArticleRepository;
+import gc_news.repository.SummaryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,6 +32,7 @@ public class ArticleService {
     private final ReporterRepository reporterRepository;
     private final ArticleRepository articleRepository;
     private final ReporterArticleCrawlingService reporterArticleCrawlingService;
+    private final SummaryRepository summaryRepository;
 
     // 단일 기사 상세 조회
     @Transactional(readOnly = true)
@@ -140,14 +143,18 @@ public class ArticleService {
                 // 1) 최근 days 기준으로 필터
                 .filter(a -> a.getPublishedAt() != null
                         && !a.getPublishedAt().isBefore(cutoff))
-                // 2) themeId가 넘어온 경우, 해당 테마만 필터
+                // 2) 칼럼(Theme 200) 제외
+                .filter(a -> a.getTheme() == null
+                        || a.getTheme().getThemeId() == null
+                        || !Long.valueOf(200L).equals(a.getTheme().getThemeId()))
+                // 3) themeId가 넘어온 경우, 해당 테마만 필터
                 .filter(a -> themeId == null
                         || (a.getTheme() != null
                                 && a.getTheme().getThemeId() != null
                                 && themeId.equals(a.getTheme().getThemeId())))
-                // 3) 날짜 기준 최신순 정렬 (publishedAt 내림차순)
+                // 4) 날짜 기준 최신순 정렬 (publishedAt 내림차순)
                 .sorted(Comparator.comparing(Article::getPublishedAt).reversed())
-                // 4) 상위 limit개만 사용
+                // 5) 상위 limit개만 사용
                 .limit(limit)
                 .toList();
     }
@@ -166,7 +173,9 @@ public class ArticleService {
                         && !a.getPublishedAt().isBefore(cutoff))
                 // 2) themeId가 있는 기사만 (null 방지)
                 .filter(a -> a.getTheme() != null && a.getTheme().getThemeId() != null)
-                // 3) themeId 별로 그룹핑
+                // 3) 칼럼(Theme 200) 제외
+                .filter(a -> !Long.valueOf(200L).equals(a.getTheme().getThemeId()))
+                // 4) themeId 별로 그룹핑
                 .collect(Collectors.groupingBy(
                         a -> a.getTheme().getThemeId(),
                         // 4) 각 그룹 안에서 날짜 기준 최신순 상위 limitPerTheme개만 남기기
@@ -185,12 +194,47 @@ public class ArticleService {
                 PageRequest.of(0, limit));
     }
 
-    // 카테고리별 최신 기사 (페이지네이션)
+    // 카테고리별 최신 기사 (페이지네이션) + AI 점수 포함
     @Transactional(readOnly = true)
     public Page<Article> getArticlesByTheme(Long themeId, Pageable pageable) {
-        // 이미 CategoryPage 가 잘 뜬다고 했으니,
-        // ArticleRepository 안에 이 메서드가 정의되어 있다고 가정.
-        return articleRepository.findByTheme_ThemeIdOrderByPublishedAtDesc(themeId, pageable);
+        Page<Article> articles = articleRepository.findByTheme_ThemeIdOrderByPublishedAtDesc(themeId, pageable);
+
+        // AI 점수 세팅
+        enrichArticlesWithAiScores(articles.getContent());
+
+        return articles;
+    }
+
+    // 기사 목록에 AI 점수를 세팅하는 헬퍼 메서드
+    private void enrichArticlesWithAiScores(List<Article> articles) {
+        if (articles == null || articles.isEmpty()) {
+            return;
+        }
+
+        // 1. 기사 ID 목록 추출
+        List<Long> articleIds = articles.stream()
+                .map(Article::getArticleId)
+                .toList();
+
+        // 2. 한 번에 모든 Summary 조회 (성능 최적화)
+        List<Summary> summaries = summaryRepository.findLatestScoresByTargetIds(
+                Summary.TargetType.article,
+                articleIds
+        );
+
+        // 3. articleId -> score 매핑
+        Map<Long, Integer> scoreMap = summaries.stream()
+                .collect(Collectors.toMap(
+                        Summary::getTargetId,
+                        Summary::getScore,
+                        (existing, replacement) -> existing // 중복 시 기존 값 유지
+                ));
+
+        // 4. 각 Article에 점수 세팅
+        articles.forEach(article -> {
+            Integer score = scoreMap.get(article.getArticleId());
+            article.setAiScore(score);
+        });
     }
 
     @Transactional
@@ -205,6 +249,13 @@ public class ArticleService {
     @Transactional(readOnly = true)
     public List<Article> getLatestArticles(int limit) {
         return articleRepository.findTopLatestArticles(PageRequest.of(0, limit));
+    }
+
+    // 칼럼 조회 (Theme 200)
+    @Transactional(readOnly = true)
+    public List<Article> getLatestColumns(int limit) {
+        return articleRepository.findByTheme_ThemeIdOrderByPublishedAtDesc(200L, PageRequest.of(0, limit))
+                .getContent();
     }
 
     /**

@@ -16,13 +16,16 @@
 }
 
 .category-list .title {
-  display: block;
+  flex: 1;
   font-size: 16px;
+  line-height: 1.5;
 }
 
 .category-list .meta {
   font-size: 12px;
   color: #777;
+  display: block;
+  margin-top: 4px;
 }
 
 .category-list ul li a:hover .title {
@@ -40,18 +43,21 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  width: 100%;
 }
 
 
 .ai-score-badge {
   padding: 2px 10px;
   border-radius: 999px;
-  background-color: #4da3ff; 
-  color: #ffffff;           
+  background-color: #4da3ff;
+  color: #ffffff;
   font-size: 0.8rem;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 

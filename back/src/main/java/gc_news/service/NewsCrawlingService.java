@@ -296,4 +296,122 @@ public class NewsCrawlingService {
         }
     }
 
+    /**
+     * 네이버 칼럼 목록 크롤링
+     * - https://news.naver.com/opinion/column
+     * - 칼럼 전용 섹션 (Theme ID 200)
+     */
+    public void crawlOpinionColumns() {
+
+        if (!crawling.compareAndSet(false, true)) {
+            System.out.println("### crawlOpinionColumns already running - skip");
+            return;
+        }
+
+        try {
+            String url = "https://news.naver.com/opinion/column";
+
+            Document doc = Jsoup.connect(url)
+                    .userAgent("Mozilla/5.0")
+                    .timeout(5000)
+                    .get();
+
+            // li.opinion_column_item 이 한 칼럼 카드
+            Elements items = doc.select("div.opinion_column_list li.opinion_column_item");
+            System.out.println("[COLUMN] li.opinion_column_item size = " + items.size());
+
+            // Theme 200 (칼럼) 조회
+            Theme columnTheme = themeRepository.findById(200L).orElse(null);
+
+            for (Element item : items) {
+
+                // 1) 링크
+                Element linkEl = item.selectFirst("a.link[href*=/article/]");
+                if (linkEl == null) {
+                    System.out.println("[COLUMN] linkEl null, skip");
+                    continue;
+                }
+
+                String link = linkEl.attr("href");
+                if (link == null || link.isBlank()) {
+                    System.out.println("[COLUMN] empty href, skip");
+                    continue;
+                }
+
+                if (articleRepository.existsByUrlString(link)) {
+                    System.out.println("[COLUMN] already exists, skip: " + link);
+                    continue;
+                }
+
+                // 2) 제목
+                Element titleEl = item.selectFirst("strong.title");
+                String title = titleEl != null ? titleEl.text() : linkEl.text();
+
+                // 3) 언론사
+                String press = "";
+                Elements subItems = item.select("div.sub_info span.sub_item");
+                if (!subItems.isEmpty()) {
+                    press = subItems.get(0).text();
+                }
+
+                // 4) 썸네일
+                Element imgEl = item.selectFirst("div.image img");
+                String photoUrl = null;
+                if (imgEl != null) {
+                    photoUrl = firstNonBlank(
+                            imgEl.attr("src"),
+                            imgEl.attr("data-src"),
+                            imgEl.attr("data-lazy-src")
+                    );
+                    photoUrl = normalizeUrl(photoUrl);
+                }
+
+                Article article = Article.builder()
+                        .title(title)
+                        .press(press)
+                        .urlString(link)
+                        .theme(columnTheme)
+                        .publishedAt(LocalDateTime.now())
+                        .build();
+
+                Article saved = articleRepository.save(article);
+
+                if (photoUrl != null) {
+                    ArticleMedia media = ArticleMedia.builder()
+                            .mediaType(ArticleMedia.MediaType.image)
+                            .url(photoUrl)
+                            .article(saved)
+                            .build();
+                    articleMediaRepository.save(media);
+                }
+
+                System.out.println("[COLUMN] saved: press=" + press + " / title=" + title);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            crawling.set(false);
+        }
+    }
+
+    /** 여러 후보 중 처음으로 null/빈문자열이 아닌 값을 반환 */
+    private String firstNonBlank(String... candidates) {
+        for (String c : candidates) {
+            if (c != null && !c.isBlank()) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    /** "", null → null / //로 시작하면 https: 붙여주는 정도만 처리 */
+    private String normalizeUrl(String url) {
+        if (url == null || url.isBlank()) return null;
+        if (url.startsWith("//")) {
+            return "https:" + url;
+        }
+        return url;
+    }
+
 }
