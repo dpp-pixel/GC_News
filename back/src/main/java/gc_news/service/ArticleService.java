@@ -43,7 +43,11 @@ public class ArticleService {
 
     @Transactional(readOnly = true)
     public List<Article> getHeadlineArticles(int limit) {
+
+        LocalDateTime fromDate = LocalDateTime.now().minusDays(3);
+
         return articleRepository.findHeadlineArticles(
+                fromDate,
                 PageRequest.of(0, limit));
     }
 
@@ -189,8 +193,11 @@ public class ArticleService {
 
     @Transactional(readOnly = true)
     public List<Article> getHeadlineArticlesByTheme(Long themeId, int limit) {
+
+        LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
         return articleRepository.findHeadlineArticlesByTheme(
                 themeId,
+                threeDaysAgo,
                 PageRequest.of(0, limit));
     }
 

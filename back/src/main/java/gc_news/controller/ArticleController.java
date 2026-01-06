@@ -104,11 +104,9 @@ public class ArticleController {
             @RequestParam(defaultValue = "5") int limit) {
 
         if (themeId == null) {
-
             return articleService.getHeadlineArticles(limit);
         }
 
-        // 카테고리별 헤드라인
         return articleService.getHeadlineArticlesByTheme(themeId, limit);
     }
 

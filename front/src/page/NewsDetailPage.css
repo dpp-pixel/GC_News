@@ -3,44 +3,26 @@
    전체 레이아웃
    =========================== */
 
-/* 페이지 전체: 가운데 정렬 */
-.news-detail-page {
+/* 페이지 전체 컨테이너 - 기사 본문만 중앙 정렬 */
+.article-detail-layout {
   display: flex;
-  justify-content: center; /* 전체 묶음을 가운데로 */
-
-}
-
-/* 기자 카드 + 기사 본문을 묶는 래퍼 */
-.news-detail-main-wrapper {
-  display: flex;
-  align-items: flex-start;
-  gap: 40px; /* 카드와 기사 사이 간격 */
-
-  max-width: 1200px;
-  width: 100%;
+  justify-content: center;
   padding: 24px 16px 80px;
-  box-sizing: border-box;
-
-  /* 🔴 보정값: 400 → 150으로 줄임 */
-  margin-left: -150px;
 }
 
-/* 왼쪽 기자 카드 영역 (기사 페이지 전용) */
-.news-detail-sidebar {
-  flex: 0 0 320px;
-  /* 🔴 카드 전체를 아래로 내리는 값 (필요하면 숫자만 조절) */
-  margin-top: 120px;
-}
-
-/* 기사 페이지에서만 ReporterCard 폭 덮어쓰기 */
-.news-detail-sidebar > div {
-  width: 320px !important;
-}
-
-/* 오른쪽 기사 영역 */
+/* 기사 본문 영역 - 화면 중앙에 고정 */
 .news-detail {
-  flex: 1;
   max-width: 720px;
+  width: 100%;
+  position: relative;
+}
+
+/* 왼쪽 기자 에셋 영역 - 기사 본문 왼쪽 여백에 absolute로 배치 */
+.article-detail-layout > aside {
+  position: absolute;
+  right: calc(50% + 720px/2 + 40px); /* 기사 본문 왼쪽에서 40px 간격 */
+  width: 320px;
+  top: 120px;
 }
 
 /* ===========================
