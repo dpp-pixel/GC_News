@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
+import { Loading } from "@/components";
 import "./ReporterArticleSection.css"; // CSS 추가
 
 interface Article {
@@ -90,7 +91,7 @@ export default function ReporterArticleSection() {
 
   // 로딩/에러/빈 데이터 처리
   if (loading) {
-    return <div className="loader">기자 기사 불러오는 중...</div>;
+    return <Loading text="기자 기사 불러오는 중" />;
   }
 
   if (error) {
@@ -169,7 +170,7 @@ export default function ReporterArticleSection() {
 
       {hasMore && (
         <div ref={loaderRef} className="loader">
-          더 불러오는 중...
+          <Loading text="더 불러오는 중" />
         </div>
       )}
     </section>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { Loading } from "@/components";
 import "./NaverNews.css";
 
 interface Article {
@@ -57,7 +58,7 @@ export default function NaverNews() {
     fetchNews();
   }, []);
 
-  if (loading) return <p>뉴스를 불러오는 중...</p>;
+  if (loading) return <Loading text="뉴스를 불러오는 중" />;
   if (error) return <p>오류가 발생했습니다.</p>;
   if (news.length === 0) return <p>뉴스가 없습니다.</p>;
 

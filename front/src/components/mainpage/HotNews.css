@@ -6,16 +6,19 @@
 
 .hot-news h2 {
   font-size: 20px;
-  margin-bottom: 16px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #000;
 }
 
-/* 🔥 여기 */
+/* 그리드 레이아웃 */
 .hot-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
 
+/* 카드 스타일 */
 .hot-card {
   border-top: 2px solid #000;
   padding-top: 10px;
@@ -23,36 +26,24 @@
 
 .hot-card h3 {
   font-size: 16px;
-  margin-bottom: 8px;
-}
-
-.hot-card ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.hot-card li {
-  font-size: 14px;
-  line-height: 1.4;
-  margin-bottom: 6px;
-}
-
-.hot-card a {
+  font-weight: 700;
+  margin-bottom: 12px;
   color: #000;
-  text-decoration: none;
 }
 
-.hot-card a:hover {
-  text-decoration: underline;
+/* 메인 기사 (이미지 있는) */
+.hot-main-article {
+  margin-bottom: 12px;
 }
-/* 첫 기사 이미지*/
+
+/* 이미지 영역 */
 .hot-image {
   width: 100%;
-  height: 110px;
-  margin-bottom: 8px;
+  height: 140px;
+  margin-bottom: 10px;
   border-radius: 4px;
   overflow: hidden;
+  background: #f5f5f5;
 }
 
 .hot-image img {
@@ -75,4 +66,51 @@
 .hot-image-placeholder span {
   font-size: 32px;
   opacity: 0.3;
+}
+
+/* 메인 기사 제목 */
+.hot-title.main {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #000;
+  text-decoration: none;
+  display: block;
+}
+
+.hot-title.main:hover {
+  color: #0066cc;
+}
+
+/* 나머지 기사 리스트 */
+.hot-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.hot-item {
+  margin-bottom: 8px;
+  padding-left: 12px;
+  position: relative;
+}
+
+.hot-item::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #666;
+}
+
+.hot-title {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #333;
+  text-decoration: none;
+  display: block;
+}
+
+.hot-title:hover {
+  color: #0066cc;
+  text-decoration: underline;
 }

@@ -237,7 +237,7 @@ export default function NewsDetailPage() {
   /* ===============================
      렌더링 분기
      =============================== */
-  if (loading) return <div className="news-loading">기사 불러오는 중...</div>;
+  if (loading) return <Loading text="기사 불러오는 중" />;
   if (error) return <div className="news-loading">{error}</div>;
   if (!article)
     return <div className="news-loading">기사 데이터를 찾을 수 없습니다.</div>;

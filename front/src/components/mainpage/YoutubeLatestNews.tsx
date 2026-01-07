@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { Loading } from "@/components";
 import "./YoutubeLatestNews.css";
 
 const channels = [
@@ -100,7 +101,7 @@ function YoutubeLatestNews() {
         {videos.length > 0 ? (
           videos.map((v) => <YoutubeCard key={v.videoId} title={v.title} videoId={v.videoId} />)
         ) : (
-          <p>불러오는 중...</p>
+          <Loading text="불러오는 중" />
         )}
       </div>
     </div>
