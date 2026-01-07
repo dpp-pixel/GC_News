@@ -1,0 +1,139 @@
+/* ===========================
+   AI 요약 카드 스타일
+   =========================== */
+
+.ai-summary-card {
+  margin: 24px 0;
+  padding: 20px 24px;
+  border-radius: 16px;
+  background: #111;
+  color: #fff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.ai-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.ai-card-title {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* 원형 점수 뱃지 */
+.ai-score-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 999px;
+  border: 3px solid #4da3ff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-score-main {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.ai-score-sub {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+/* 요약 / 핵심 포인트 */
+.ai-summary-body {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.ai-summary-block {
+  flex: 1;
+}
+
+.ai-section-label {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  opacity: 0.8;
+  margin-bottom: 6px;
+}
+
+.ai-summary-list {
+  list-style: disc;
+  padding-left: 20px;
+  margin: 0;
+}
+
+.ai-summary-list li {
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 4px;
+}
+
+.ai-key-point {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* 점수 막대 그래프 */
+.ai-score-detail {
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ai-score-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.ai-score-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ai-score-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.ai-score-label {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.ai-score-bar-track {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.ai-score-bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #4da3ff, #60e6ff);
+  transform-origin: left;
+  transition: width 0.6s ease-out;
+}
+
+.ai-score-value {
+  font-size: 12px;
+}
+
+/* 에러 메시지 */
+.ai-summary-error {
+  margin: 16px 0;
+  color: #d9534f;
+  font-size: 14px;
+}
