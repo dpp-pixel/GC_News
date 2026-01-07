@@ -21,6 +21,12 @@ public class LoginService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
 
+    @Transactional(readOnly = true)
+    public boolean isEmailAvailable(String email) {
+        String normalizedEmail = email.trim().toLowerCase();
+        return !userRepository.existsByEmail(normalizedEmail);
+    }
+
     @Transactional
     public void signup(UserSignupRequest req) {
         String email = req.getEmail().trim().toLowerCase();
@@ -28,6 +34,12 @@ public class LoginService {
         if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("이미 가입된 이메일입니다.");
         }
+
+        // 비밀번호 길이 검증
+        if (req.getPassword() == null || req.getPassword().length() < 8) {
+            throw new IllegalArgumentException("비밀번호는 8자 이상이어야 합니다.");
+        }
+
         String name = req.getName() != null ? req.getName().trim() : null;
         if (name != null && name.isEmpty()) {
             name = null;

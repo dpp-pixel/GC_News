@@ -91,6 +91,15 @@ export default function Signup() {
       return;
     }
 
+    // 비밀번호 길이 체크
+    if (password.length < 8) {
+      setErrorAlert({
+        open: true,
+        message: "비밀번호는 8자 이상이어야 합니다.",
+      });
+      return;
+    }
+
     try {
       await axios.post(
         "http://localhost:8081/api/auth/signup",
@@ -197,6 +206,7 @@ export default function Signup() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="비밀번호를 입력하세요 (8자 이상)"
               type="password"
+              minLength={8}
               required
             />
           </label>
