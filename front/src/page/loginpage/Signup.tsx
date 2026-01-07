@@ -130,6 +130,13 @@ export default function Signup() {
   return (
     <div className={styles.signupPage}>
       <div className={styles.signupCard}>
+        <button
+          className={styles.closeButton}
+          onClick={() => navigate("/")}
+          aria-label="메인으로 돌아가기"
+        >
+          ✕
+        </button>
         <h1 className={styles.signupTitle}>회원가입</h1>
 
         <form onSubmit={onSubmit} className={styles.signupForm}>
@@ -146,14 +153,40 @@ export default function Signup() {
 
           <label className={styles.signupLabel}>
             <span>이메일 주소</span>
-            <input
-              className={styles.signupInput}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="이메일을 입력하세요"
-              type="email"
-              required
-            />
+            <div className={styles.emailInputWrapper}>
+              <input
+                className={styles.signupInput}
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setIsEmailChecked(false);
+                  setIsEmailAvailable(false);
+                }}
+                placeholder="이메일을 입력하세요"
+                type="email"
+                required
+              />
+              <button
+                type="button"
+                className={styles.checkEmailButton}
+                onClick={checkEmailDuplicate}
+              >
+                중복확인
+              </button>
+            </div>
+            {isEmailChecked && (
+              <span
+                className={
+                  isEmailAvailable
+                    ? styles.emailCheckSuccess
+                    : styles.emailCheckError
+                }
+              >
+                {isEmailAvailable
+                  ? "✓ 사용 가능한 이메일입니다."
+                  : "✗ 이미 사용 중인 이메일입니다."}
+              </span>
+            )}
           </label>
 
           <label className={styles.signupLabel}>

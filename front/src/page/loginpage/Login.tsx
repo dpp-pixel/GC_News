@@ -109,6 +109,13 @@ export default function Login() {
   return (
     <div className={styles.loginPage}>
       <div className={styles.loginCard}>
+        <button
+          className={styles.closeButton}
+          onClick={() => navigate("/")}
+          aria-label="메인으로 돌아가기"
+        >
+          ✕
+        </button>
         <h1 className={styles.loginTitle}>로그인</h1>
 
         {/* 이메일/비밀번호 로그인 */}
