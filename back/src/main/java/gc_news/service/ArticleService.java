@@ -43,8 +43,44 @@ public class ArticleService {
 
     @Transactional(readOnly = true)
     public List<Article> getHeadlineArticles(int limit) {
-        return articleRepository.findHeadlineArticles(
-                PageRequest.of(0, limit));
+
+        LocalDateTime fromDate = LocalDateTime.now().minusDays(3);
+
+        // 테마별로 고르게 분산해서 헤드라인 가져오기
+        List<Article> result = new java.util.ArrayList<>();
+
+        // 테마 ID 목록 (정치, 경제, 사회, 생활/문화, 세계, IT/과학)
+        Long[] themeIds = {100L, 101L, 102L, 103L, 104L, 105L};
+
+        // 각 테마당 가져올 개수 (6개를 고르게 분산)
+        int perTheme = 1;
+
+        for (Long themeId : themeIds) {
+            List<Article> themeHeadlines = articleRepository.findHeadlineArticlesByTheme(
+                    themeId,
+                    fromDate,
+                    PageRequest.of(0, perTheme));
+            result.addAll(themeHeadlines);
+
+            if (result.size() >= limit) {
+                break;
+            }
+        }
+
+        // 부족하면 추가로 채우기 (테마 상관없이 clusterCount 높은 순)
+        if (result.size() < limit) {
+            int needed = limit - result.size();
+            List<Article> additional = articleRepository.findHeadlineArticles(
+                    fromDate,
+                    PageRequest.of(0, limit * 2)) // 여유있게 가져옴
+                    .stream()
+                    .filter(a -> !result.contains(a)) // 이미 추가된 것 제외
+                    .limit(needed)
+                    .toList();
+            result.addAll(additional);
+        }
+
+        return result.stream().limit(limit).toList();
     }
 
     // 상세 조회 시, content 가 비었으면 네이버 원문에서 크롤링해서 채우기
@@ -189,8 +225,11 @@ public class ArticleService {
 
     @Transactional(readOnly = true)
     public List<Article> getHeadlineArticlesByTheme(Long themeId, int limit) {
+
+        LocalDateTime threeDaysAgo = LocalDateTime.now().minusDays(3);
         return articleRepository.findHeadlineArticlesByTheme(
                 themeId,
+                threeDaysAgo,
                 PageRequest.of(0, limit));
     }
 

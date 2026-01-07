@@ -7,6 +7,10 @@ import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -15,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import gc_news.entity.Article;
 import gc_news.entity.Reporter;
+import gc_news.repository.ReporterRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -22,6 +27,8 @@ import lombok.RequiredArgsConstructor;
 public class ReporterArticleCrawlingService {
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
+    private final ReporterRepository reporterRepository;
+    private final AiService aiService;
 
     // 1) 기자 프로필(이름/사진) 크롤링
     public Reporter crawlReporterProfile(Reporter reporter) {
@@ -217,5 +224,153 @@ public class ReporterArticleCrawlingService {
         if (u.startsWith("//"))
             return "https:" + u;
         return u;
+    }
+
+    /**
+     * 기자의 신뢰도를 분석합니다. (병렬 처리, DB 저장 없음)
+     * @param reporterId 기자 ID
+     * @param articles 분석할 기사 목록 (기자 페이지에서 크롤링한 기사들)
+     * @return 평균 신뢰도 점수
+     */
+    public Float analyzeReporterTrustScore(Long reporterId, List<Article> articles) {
+        if (articles == null || articles.isEmpty()) {
+            throw new IllegalArgumentException("분석할 기사가 없습니다.");
+        }
+
+        Reporter reporter = reporterRepository.findById(reporterId)
+                .orElseThrow(() -> new IllegalArgumentException("기자를 찾을 수 없습니다: " + reporterId));
+
+        System.out.println("[기자 신뢰도 분석] 시작 - 기자: " + reporter.getName());
+        System.out.println("[기자 신뢰도 분석] 분석할 기사 수: " + articles.size());
+
+        // 병렬 처리를 위한 ExecutorService (10개 스레드 풀)
+        ExecutorService executor = Executors.newFixedThreadPool(10);
+
+        try {
+            // 모든 기사를 병렬로 처리
+            List<CompletableFuture<Integer>> futures = articles.stream()
+                    .map(crawledArticle -> CompletableFuture.supplyAsync(() -> {
+                        String url = crawledArticle.getUrlString();
+                        String title = crawledArticle.getTitle();
+
+                        try {
+                            System.out.println("[처리 중] " + title);
+
+                            // 1. 본문 크롤링 (DB 저장 없음)
+                            String content = crawlArticleContent(url);
+                            if (content == null || content.isBlank()) {
+                                System.out.println("[실패] 본문 크롤링 실패: " + title);
+                                return null;
+                            }
+
+                            // 2. AI 분석 (본문을 직접 전달)
+                            Integer score = analyzeArticleContent(title, content);
+                            if (score != null) {
+                                System.out.println("[완료] " + title + " - 점수: " + score + "점");
+                            } else {
+                                System.out.println("[실패] AI 분석 실패: " + title);
+                            }
+
+                            return score;
+
+                        } catch (Exception e) {
+                            System.err.println("[오류] " + title + " - " + e.getMessage());
+                            return null;
+                        }
+                    }, executor))
+                    .collect(Collectors.toList());
+
+            // 모든 작업 완료 대기
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+            // 점수 수집 (null 제외)
+            List<Integer> scores = futures.stream()
+                    .map(CompletableFuture::join)
+                    .filter(score -> score != null)
+                    .collect(Collectors.toList());
+
+            if (scores.isEmpty()) {
+                throw new IllegalStateException("유효한 점수가 없습니다.");
+            }
+
+            float averageScore = (float) scores.stream()
+                    .mapToInt(Integer::intValue)
+                    .average()
+                    .orElse(0.0);
+
+            System.out.println("[기자 신뢰도 분석] 완료 - 평균 점수: " + averageScore + "점 (분석된 기사: " + scores.size() + "개)");
+
+            // Reporter의 trustScore 업데이트
+            reporter.setTrustScore(averageScore);
+            reporterRepository.save(reporter);
+
+            return averageScore;
+
+        } finally {
+            executor.shutdown();
+        }
+    }
+
+    /**
+     * 기사 본문을 AI로 분석하여 신뢰도 점수 반환
+     */
+    private Integer analyzeArticleContent(String title, String content) {
+        try {
+            // HTML 태그 제거
+            String cleanedContent = Jsoup.parse(content).text();
+
+            // 제목 + 본문 조합
+            String input = String.format("[제목]\n%s\n\n[본문]\n%s", title, cleanedContent);
+
+            // AI 분석 (AiService의 summarizeArticle 메서드 사용)
+            String resultText = aiService.summarizeArticle(input);
+
+            // 점수 추출 (정규식으로 "점수: XX점" 패턴 찾기)
+            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("점수:\\s*(\\d+)점");
+            java.util.regex.Matcher matcher = pattern.matcher(resultText);
+
+            if (matcher.find()) {
+                return Integer.parseInt(matcher.group(1));
+            }
+
+            return null;
+
+        } catch (Exception e) {
+            System.err.println("AI 분석 중 오류: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * 네이버 뉴스 URL에서 본문 크롤링
+     */
+    private String crawlArticleContent(String url) {
+        try {
+            Document doc = Jsoup.connect(url)
+                    .userAgent("Mozilla/5.0")
+                    .timeout(10000)
+                    .get();
+
+            // 네이버 뉴스 본문 선택자
+            Element body = doc.selectFirst(
+                    "#newsct_article, " +
+                    "#articleBodyContents, " +
+                    ".newsct_article, " +
+                    "#articeBody"
+            );
+
+            if (body != null) {
+                // 불필요한 요소 제거
+                body.select("script, style, .ad, .relation_news").remove();
+                return body.html();
+            } else {
+                System.err.println("본문 엘리먼트를 찾을 수 없습니다: " + url);
+                return null;
+            }
+
+        } catch (Exception e) {
+            System.err.println("본문 크롤링 실패: " + url + " - " + e.getMessage());
+            return null;
+        }
     }
 }

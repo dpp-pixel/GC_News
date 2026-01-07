@@ -173,8 +173,19 @@ export default function Header() {
                 type="text"
                 placeholder="검색어를 입력하세요"
                 className={styles.searchInput}
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleSearchSubmit();
+                  }
+                }}
               />
-              <button type="button" className={styles.searchSubmit}>
+              <button
+                type="button"
+                className={styles.searchSubmit}
+                onClick={handleSearchSubmit}
+              >
                 검색
               </button>
             </div>

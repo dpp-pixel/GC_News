@@ -29,13 +29,19 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
         List<Article> findTopLatestArticles(Pageable pageable);
 
         @Query("""
-                            SELECT DISTINCT a
-                            FROM Article a
-                            LEFT JOIN FETCH a.mediaList
-                            WHERE a.headline = true
-                            ORDER BY a.clusterCount DESC, a.publishedAt DESC
-                        """)
-        List<Article> findHeadlineArticles(Pageable pageable);
+                SELECT DISTINCT a
+                FROM Article a
+                LEFT JOIN FETCH a.mediaList
+                LEFT JOIN FETCH a.theme
+                WHERE a.headline = true
+                AND a.theme.themeId = :themeId
+                AND a.publishedAt >= :fromDate
+                ORDER BY a.clusterCount DESC, a.publishedAt DESC
+            """)
+    List<Article> findHeadlineArticlesByTheme(
+            @Param("themeId") Long themeId,
+            @Param("fromDate") LocalDateTime fromDate,
+            Pageable pageable);
 
         List<Article> findAllByOrderByViewCountDesc(); // 조회수 높은 순
 
@@ -64,17 +70,17 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
         Page<Article> findByTheme_ThemeIdOrderByPublishedAtDesc(Long themeId, Pageable pageable);
 
         @Query("""
-                            SELECT DISTINCT a
-                            FROM Article a
-                            LEFT JOIN FETCH a.mediaList
-                            LEFT JOIN FETCH a.theme
-                            WHERE a.headline = true
-                            AND a.theme.themeId = :themeId
-                            ORDER BY a.clusterCount DESC, a.publishedAt DESC
-                        """)
-        List<Article> findHeadlineArticlesByTheme(
-                        @Param("themeId") Long themeId,
-                        Pageable pageable);
+                SELECT DISTINCT a
+                FROM Article a
+                LEFT JOIN FETCH a.mediaList
+                LEFT JOIN FETCH a.theme
+                WHERE a.headline = true
+                  AND a.publishedAt >= :fromDate
+                ORDER BY a.clusterCount DESC, a.publishedAt DESC
+            """)
+    List<Article> findHeadlineArticles(
+            @Param("fromDate") LocalDateTime fromDate,
+            Pageable pageable);
 
         Page<Article> findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(
                         String titleKeyword, String contentKeyword, Pageable pageable);

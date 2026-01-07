@@ -1,32 +1,48 @@
 // src/page/mycontent/subscribe/MySubscribeSection.tsx
 import { useEffect, useRef, useState } from "react";
+import { api } from "@/api/client";
 import ReporterCard, {
   type ReporterInfo,
 } from "../../../components/reporter/ReporterCard";
 import "./MySubscribeSection.css";
-
-// 더미 데이터
-const MOCK_REPORTERS: ReporterInfo[] = Array.from({ length: 10 }).map(
-  (_, i) => ({
-    id: i + 1,
-    name: `김기덕${i + 1}`,
-    email: `reporter${i + 1}@news.com`,
-    subscribers: 80 + i * 5,
-    recommends: 3 + i * 2,
-    tags: ["정치부", "분석"],
-    trustScore: 70 + i,
-    imageUrl: "https://picsum.photos/150",
-  })
-);
 
 // 기본 설정값
 const GAP = 24;           // 카드 사이 간격(px)
 const VISIBLE_COUNT = 4;  // 한 화면에 보이는 카드 개수
 
 export default function MySubscribeSection() {
+  const [reporters, setReporters] = useState<ReporterInfo[]>([]);
+  const [loading, setLoading] = useState(true);
   const [index, setIndex] = useState(0);
   const [cardWidth, setCardWidth] = useState(0);
   const viewportRef = useRef<HTMLDivElement | null>(null);
+
+  // 구독한 기자 목록 가져오기
+  useEffect(() => {
+    const fetchSubscribedReporters = async () => {
+      try {
+        setLoading(true);
+        const res = await api.get("/users/me/subscribed-reporters");
+        const reporterData = res.data.map((reporter: any) => ({
+          id: reporter.reporterId,
+          name: reporter.name,
+          email: reporter.email || "",
+          subscribers: reporter.subscriberCount || 0,
+          recommends: reporter.recommendationCount || 0,
+          tags: [],
+          trustScore: reporter.trustScore || 0,
+          imageUrl: reporter.profileImageUrl || "https://picsum.photos/150",
+        }));
+        setReporters(reporterData);
+      } catch (e) {
+        console.error("구독 목록 조회 실패:", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSubscribedReporters();
+  }, []);
 
   // 뷰포트 실제 너비를 기준으로 카드 하나의 너비를 계산
   useEffect(() => {
@@ -45,13 +61,19 @@ export default function MySubscribeSection() {
     return () => window.removeEventListener("resize", updateSize);
   }, []);
 
-  const maxIndex = Math.max(0, MOCK_REPORTERS.length - VISIBLE_COUNT);
+  const maxIndex = Math.max(0, reporters.length - VISIBLE_COUNT);
   const canPrev = index > 0;
   const canNext = index < maxIndex;
 
   // 카드 하나 이동할 때의 이동량 = 카드 폭 + 간격
   const step = cardWidth + GAP;
   const translateX = index * step;
+
+  if (loading) return <div>구독 목록을 불러오는 중...</div>;
+
+  if (reporters.length === 0) {
+    return <div>구독한 기자가 없습니다.</div>;
+  }
 
   return (
     <div className="slider-wrapper">
@@ -71,14 +93,14 @@ export default function MySubscribeSection() {
           className="card-track"
           style={{ transform: `translateX(-${translateX}px)` }}
         >
-          {MOCK_REPORTERS.map((info) => (
+          {reporters.map((info) => (
             <div
               key={info.id}
               className="card-item"
               style={{ width: cardWidth || undefined }}
             >
               {/* 카드 크기는 ReporterCard.module.css에서 조절 */}
-              <ReporterCard info={info} />
+              <ReporterCard info={info} showTrustAnalysis={false} />
             </div>
           ))}
         </div>
