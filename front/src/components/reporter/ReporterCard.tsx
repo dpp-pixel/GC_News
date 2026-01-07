@@ -130,46 +130,63 @@ export default function ReporterCard({
 
   return (
     <div className={styles.card}>
-      <div className={styles.profile}>
+      {/* 프로필 이미지 */}
+      <div
+        className={styles.avatarWrapper}
+        onClick={() => navigate(`/reporter/${id}`)}
+      >
         <img src={imageUrl} alt={`${name} 기자`} className={styles.avatar} />
+      </div>
 
-        <div
-          className={styles.name}
-          onClick={() => navigate(`/reporter/${id}`)}
-        >
-          {name} 기자
+      {/* 이름 */}
+      <div
+        className={styles.name}
+        onClick={() => navigate(`/reporter/${id}`)}
+      >
+        {name} 기자
+      </div>
+
+      {/* 구독 / 추천 통계 */}
+      <div className={styles.statsRow}>
+        <div className={styles.statItem}>
+          <div className={styles.statValue}>{subscribers}</div>
+          <div className={styles.statLabel}>구독</div>
         </div>
-
-        <div className={styles.position}>정치부 열혈기자</div>
+        <div className={styles.statItem}>
+          <div className={styles.statValue}>{recommends}</div>
+          <div className={styles.statLabel}>추천</div>
+        </div>
       </div>
 
-      <div className={styles.horizontalLine} />
-
-      <div className={styles.summaryRow}>
-        <span>구독 {subscribers}</span>
-        <span className={styles.separator}>|</span>
-        <span>추천 {recommends}</span>
+      {/* 인사말 */}
+      <div className={styles.greeting}>
+        안녕하세요. {name} 기자입니다.
       </div>
 
-      {/* <p className={styles.desc}>
-        정치/사회 섹션에서 정책 기사를 중심으로 취재하고 있습니다.
-      </p> */}
-
+      {/* 구독 / 추천 버튼 */}
       <div className={styles.buttonRow}>
-        <button type="button" className={styles.primaryButton} onClick={handleSubscribe}>
-          {isSubscribed ? "구독 취소" : "+ 구독"}
+        <button
+          type="button"
+          className={`${styles.actionButton} ${isSubscribed ? styles.subscribed : ""}`}
+          onClick={handleSubscribe}
+        >
+          <span className={styles.buttonIcon}>{isSubscribed ? "✓" : "+"}</span>
+          <span>{isSubscribed ? "구독중" : "구독"}</span>
         </button>
-        <button type="button" className={styles.secondaryButton} onClick={handleRecommend}>
-          {isRecommended ? "추천 취소" : "추천"}
+        <button
+          type="button"
+          className={`${styles.actionButton} ${isRecommended ? styles.recommended : ""}`}
+          onClick={handleRecommend}
+        >
+          <span className={styles.buttonIcon}>{isRecommended ? "✓" : "+"}</span>
+          <span>{isRecommended ? "추천중" : "추천"}</span>
         </button>
       </div>
 
+      {/* 신뢰도 섹션 */}
       <div className={styles.trustSection}>
         <div className={styles.trustHeader}>
           <span>기자 신뢰도</span>
-          <button type="button" className={styles.infoButton}>
-            ?
-          </button>
         </div>
 
         <div className={styles.trustBarWrapper}>
@@ -183,17 +200,16 @@ export default function ReporterCard({
         </div>
       </div>
 
+      {/* 신뢰도 분석 버튼 */}
       {showTrustAnalysis && (
-        <div className={styles.bottomButtons}>
-          <button
-            type="button"
-            className={styles.fullWidthButton}
-            onClick={handleTrustAnalysis}
-            disabled={isAnalyzing}
-          >
-            {isAnalyzing ? "분석 중..." : "신뢰도 분석"}
-          </button>
-        </div>
+        <button
+          type="button"
+          className={styles.analyzeButton}
+          onClick={handleTrustAnalysis}
+          disabled={isAnalyzing}
+        >
+          {isAnalyzing ? "분석 중..." : "신뢰도 분석"}
+        </button>
       )}
     </div>
   );

@@ -20,8 +20,8 @@
 .article-detail-layout > aside {
   position: absolute;
   right: calc(50% + 720px / 2 + 40px);
-  width: 320px;
-  top: 120px;
+  width: 260px;
+  top: 295px;
 }
 
 /* ===========================
