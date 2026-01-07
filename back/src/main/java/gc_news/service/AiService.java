@@ -175,4 +175,211 @@ public class AiService {
 
                 return summaryRepository.save(summary);
         }
+
+        // 헤드라인 뉴스 전체를 종합 요약하는 함수
+        public Summary summarizeHeadlineNews(List<Article> headlines, boolean force) {
+
+                // 1) 캐시 조회 (targetType: global, targetId: 0으로 헤드라인 요약 식별)
+                Summary cached = summaryRepository
+                                .findTopByTargetTypeAndTargetIdOrderByCreatedAtDesc(
+                                                Summary.TargetType.global,
+                                                0L)
+                                .orElse(null);
+
+                // 강제 갱신이 아니고 캐시가 있으면 반환
+                if (!force && cached != null) {
+                        return cached;
+                }
+
+                // 2) 헤드라인 기사들의 제목과 내용을 수집
+                if (headlines == null || headlines.isEmpty()) {
+                        throw new IllegalArgumentException("헤드라인 뉴스가 없습니다.");
+                }
+
+                StringBuilder newsContent = new StringBuilder();
+                newsContent.append("[오늘의 주요 헤드라인 뉴스]\n\n");
+
+                for (int i = 0; i < headlines.size(); i++) {
+                        Article article = headlines.get(i);
+                        newsContent.append(String.format("%d. 제목: %s\n", i + 1, article.getTitle()));
+
+                        // 본문이 없으면 자동으로 크롤링
+                        String content = article.getContent();
+                        if (content == null || content.isBlank()) {
+                                String url = article.getUrlString();
+                                if (url != null && !url.isBlank()) {
+                                        try {
+                                                System.out.println("[헤드라인 요약] 본문 크롤링 시작: " + article.getTitle());
+                                                org.jsoup.nodes.Document doc = Jsoup.connect(url)
+                                                        .userAgent("Mozilla/5.0")
+                                                        .get();
+
+                                                org.jsoup.nodes.Element body = doc.selectFirst(
+                                                        "#newsct_article, " +
+                                                        "#articleBodyContents, " +
+                                                        ".newsct_article"
+                                                );
+
+                                                if (body != null) {
+                                                        content = body.html();
+                                                        article.setContent(content);
+                                                        articleRepository.save(article);
+                                                        System.out.println("[헤드라인 요약] 본문 크롤링 완료");
+                                                } else {
+                                                        System.out.println("[헤드라인 요약] 본문 엘리먼트를 찾지 못함");
+                                                }
+                                        } catch (Exception e) {
+                                                System.out.println("[헤드라인 요약] 크롤링 실패: " + e.getMessage());
+                                        }
+                                }
+                        }
+
+                        // 본문이 있으면 HTML 태그 제거 후 일부만 포함 (너무 길면 AI 토큰 낭비)
+                        if (content != null && !content.isBlank()) {
+                                String cleanContent = Jsoup.parse(content).text();
+                                // 최대 200자만 사용
+                                String preview = cleanContent.length() > 200
+                                        ? cleanContent.substring(0, 200) + "..."
+                                        : cleanContent;
+                                newsContent.append(String.format("   내용: %s\n", preview));
+                        }
+                        newsContent.append("\n");
+                }
+
+                // 3) AI에게 전체 흐름 요약 요청
+                String systemPrompt = """
+                        당신은 뉴스 분석 전문가입니다.
+                        여러 개의 헤드라인 뉴스 제목과 내용을 보고,
+                        오늘의 주요 뉴스 흐름을 2-3줄로 간결하게 요약해주세요.
+
+                        요약 시 다음 사항을 고려하세요:
+                        - 여러 뉴스에서 공통적으로 다루는 주제나 트렌드
+                        - 가장 중요하거나 영향력 있는 이슈
+                        - 독자가 한눈에 오늘의 뉴스를 파악할 수 있도록
+
+                        출력 형식: 2~3개의 문장으로만 작성하세요.
+                        """;
+
+                String userPrompt = newsContent.toString();
+
+                // 4) AI 호출
+                String summaryText = askWithSystem(systemPrompt, userPrompt);
+
+                // 5) Summary 엔티티 생성 및 저장
+                Summary summary = Summary.builder()
+                                .targetType(Summary.TargetType.global)
+                                .targetId(0L)  // 헤드라인 전체 요약은 ID 0으로 관리
+                                .summaryText(summaryText)
+                                .score(null)  // 점수는 없음 (전체 요약이므로)
+                                .createdAt(LocalDateTime.now())
+                                .build();
+
+                return summaryRepository.save(summary);
+        }
+
+        // 테마별 헤드라인 뉴스 요약 함수
+        public Summary summarizeThemeHeadlineNews(Long themeId, List<Article> headlines, boolean force) {
+
+                // 1) 캐시 조회 (targetType: theme, targetId: themeId)
+                Summary cached = summaryRepository
+                                .findTopByTargetTypeAndTargetIdOrderByCreatedAtDesc(
+                                                Summary.TargetType.theme,
+                                                themeId)
+                                .orElse(null);
+
+                // 강제 갱신이 아니고 캐시가 있으면 반환
+                if (!force && cached != null) {
+                        return cached;
+                }
+
+                // 2) 헤드라인 기사들의 제목과 내용을 수집
+                if (headlines == null || headlines.isEmpty()) {
+                        throw new IllegalArgumentException("테마 헤드라인 뉴스가 없습니다.");
+                }
+
+                // 테마 이름 가져오기
+                String themeName = headlines.get(0).getTheme() != null
+                        ? headlines.get(0).getTheme().getName()
+                        : "테마";
+
+                StringBuilder newsContent = new StringBuilder();
+                newsContent.append(String.format("[%s 분야 주요 헤드라인 뉴스]\n\n", themeName));
+
+                for (int i = 0; i < headlines.size(); i++) {
+                        Article article = headlines.get(i);
+                        newsContent.append(String.format("%d. 제목: %s\n", i + 1, article.getTitle()));
+
+                        // 본문이 없으면 자동으로 크롤링
+                        String content = article.getContent();
+                        if (content == null || content.isBlank()) {
+                                String url = article.getUrlString();
+                                if (url != null && !url.isBlank()) {
+                                        try {
+                                                System.out.println("[테마 요약] 본문 크롤링 시작: " + article.getTitle());
+                                                org.jsoup.nodes.Document doc = Jsoup.connect(url)
+                                                        .userAgent("Mozilla/5.0")
+                                                        .get();
+
+                                                org.jsoup.nodes.Element body = doc.selectFirst(
+                                                        "#newsct_article, " +
+                                                        "#articleBodyContents, " +
+                                                        ".newsct_article"
+                                                );
+
+                                                if (body != null) {
+                                                        content = body.html();
+                                                        article.setContent(content);
+                                                        articleRepository.save(article);
+                                                        System.out.println("[테마 요약] 본문 크롤링 완료");
+                                                } else {
+                                                        System.out.println("[테마 요약] 본문 엘리먼트를 찾지 못함");
+                                                }
+                                        } catch (Exception e) {
+                                                System.out.println("[테마 요약] 크롤링 실패: " + e.getMessage());
+                                        }
+                                }
+                        }
+
+                        // 본문이 있으면 HTML 태그 제거 후 일부만 포함
+                        if (content != null && !content.isBlank()) {
+                                String cleanContent = Jsoup.parse(content).text();
+                                String preview = cleanContent.length() > 200
+                                        ? cleanContent.substring(0, 200) + "..."
+                                        : cleanContent;
+                                newsContent.append(String.format("   내용: %s\n", preview));
+                        }
+                        newsContent.append("\n");
+                }
+
+                // 3) AI에게 테마별 흐름 요약 요청
+                String systemPrompt = String.format("""
+                        당신은 뉴스 분석 전문가입니다.
+                        %s 분야의 여러 헤드라인 뉴스 제목과 내용을 보고,
+                        이 분야의 주요 뉴스 흐름을 2-3줄로 간결하게 요약해주세요.
+
+                        요약 시 다음 사항을 고려하세요:
+                        - 이 분야에서 공통적으로 다루는 주제나 트렌드
+                        - 가장 중요하거나 영향력 있는 이슈
+                        - 독자가 한눈에 %s 분야 뉴스를 파악할 수 있도록
+
+                        출력 형식: 2-3개의 문장으로만 작성하세요.
+                        """, themeName, themeName);
+
+                String userPrompt = newsContent.toString();
+
+                // 4) AI 호출
+                String summaryText = askWithSystem(systemPrompt, userPrompt);
+
+                // 5) Summary 엔티티 생성 및 저장
+                Summary summary = Summary.builder()
+                                .targetType(Summary.TargetType.theme)
+                                .targetId(themeId)
+                                .summaryText(summaryText)
+                                .score(null)
+                                .createdAt(LocalDateTime.now())
+                                .theme(headlines.get(0).getTheme())
+                                .build();
+
+                return summaryRepository.save(summary);
+        }
 }

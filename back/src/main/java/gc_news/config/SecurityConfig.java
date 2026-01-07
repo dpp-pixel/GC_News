@@ -27,13 +27,21 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/api/articles/**",
-                                "/api/comments/article/**")
+                                "/api/comments/article/**",
+                                "/api/reporters/{reporterId}")
                         .permitAll()
 
                         // ✅ 로그인 필요
                         .requestMatchers(
                                 "/api/comments/**",
-                                "/api/bookmarks/**")
+                                "/api/bookmarks/**",
+                                "/api/reporters/{reporterId}/subscribe",
+                                "/api/reporters/{reporterId}/unsubscribe",
+                                "/api/reporters/{reporterId}/is-subscribed",
+                                "/api/reporters/{reporterId}/recommend",
+                                "/api/reporters/{reporterId}/unrecommend",
+                                "/api/reporters/{reporterId}/is-recommended",
+                                "/api/users/me/**")
                         .authenticated()
 
                         // 그 외
