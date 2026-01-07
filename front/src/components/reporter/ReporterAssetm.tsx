@@ -1,7 +1,7 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { api } from "../../api/client";
-import { isLoggedIn } from "../../auth/auth";
+import { isLoggedIn, requireLogin } from "../../auth/auth";
 
 interface Reporter {
   reporterId: number;
@@ -17,6 +17,7 @@ interface ReporterAssetProps {
 }
 
 export default function ReporterAsset({ reporter }: ReporterAssetProps) {
+  const navigate = useNavigate();
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [subscriberCount, setSubscriberCount] = useState(reporter?.subscriberCount ?? 0);
@@ -51,8 +52,7 @@ export default function ReporterAsset({ reporter }: ReporterAssetProps) {
   const handleSubscribe = async (e: React.MouseEvent) => {
     e.preventDefault();
 
-    if (!isLoggedIn()) {
-      alert("로그인이 필요합니다.");
+    if (!requireLogin(navigate)) {
       return;
     }
 

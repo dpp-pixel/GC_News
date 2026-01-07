@@ -1,6 +1,6 @@
 // src/page/NewsDetailPage.tsx
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 import { api } from "../api/client";
 import "./NewsDetailPage.css";
@@ -8,7 +8,7 @@ import "./NewsDetailPage.css";
 import ArticleReaction from "../components/articledetailpage/ArticleReaction";
 import ArticleComments from "../components/articledetailpage/ArticleComments";
 import ReporterAssetm from "@/components/reporter/ReporterAssetm";
-import { isLoggedIn } from "../auth/auth";
+import { isLoggedIn, requireLogin } from "../auth/auth";
 
 interface Media {
   url: string;
@@ -114,6 +114,7 @@ function parseScores(evaluationText: string): ParsedScore[] {
 
 export default function NewsDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
   const [article, setArticle] = useState<ArticleDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -186,8 +187,7 @@ export default function NewsDetailPage() {
      북마크 토글
      =============================== */
   const toggleBookmark = async () => {
-    if (!isLoggedIn()) {
-      alert("로그인이 필요합니다.");
+    if (!requireLogin(navigate)) {
       return;
     }
 
@@ -210,8 +210,7 @@ export default function NewsDetailPage() {
      AI 요약 호출
      =============================== */
   const handleAiSummary = async () => {
-    if (!isLoggedIn()) {
-      alert("AI 요약은 로그인 후 이용할 수 있습니다.");
+    if (!requireLogin(navigate)) {
       return;
     }
     if (!id) return;

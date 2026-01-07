@@ -81,11 +81,15 @@ export default function LatestNewsList() {
   <div className="latest-left">
     {leftNews.map((item) => (
       <article key={item.articleId} className="image-article">
-        {item.mediaList?.[0]?.url && (
-          <div className="image-wrap">
+        <div className="image-wrap">
+          {item.mediaList?.[0]?.url ? (
             <img src={item.mediaList[0].url} alt={item.title} />
-          </div>
-        )}
+          ) : (
+            <div className="image-placeholder">
+              <span>📰</span>
+            </div>
+          )}
+        </div>
         <Link to={`/news/${item.articleId}`}>
           <h4>{item.title}</h4>
         </Link>

@@ -45,3 +45,13 @@ export const getUserRole = (): UserRole | null => {
 
 // 관리자 여부 편의 함수 추가
 export const isAdmin = () => getUserRole() === "admin";
+
+// 로그인 필요 기능 체크 함수 추가
+export const requireLogin = (navigate: (path: string) => void): boolean => {
+  if (!isLoggedIn()) {
+    alert("로그인이 필요한 기능입니다.");
+    navigate("/login");
+    return false;
+  }
+  return true;
+};

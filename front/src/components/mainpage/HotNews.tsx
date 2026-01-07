@@ -69,13 +69,19 @@ export default function HotNews() {
             <ul>
               {category.articles.map((article, idx) => (
                 <li key={article.articleId} className="hot-item">
-                  {/* 첫 기사만 이미지 */}
-                  {idx === 0 && article.mediaList?.[0]?.url && (
+                  {/* 첫 기사는 항상 이미지 영역 표시 */}
+                  {idx === 0 && (
                     <div className="hot-image">
-                      <img
-                        src={article.mediaList[0].url}
-                        alt={article.title}
-                      />
+                      {article.mediaList?.[0]?.url ? (
+                        <img
+                          src={article.mediaList[0].url}
+                          alt={article.title}
+                        />
+                      ) : (
+                        <div className="hot-image-placeholder">
+                          <span>📰</span>
+                        </div>
+                      )}
                     </div>
                   )}
 
