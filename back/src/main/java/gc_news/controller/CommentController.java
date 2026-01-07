@@ -44,16 +44,16 @@ public class CommentController {
 
     // 베스트 댓글 조회
     @GetMapping("/article/{articleId}/best")
-    public List<Comment> getBestComments(
+    public List<CommentResponseDto> getBestComments(
             @PathVariable Long articleId) {
-        return commentService.getBestComments(articleId);
+        return commentService.getBestCommentsDto(articleId);
     }
 
     // 최신 댓글 조회
     @GetMapping("/article/{articleId}")
-    public List<Comment> getCommentsByArticle(
+    public List<CommentResponseDto> getCommentsByArticle(
             @PathVariable Long articleId) {
-        return commentService.getCommentsByArticle(articleId);
+        return commentService.getCommentsByArticleDto(articleId);
     }
 
     // 로그인 유저 댓글 조회 (페이징 가능)

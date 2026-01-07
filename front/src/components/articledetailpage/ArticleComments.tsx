@@ -9,6 +9,7 @@ interface Comment {
   createdAt: string;
   likeCount: number;
   dislikeCount: number;
+  userName?: string;
 }
 
 interface Props {
@@ -115,6 +116,7 @@ export default function ArticleComments({ articleId }: Props) {
           <ul className="comment-list best">
             {bestComments.map(c => (
               <li key={c.commentId}>
+                {c.userName && <p className="comment-author">{c.userName}</p>}
                 <p className="comment-content">{c.content}</p>
                 <div className="comment-footer">
                   <span className="comment-date">
@@ -145,6 +147,7 @@ export default function ArticleComments({ articleId }: Props) {
       <ul className="comment-list">
         {comments.map(c => (
           <li key={c.commentId}>
+            {c.userName && <p className="comment-author">{c.userName}</p>}
             <p className="comment-content">{c.content}</p>
             <div className="comment-footer">
               <span className="comment-date">
