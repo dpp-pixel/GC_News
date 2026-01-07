@@ -18,7 +18,13 @@ export interface ReporterInfo {
   imageUrl: string;
 }
 
-export default function ReporterCard({ info }: { info: ReporterInfo }) {
+export default function ReporterCard({
+  info,
+  showTrustAnalysis = true
+}: {
+  info: ReporterInfo;
+  showTrustAnalysis?: boolean;
+}) {
   const navigate = useNavigate();
 
   const {
@@ -34,8 +40,10 @@ export default function ReporterCard({ info }: { info: ReporterInfo }) {
   const [recommends, setRecommends] = useState(initialRecommends);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isRecommended, setIsRecommended] = useState(false);
+  const [currentTrustScore, setCurrentTrustScore] = useState(trustScore);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  const clampedScore = Math.max(0, Math.min(100, trustScore));
+  const clampedScore = Math.max(0, Math.min(100, currentTrustScore));
 
   // 컴포넌트 마운트 시 구독/추천 상태 확인
   useEffect(() => {
@@ -87,6 +95,36 @@ export default function ReporterCard({ info }: { info: ReporterInfo }) {
       console.error("추천 처리 실패:", e);
       console.error("에러 응답:", e.response?.data);
       alert(`추천 처리 실패: ${e.response?.data?.message || e.message}`);
+    }
+  };
+
+  const handleTrustAnalysis = async () => {
+    if (isAnalyzing) return;
+
+    const confirmed = window.confirm(
+      `${name} 기자의 최근 기사를 분석하여 신뢰도를 평가합니다.\n` +
+      `분석에는 수 분이 소요될 수 있습니다.\n` +
+      `계속하시겠습니까?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setIsAnalyzing(true);
+      const response = await api.post(`/reporters/${id}/analyze-trust`);
+      const data = response.data;
+
+      setCurrentTrustScore(data.trustScore);
+      alert(
+        `신뢰도 분석이 완료되었습니다!\n` +
+        `분석된 기사: ${data.analyzedCount}개\n` +
+        `신뢰도 점수: ${Math.round(data.trustScore)}점`
+      );
+    } catch (e: any) {
+      console.error("신뢰도 분석 실패:", e);
+      alert(`신뢰도 분석 실패: ${e.response?.data?.message || e.message}`);
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -145,11 +183,18 @@ export default function ReporterCard({ info }: { info: ReporterInfo }) {
         </div>
       </div>
 
-      <div className={styles.bottomButtons}>
-        <button type="button" className={styles.fullWidthButton}>
-          신뢰도 분석
-        </button>
-      </div>
+      {showTrustAnalysis && (
+        <div className={styles.bottomButtons}>
+          <button
+            type="button"
+            className={styles.fullWidthButton}
+            onClick={handleTrustAnalysis}
+            disabled={isAnalyzing}
+          >
+            {isAnalyzing ? "분석 중..." : "신뢰도 분석"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

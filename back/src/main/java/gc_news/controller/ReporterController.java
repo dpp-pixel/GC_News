@@ -4,6 +4,7 @@ import gc_news.repository.ReporterRepository;
 import gc_news.entity.Article;
 import gc_news.entity.Reporter;
 import gc_news.entity.User;
+import gc_news.service.NewsCrawlingService;
 import gc_news.service.ReporterArticleCrawlingService;
 import gc_news.service.ReporterSubscriptionService;
 import lombok.RequiredArgsConstructor;
@@ -101,5 +102,44 @@ public class ReporterController {
         String userId = user.getUserId();
         boolean recommended = subscriptionService.isRecommended(userId, reporterId);
         return ResponseEntity.ok(Map.of("isRecommended", recommended));
+    }
+
+    @PostMapping("/{reporterId}/analyze-trust")
+    public ResponseEntity<Map<String, Object>> analyzeTrustScore(@PathVariable Long reporterId) {
+        try {
+            // 기자 조회
+            Reporter reporter = reporterRepository.findById(reporterId)
+                    .orElseThrow(() -> new IllegalArgumentException("기자를 찾을 수 없습니다."));
+
+            // 기자의 최근 기사 목록 크롤링
+            List<Article> articles = reporterArticleCrawlingService.crawlReporterArticles(reporter);
+
+            if (articles.isEmpty()) {
+                return ResponseEntity.ok(Map.of(
+                        "message", "분석할 기사가 없습니다.",
+                        "trustScore", reporter.getTrustScore() != null ? reporter.getTrustScore() : 0f
+                ));
+            }
+
+            // 최대 30개로 제한
+            int maxArticles = Math.min(30, articles.size());
+            List<Article> articlesToAnalyze = articles.subList(0, maxArticles);
+
+            // 신뢰도 분석 실행
+            Float trustScore = reporterArticleCrawlingService.analyzeReporterTrustScore(reporterId, articlesToAnalyze);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "신뢰도 분석이 완료되었습니다.",
+                    "trustScore", trustScore,
+                    "analyzedCount", maxArticles
+            ));
+
+        } catch (Exception e) {
+            System.err.println("신뢰도 분석 실패: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of(
+                    "message", "신뢰도 분석 중 오류가 발생했습니다: " + e.getMessage()
+            ));
+        }
     }
 }

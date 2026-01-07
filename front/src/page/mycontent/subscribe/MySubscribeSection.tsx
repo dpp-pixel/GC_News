@@ -100,7 +100,7 @@ export default function MySubscribeSection() {
               style={{ width: cardWidth || undefined }}
             >
               {/* 카드 크기는 ReporterCard.module.css에서 조절 */}
-              <ReporterCard info={info} />
+              <ReporterCard info={info} showTrustAnalysis={false} />
             </div>
           ))}
         </div>
