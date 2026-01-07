@@ -1,5 +1,6 @@
 .hot-issue {
   margin-bottom: 40px;
+  margin-top: 32px; /*헤드라인 뉴스 - 카테고리바 간격*/
 }
 
 .hot-main img {
