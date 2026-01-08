@@ -12,15 +12,8 @@ export default function Footer() {
           <div className="footer-top-body">
             {/* 왼쪽 : 임시 컨텐츠 + 카테고리 */}
             <div className="footer-left">
-              {/* 임시 컨텐츠 목록 */}
-              <div className="footer-left-col">
-                <div className="footer-row">&lt;임시 컨텐츠1&gt;</div>
-                <div className="footer-row">&lt;임시 컨텐츠2&gt;</div>
-                <div className="footer-row">&lt;임시 컨텐츠3&gt;</div>
-                <div className="footer-row">&lt;임시 컨텐츠4&gt;</div>
-              </div>
 
-              {/* ✅ 가운데 세로 구분선 (텍스트 | 대신) */}
+              {/*  가운데 세로 구분선 (텍스트 | 대신) */}
               <div className="footer-divider" />
 
               {/* 카테고리 텍스트 */}
@@ -49,13 +42,7 @@ export default function Footer() {
 
         {/* 하단 바 */}
         <div className="footer-bottom">
-          <div className="footer-bottom-links">
-            <button type="button">고객센터</button>
-            <button type="button">이용약관</button>
-            <button type="button">개인정보처리방침</button>
-            <button type="button">사이트맵</button>
-            <button type="button">정정보도 신청</button>
-          </div>
+          
 
           <div className="footer-copy">
             ©insightnews.com All rights reserved. 무단 전재, 재배포 및 AI학습

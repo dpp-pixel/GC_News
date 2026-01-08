@@ -30,10 +30,10 @@ public class AiService {
         private final ArticleRepository articleRepository;
         private final SummaryRepository summaryRepository;
 
-        // ✅ 1) "점수: 82점" 같은 문장에서 숫자만 뽑아내는 정규식 패턴
+        //  1) "점수: 82점" 같은 문장에서 숫자만 뽑아내는 정규식 패턴
         private static final Pattern SCORE_PATTERN = Pattern.compile("점수:\\s*(\\d+)점");
 
-        // ✅ 2) Summary 전체 텍스트에서 점수만 추출하는 헬퍼 메서드
+        //  2) Summary 전체 텍스트에서 점수만 추출하는 헬퍼 메서드
         private Integer extractScore(String text) {
                 if (text == null)
                         return null;
@@ -250,14 +250,14 @@ public class AiService {
                 String systemPrompt = """
                         당신은 뉴스 분석 전문가입니다.
                         여러 개의 헤드라인 뉴스 제목과 내용을 보고,
-                        오늘의 주요 뉴스 흐름을 2-3줄로 간결하게 요약해주세요.
+                        오늘의 주요 뉴스 흐름을 5줄로 간결하게 요약해주세요.
 
                         요약 시 다음 사항을 고려하세요:
                         - 여러 뉴스에서 공통적으로 다루는 주제나 트렌드
                         - 가장 중요하거나 영향력 있는 이슈
                         - 독자가 한눈에 오늘의 뉴스를 파악할 수 있도록
 
-                        출력 형식: 2~3개의 문장으로만 작성하세요.
+                        출력 형식: 5~8개의 문장으로만 작성하세요.
                         """;
 
                 String userPrompt = newsContent.toString();

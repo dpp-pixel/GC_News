@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { Loading } from "@/components";
@@ -31,36 +31,27 @@ function stripHtml(html: string | null, maxLength = 120): string {
   return text;
 }
 
+const fetchHeadlineNews = async () => {
+  const res = await axios.get<Article[]>(
+    "http://localhost:8081/api/articles/headline",
+    {
+      params: {
+        limit: 6,
+      },
+    }
+  );
+  return res.data;
+};
+
 export default function NaverNews() {
-  const [news, setNews] = useState<Article[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const { data: news, isLoading, error } = useQuery({
+    queryKey: ['headlineNews'],
+    queryFn: fetchHeadlineNews,
+  });
 
-  useEffect(() => {
-    const fetchNews = async () => {
-      try {
-        const res = await axios.get<Article[]>(
-  "http://localhost:8081/api/articles/headline",
-  {
-    params: {
-      limit: 6,
-    },
-  }
-);
-        setNews(res.data);
-      } catch (e) {
-        console.error("NaverNews /api/articles/headline error:", e);
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchNews();
-  }, []);
-
-  if (loading) return <Loading text="뉴스를 불러오는 중" />;
+  if (isLoading) return <Loading text="뉴스를 불러오는 중" />;
   if (error) return <p>오류가 발생했습니다.</p>;
-  if (news.length === 0) return <p>뉴스가 없습니다.</p>;
+  if (!news || news.length === 0) return <p>뉴스가 없습니다.</p>;
 
   // 이미지가 있는 기사만 필터링
   const articlesWithImages = news.filter(

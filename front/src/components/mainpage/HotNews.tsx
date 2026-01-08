@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { Loading } from "@/components";
@@ -22,41 +22,36 @@ interface CategoryHotNews {
   articles: Article[];
 }
 
+const fetchHotNews = async (): Promise<CategoryHotNews[]> => {
+  const res = await axios.get<Record<number, Article[]>>(
+    "http://localhost:8081/api/articles/hot/grouped",
+    {
+      params: {
+        days: 3,
+        limit: 3,
+      },
+    }
+  );
+
+  const result = Object.entries(res.data).map(
+    ([themeId, articles]) => ({
+      themeId: Number(themeId),
+      themeName: articles[0]?.theme?.name ?? "",
+      articles,
+    })
+  );
+
+  return result;
+};
+
 export default function HotNews() {
-  const [hotNews, setHotNews] = useState<CategoryHotNews[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: hotNews, isLoading } = useQuery({
+    queryKey: ['hotNews'],
+    queryFn: fetchHotNews,
+  });
 
-  useEffect(() => {
-    const fetchHotNews = async () => {
-      try {
-        const res = await axios.get<Record<number, Article[]>>(
-          "http://localhost:8081/api/articles/hot/grouped",
-          {
-            params: {
-              days: 3,
-              limit: 3,
-            },
-          }
-        );
-
-        const result = Object.entries(res.data).map(
-          ([themeId, articles]) => ({
-            themeId: Number(themeId),
-            themeName: articles[0]?.theme?.name ?? "",
-            articles,
-          })
-        );
-
-        setHotNews(result);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchHotNews();
-  }, []);
-
-  if (loading) return <Loading text="인기 뉴스 불러오는 중" />;
+  if (isLoading) return <Loading text="인기 뉴스 불러오는 중" />;
+  if (!hotNews) return null;
 
   return (
     <section className="hot-news">
