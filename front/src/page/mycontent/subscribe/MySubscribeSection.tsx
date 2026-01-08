@@ -1,6 +1,7 @@
 // src/page/mycontent/subscribe/MySubscribeSection.tsx
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/api/client";
+import { Loading } from "@/components";
 import ReporterCard, {
   type ReporterInfo,
 } from "../../../components/reporter/ReporterCard";
@@ -69,7 +70,7 @@ export default function MySubscribeSection() {
   const step = cardWidth + GAP;
   const translateX = index * step;
 
-  if (loading) return <div>구독 목록을 불러오는 중...</div>;
+  if (loading) return <Loading text="구독 목록을 불러오는 중" />;
 
   if (reporters.length === 0) {
     return <div>구독한 기자가 없습니다.</div>;

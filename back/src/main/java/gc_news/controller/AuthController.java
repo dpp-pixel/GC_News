@@ -18,6 +18,13 @@ public class AuthController {
 
     private final LoginService loginService;
 
+    // 이메일 중복 확인
+    @GetMapping("/check-email")
+    public ResponseEntity<Map<String, Boolean>> checkEmail(@RequestParam String email) {
+        boolean available = loginService.isEmailAvailable(email);
+        return ResponseEntity.ok(Map.of("available", available));
+    }
+
     // 회원가입
     @PostMapping("/signup")
     public ResponseEntity<Void> signup(@RequestBody UserSignupRequest req) {

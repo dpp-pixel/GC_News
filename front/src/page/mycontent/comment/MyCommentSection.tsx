@@ -13,6 +13,7 @@ interface CommentItem {
   articleId: number;
   articleTitle: string;
   articleImageUrl?: string;
+  userName?: string;
 }
 
 type CommentSortKey = "created" | "reaction";

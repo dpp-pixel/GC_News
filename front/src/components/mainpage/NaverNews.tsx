@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { Loading } from "@/components";
 import "./NaverNews.css";
 
 interface Article {
@@ -57,18 +58,23 @@ export default function NaverNews() {
     fetchNews();
   }, []);
 
-  if (loading) return <p>뉴스를 불러오는 중...</p>;
+  if (loading) return <Loading text="뉴스를 불러오는 중" />;
   if (error) return <p>오류가 발생했습니다.</p>;
   if (news.length === 0) return <p>뉴스가 없습니다.</p>;
+
+  // 이미지가 있는 기사만 필터링
+  const articlesWithImages = news.filter(
+    (article) => article.mediaList && article.mediaList.length > 0
+  );
 
   return (
     <section className="news-container">
       <div className="main-layout">
         {/* 왼쪽 영역: 메인 + 서브 기사 */}
         <div className="left-news">
-          {news[0] && <MainArticle item={news[0]} />}
+          {articlesWithImages[0] && <MainArticle item={articlesWithImages[0]} />}
           <div className="sub-grid">
-            {news.slice(1, 3).map((item) => (
+            {articlesWithImages.slice(1, 3).map((item) => (
               <SubArticle key={item.articleId} item={item} />
             ))}
           </div>
@@ -76,7 +82,7 @@ export default function NaverNews() {
 
         {/* 오른쪽 리스트 기사 */}
         <div className="right-list">
-          {news.slice(4).map((item) => (
+          {articlesWithImages.slice(3).map((item) => (
             <ListArticle key={item.articleId} item={item} />
           ))}
         </div>

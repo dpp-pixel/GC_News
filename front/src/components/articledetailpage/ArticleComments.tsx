@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { api } from "../../api/client"; 
+import { useNavigate } from "react-router-dom";
+import { api } from "../../api/client";
 import "./ArticleComments.css";
-import { isLoggedIn } from "../../auth/auth";
+import { requireLogin } from "../../auth/auth";
 
 interface Comment {
   commentId: number;
@@ -9,6 +10,7 @@ interface Comment {
   createdAt: string;
   likeCount: number;
   dislikeCount: number;
+  userName?: string;
 }
 
 interface Props {
@@ -16,6 +18,7 @@ interface Props {
 }
 
 export default function ArticleComments({ articleId }: Props) {
+  const navigate = useNavigate();
   const [comments, setComments] = useState<Comment[]>([]);
   const [bestComments, setBestComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
@@ -49,8 +52,7 @@ export default function ArticleComments({ articleId }: Props) {
 
   /* 댓글 작성 */
   const submitComment = async () => {
-    if (!isLoggedIn()) {
-      alert("로그인이 필요합니다.");
+    if (!requireLogin(navigate)) {
       return;
     }
     if (!newComment.trim()) return;
@@ -85,8 +87,7 @@ export default function ArticleComments({ articleId }: Props) {
 
   /* 댓글 좋아요 / 싫어요 */
   const reactComment = async (commentId: number, type: "like" | "dislike") => {
-    if (!isLoggedIn()) {
-      alert("로그인이 필요합니다.");
+    if (!requireLogin(navigate)) {
       return;
     }
 
@@ -115,6 +116,7 @@ export default function ArticleComments({ articleId }: Props) {
           <ul className="comment-list best">
             {bestComments.map(c => (
               <li key={c.commentId}>
+                {c.userName && <p className="comment-author">{c.userName}</p>}
                 <p className="comment-content">{c.content}</p>
                 <div className="comment-footer">
                   <span className="comment-date">
@@ -145,6 +147,7 @@ export default function ArticleComments({ articleId }: Props) {
       <ul className="comment-list">
         {comments.map(c => (
           <li key={c.commentId}>
+            {c.userName && <p className="comment-author">{c.userName}</p>}
             <p className="comment-content">{c.content}</p>
             <div className="comment-footer">
               <span className="comment-date">

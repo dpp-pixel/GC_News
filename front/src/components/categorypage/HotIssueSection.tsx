@@ -37,61 +37,25 @@ export default function HotIssueSection({ themeId }: { themeId: number }) {
 
       <ul className="hot-list">
         {articles.map((article) => (
-          <li
-            key={article.articleId}
-            className="hot-item"
-            style={{
-              display: "flex",
-              gap: "8px",
-              alignItems: "center",
-              marginBottom: "8px",
-            }}
-          >
+          <li key={article.articleId} className="hot-item">
             {/* 썸네일 */}
-            {article.mediaList?.[0]?.url && (
-              <div
-                style={{
-                  flexShrink: 0,
-                  width: "60px",
-                  height: "60px",
-                  overflow: "hidden",
-                }}
-              >
-                <img
-                  src={article.mediaList[0].url}
-                  alt={article.title}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    borderRadius: "4px",
-                  }}
-                />
-              </div>
-            )}
+            <div className="hot-thumbnail">
+              {article.mediaList?.[0]?.url ? (
+                <img src={article.mediaList[0].url} alt={article.title} />
+              ) : (
+                <div className="thumbnail-placeholder">
+                  <span>📰</span>
+                </div>
+              )}
+            </div>
 
-            {/* ❗️여기가 핵심: 제목 클릭 → 기사 상세 */}
-            <Link
-              to={`/news/${article.articleId}`}
-              style={{
-                fontWeight: "bold",
-                fontSize: "14px",
-                color: "#000",
-                textDecoration: "none",
-              }}
-            >
-              {article.title}
-            </Link>
-            <span
-          style={{
-            fontSize: "12px",
-            color: "gray",
-            alignSelf: "flex-end",
-            marginTop: "2px",
-          }}
-        >
-          관련뉴스 {article.clusterCount}개
-        </span>
+            {/* 제목과 메타 정보 */}
+            <div className="hot-content">
+              <Link to={`/news/${article.articleId}`} className="hot-title">
+                {article.title}
+              </Link>
+              <span className="hot-meta">관련뉴스 {article.clusterCount}개</span>
+            </div>
           </li>
         ))}
       </ul>

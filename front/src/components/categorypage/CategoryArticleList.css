@@ -1,3 +1,8 @@
+.category-list {
+  width: 100%;
+  margin: 0 auto;
+}
+
 .category-list ul {
   list-style: none;
   padding: 0;
@@ -32,9 +37,10 @@
 .pagination {
   display: flex;
   align-items: center;
-  gap: 4px; /* 버튼 사이 간격 */
+  justify-content: center;
+  gap: 4px;
   margin-top: 20px;
-  flex-wrap: wrap; /* 화면 좁아지면 줄 바꿈 */
+  flex-wrap: wrap;
 }
 
 .pagination button {
@@ -65,14 +71,6 @@
 .pagination span {
   padding: 6px 8px;
   font-size: 14px;
-} 
-
-.pagination {
-  display: flex;
-  align-items: center;
-  gap: 4px; /* 버튼 사이 간격 */
-  margin-top: 20px;
-  flex-wrap: wrap; /* 화면 좁아지면 줄 바꿈 */
 }
 
 

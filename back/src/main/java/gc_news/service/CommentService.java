@@ -52,10 +52,47 @@ public class CommentService {
                 PageRequest.of(0, 3)); // 갯수
     }
 
+    /** 베스트 댓글 DTO 변환 */
+    @Transactional(readOnly = true)
+    public List<CommentResponseDto> getBestCommentsDto(Long articleId) {
+        List<Comment> comments = commentRepository.findBestComments(
+                articleId,
+                PageRequest.of(0, 3));
+        return convertToDto(comments);
+    }
+
     /** 최신순 댓글 */
     @Transactional(readOnly = true)
     public List<Comment> getCommentsByArticle(Long articleId) {
         return commentRepository.findByArticle_ArticleIdOrderByCreatedAtAsc(articleId);
+    }
+
+    /** 최신순 댓글 DTO 변환 */
+    @Transactional(readOnly = true)
+    public List<CommentResponseDto> getCommentsByArticleDto(Long articleId) {
+        List<Comment> comments = commentRepository.findByArticle_ArticleIdOrderByCreatedAtAsc(articleId);
+        return convertToDto(comments);
+    }
+
+    /** Comment를 CommentResponseDto로 변환하는 공통 메서드 */
+    private List<CommentResponseDto> convertToDto(List<Comment> comments) {
+        return comments.stream().map(c -> {
+            CommentResponseDto dto = new CommentResponseDto();
+            dto.setCommentId(c.getCommentId());
+            dto.setContent(c.getContent());
+            dto.setCreatedAt(c.getCreatedAt());
+            dto.setLikeCount(c.getLikeCount());
+            dto.setDislikeCount(c.getDislikeCount());
+            dto.setArticleId(c.getArticle().getArticleId());
+            dto.setArticleTitle(c.getArticle().getTitle());
+            if (c.getArticle().getMediaList() != null && !c.getArticle().getMediaList().isEmpty()) {
+                dto.setArticleImageUrl(c.getArticle().getMediaList().get(0).getUrl());
+            }
+            if (c.getUser() != null) {
+                dto.setUserName(c.getUser().getName());
+            }
+            return dto;
+        }).toList();
     }
 
     /** 댓글 삭제 */
@@ -101,6 +138,9 @@ public class CommentService {
             dto.setArticleTitle(c.getArticle().getTitle());
             if (c.getArticle().getMediaList() != null && !c.getArticle().getMediaList().isEmpty()) {
                 dto.setArticleImageUrl(c.getArticle().getMediaList().get(0).getUrl());
+            }
+            if (c.getUser() != null) {
+                dto.setUserName(c.getUser().getName());
             }
             return dto;
         }).toList();

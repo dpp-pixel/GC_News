@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { api } from "@/api/client";
+import { requireLogin } from "@/auth/auth";
 import styles from "./ReporterCard.module.css";
 
 
@@ -42,6 +43,7 @@ export default function ReporterCard({
   const [isRecommended, setIsRecommended] = useState(false);
   const [currentTrustScore, setCurrentTrustScore] = useState(trustScore);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   const clampedScore = Math.max(0, Math.min(100, currentTrustScore));
 
@@ -63,6 +65,10 @@ export default function ReporterCard({
   }, [id]);
 
   const handleSubscribe = async () => {
+    if (!requireLogin(navigate)) {
+      return;
+    }
+
     try {
       if (isSubscribed) {
         await api.post(`/reporters/${id}/unsubscribe`);
@@ -81,6 +87,10 @@ export default function ReporterCard({
   };
 
   const handleRecommend = async () => {
+    if (!requireLogin(navigate)) {
+      return;
+    }
+
     try {
       if (isRecommended) {
         await api.post(`/reporters/${id}/unrecommend`);
@@ -99,11 +109,15 @@ export default function ReporterCard({
   };
 
   const handleTrustAnalysis = async () => {
+    if (!requireLogin(navigate)) {
+      return;
+    }
+
     if (isAnalyzing) return;
 
     const confirmed = window.confirm(
       `${name} 기자의 최근 기사를 분석하여 신뢰도를 평가합니다.\n` +
-      `분석에는 수 분이 소요될 수 있습니다.\n` +
+      `분석에는 시간이 소요될 수 있습니다.\n` +
       `계속하시겠습니까?`
     );
 
@@ -130,46 +144,148 @@ export default function ReporterCard({
 
   return (
     <div className={styles.card}>
-      <div className={styles.profile}>
+      {/* 프로필 이미지 */}
+      <div
+        className={styles.avatarWrapper}
+        onClick={() => navigate(`/reporter/${id}`)}
+      >
         <img src={imageUrl} alt={`${name} 기자`} className={styles.avatar} />
+      </div>
 
-        <div
-          className={styles.name}
-          onClick={() => navigate(`/reporter/${id}`)}
-        >
-          {name} 기자
+      {/* 이름 */}
+      <div
+        className={styles.name}
+        onClick={() => navigate(`/reporter/${id}`)}
+      >
+        {name} 기자
+      </div>
+
+      {/* 구독 / 추천 통계 */}
+      <div className={styles.statsRow}>
+        <div className={styles.statItem}>
+          <div className={styles.statValue}>{subscribers}</div>
+          <div className={styles.statLabel}>구독</div>
         </div>
-
-        <div className={styles.position}>정치부 열혈기자</div>
+        <div className={styles.statItem}>
+          <div className={styles.statValue}>{recommends}</div>
+          <div className={styles.statLabel}>추천</div>
+        </div>
       </div>
 
-      <div className={styles.horizontalLine} />
-
-      <div className={styles.summaryRow}>
-        <span>구독 {subscribers}</span>
-        <span className={styles.separator}>|</span>
-        <span>추천 {recommends}</span>
+      {/* 인사말 */}
+      <div className={styles.greeting}>
+        안녕하세요. {name} 기자입니다.
       </div>
 
-      {/* <p className={styles.desc}>
-        정치/사회 섹션에서 정책 기사를 중심으로 취재하고 있습니다.
-      </p> */}
-
+      {/* 구독 / 추천 버튼 */}
       <div className={styles.buttonRow}>
-        <button type="button" className={styles.primaryButton} onClick={handleSubscribe}>
-          {isSubscribed ? "구독 취소" : "+ 구독"}
+        <button
+          type="button"
+          className={`${styles.actionButton} ${isSubscribed ? styles.subscribed : ""}`}
+          onClick={handleSubscribe}
+        >
+          <span className={styles.buttonIcon}>{isSubscribed ? "✓" : "+"}</span>
+          <span>{isSubscribed ? "구독중" : "구독"}</span>
         </button>
-        <button type="button" className={styles.secondaryButton} onClick={handleRecommend}>
-          {isRecommended ? "추천 취소" : "추천"}
+        <button
+          type="button"
+          className={`${styles.actionButton} ${isRecommended ? styles.recommended : ""}`}
+          onClick={handleRecommend}
+        >
+          <span className={styles.buttonIcon}>{isRecommended ? "✓" : "+"}</span>
+          <span>{isRecommended ? "추천중" : "추천"}</span>
         </button>
       </div>
 
+      {/* 신뢰도 섹션 */}
       <div className={styles.trustSection}>
         <div className={styles.trustHeader}>
           <span>기자 신뢰도</span>
-          <button type="button" className={styles.infoButton}>
-            ?
-          </button>
+          <div className={styles.infoButtonWrapper}>
+            <button
+              type="button"
+              className={styles.infoButton}
+              onClick={() => setShowTooltip(!showTooltip)}
+            >
+              ?
+            </button>
+
+            {/* 툴팁 */}
+            {showTooltip && (
+              <div className={styles.tooltip}>
+                <div className={styles.tooltipContent}>
+              <h4>⚠️ 평가 원칙</h4>
+              <p>1. 우수한 저널리즘 기준으로 평가 (평범한 기사 = 평범한 점수)</p>
+              <p>2. 각 항목 최고점은 완벽한 경우에만 부여</p>
+              <p>3. 문제점 발견 시 즉시 감점</p>
+
+              <h4>평가 배점 (총 100점) - 내용 중심 평가</h4>
+
+              <h5>Part A. 제목-본문 정합성 (40점)</h5>
+              <p><strong>키워드 일치도 (10점)</strong></p>
+              <ul>
+                <li>제목의 모든 키워드가 본문에 명확히 등장: 10점</li>
+                <li>대부분 일치하나 일부 불명확: 7점</li>
+                <li>절반 정도 일치: 5점</li>
+                <li>일치도 낮음: 3점</li>
+              </ul>
+
+              <p><strong>주제 반영도 (10점)</strong></p>
+              <ul>
+                <li>본문 핵심이 제목에 정확히 요약됨: 10점</li>
+                <li>주요 내용 반영되나 부차적 내용 강조: 7점</li>
+                <li>부분적으로만 반영: 5점</li>
+                <li>제목과 본문 초점 불일치: 3점</li>
+              </ul>
+
+              <p><strong>과장/왜곡 여부 (20점)</strong></p>
+              <ul>
+                <li>사실 그대로 전달, 완전 중립적: 20점</li>
+                <li>약간의 강조 표현: 16점</li>
+                <li>경미한 과장 (범위→단일값 등): 12점</li>
+                <li>선정적/모호한 표현: 8점</li>
+                <li>명백한 오도/클릭베이트: 0-4점</li>
+              </ul>
+
+              <h5>Part B. 내용 구성 품질 (60점)</h5>
+              <p><strong>사실/의견 구분 명확성 (35점)</strong></p>
+              <p>※ 사실: 검증 가능한 객관적 정보 / 의견: 주장, 추측, 감정 표현</p>
+              <ul>
+                <li>사실 60% 이상 + 출처 명확: 35점</li>
+                <li>사실 45-59% + 출처 대부분 명확: 28점</li>
+                <li>사실 30-44% 또는 출처 일부 불명확: 20점</li>
+                <li>사실 30% 미만 또는 사실/의견 혼재: 12점</li>
+                <li>대부분 의견이나 추측: 5점</li>
+              </ul>
+
+              <p><strong>내용 균형성 (25점)</strong></p>
+              <p>※ 5개 요소: 사실/수치/주장/배경/분석</p>
+              <ul>
+                <li>5개 요소 모두 충실히 포함: 25점</li>
+                <li>4개 요소 포함: 20점</li>
+                <li>3개 요소 포함: 15점</li>
+                <li>2개 요소: 10점</li>
+                <li>1개 이하: 5점</li>
+              </ul>
+
+              <h4>세부 분석 항목</h4>
+              <p>1. 사실 (Facts): 공식 발표, 실명 인용, 검증 가능한 데이터</p>
+              <p>2. 수치 (Numbers): 출처가 명확한 구체적 숫자</p>
+              <p>3. 주장 (Claims): 의견, 추측, 익명 인용, 감정 표현</p>
+              <p>4. 배경설명 (Context): 과거 경위, 관련 정보</p>
+              <p>5. 분석 (Analysis): 전문가 실명 견해, 근거 있는 인과관계</p>
+
+              <h4>점수 해석 가이드</h4>
+              <ul>
+                <li>75점 이상: 우수한 기사</li>
+                <li>60-74점: 평균적 기사</li>
+                <li>45-59점: 미흡한 기사</li>
+                <li>45점 미만: 저품질 기사</li>
+              </ul>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className={styles.trustBarWrapper}>
@@ -183,17 +299,16 @@ export default function ReporterCard({
         </div>
       </div>
 
+      {/* 신뢰도 분석 버튼 */}
       {showTrustAnalysis && (
-        <div className={styles.bottomButtons}>
-          <button
-            type="button"
-            className={styles.fullWidthButton}
-            onClick={handleTrustAnalysis}
-            disabled={isAnalyzing}
-          >
-            {isAnalyzing ? "분석 중..." : "신뢰도 분석"}
-          </button>
-        </div>
+        <button
+          type="button"
+          className={styles.analyzeButton}
+          onClick={handleTrustAnalysis}
+          disabled={isAnalyzing}
+        >
+          {isAnalyzing ? "분석 중..." : "신뢰도 분석"}
+        </button>
       )}
     </div>
   );

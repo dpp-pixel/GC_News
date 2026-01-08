@@ -32,7 +32,7 @@ export default function CategoryPage() {
       {/* AI 요약 */}
       <section
         style={{
-          maxWidth: 1040,
+          width: 1100,
           margin: "32px auto 24px",
         }}
       >

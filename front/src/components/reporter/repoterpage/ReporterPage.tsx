@@ -2,6 +2,7 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { api } from "@/api/client";
+import { Loading } from "@/components";
 import ReporterCard, { type ReporterInfo } from "../ReporterCard";
 import ReporterArticleSection from "./ReporterArticleSection";
 import styles from "./ReporterPage.module.css";
@@ -44,7 +45,7 @@ export default function ReporterPage() {
     fetchReporter();
   }, [reporterId]);
 
-  if (loading) return <div>기자 정보 불러오는 중...</div>;
+  if (loading) return <Loading text="기자 정보 불러오는 중" />;
   if (error) return <div>{error}</div>;
   if (!reporterInfo) return <div>기자 정보를 찾을 수 없습니다.</div>;
 

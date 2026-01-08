@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { api } from "../../api/client"; 
+import { useNavigate } from "react-router-dom";
+import { api } from "../../api/client";
 import "./ArticleReaction.css";
-import { isLoggedIn } from "../../auth/auth";
+import { requireLogin } from "../../auth/auth";
 
 interface Props {
   articleId: number;
@@ -14,6 +15,7 @@ type ReactionCounts = {
 };
 
 export default function ArticleReaction({ articleId }: Props) {
+  const navigate = useNavigate();
   const [counts, setCounts] = useState<ReactionCounts>({});
 
   // 서버에서 기사 감정 반응 개수 조회
@@ -33,8 +35,7 @@ export default function ArticleReaction({ articleId }: Props) {
 
   // 기사 감정 반응 처리
   const react = async (type: "happy" | "sad" | "angry") => {
-    if (!isLoggedIn()) {
-      alert("로그인이 필요합니다.");
+    if (!requireLogin(navigate)) {
       return;
     }
 

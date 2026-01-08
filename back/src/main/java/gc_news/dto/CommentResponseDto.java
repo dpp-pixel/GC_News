@@ -16,5 +16,6 @@ public class CommentResponseDto {
     private Long articleId;
     private String articleTitle;
     private String articleImageUrl;
+    private String userName; // 사용자 이름 추가
 
 }

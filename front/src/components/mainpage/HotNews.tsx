@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { Loading } from "@/components";
 import "./HotNews.css";
 
 interface Article {
@@ -55,7 +56,7 @@ export default function HotNews() {
     fetchHotNews();
   }, []);
 
-  if (loading) return <p>인기 뉴스 불러오는 중...</p>;
+  if (loading) return <Loading text="인기 뉴스 불러오는 중" />;
 
   return (
     <section className="hot-news">
@@ -66,23 +67,37 @@ export default function HotNews() {
           <div key={category.themeId} className="hot-card">
             <h3>{category.themeName}</h3>
 
-            <ul>
-              {category.articles.map((article, idx) => (
-                <li key={article.articleId} className="hot-item">
-                  {/* 첫 기사만 이미지 */}
-                  {idx === 0 && article.mediaList?.[0]?.url && (
-                    <div className="hot-image">
-                      <img
-                        src={article.mediaList[0].url}
-                        alt={article.title}
-                      />
+            {/* 첫 번째 기사: 이미지 표시 */}
+            {category.articles[0] && (
+              <div className="hot-main-article">
+                <div className="hot-image">
+                  {category.articles[0].mediaList?.[0]?.url ? (
+                    <img
+                      src={category.articles[0].mediaList[0].url}
+                      alt={category.articles[0].title}
+                    />
+                  ) : (
+                    <div className="hot-image-placeholder">
+                      <span>📰</span>
                     </div>
                   )}
+                </div>
+                <Link
+                  to={`/news/${category.articles[0].articleId}`}
+                  className="hot-title main"
+                >
+                  {category.articles[0].title}
+                </Link>
+              </div>
+            )}
 
-                  {/* ❗️여기가 핵심 수정 부분 */}
+            {/* 나머지 기사들: 텍스트만 */}
+            <ul>
+              {category.articles.slice(1).map((article) => (
+                <li key={article.articleId} className="hot-item">
                   <Link
                     to={`/news/${article.articleId}`}
-                    className={idx === 0 ? "hot-title main" : "hot-title"}
+                    className="hot-title"
                   >
                     {article.title}
                   </Link>

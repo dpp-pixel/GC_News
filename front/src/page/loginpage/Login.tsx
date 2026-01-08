@@ -109,84 +109,49 @@ export default function Login() {
   return (
     <div className={styles.loginPage}>
       <div className={styles.loginCard}>
+        <button
+          className={styles.closeButton}
+          onClick={() => navigate("/")}
+          aria-label="메인으로 돌아가기"
+        >
+          ✕
+        </button>
         <h1 className={styles.loginTitle}>로그인</h1>
 
-        {/* 소셜 로그인 영역 (UI만) */}
-        <section className={styles.loginSection}>
-          <p className={styles.loginSectionCaption}>
-            SNS 계정으로 간편 로그인
-          </p>
-
-          <button
-            type="button"
-            className={`${styles.socialBtn} ${styles.socialBtnNaver}`}
-          >
-            네이버
-          </button>
-
-          <button
-            type="button"
-            className={`${styles.socialBtn} ${styles.socialBtnKakao}`}
-          >
-            카카오톡
-          </button>
-
-          <button
-            type="button"
-            className={`${styles.socialBtn} ${styles.socialBtnGoogle}`}
-          >
-            Google
-          </button>
-
-          <button
-            type="button"
-            className={`${styles.socialBtn} ${styles.socialBtnApple}`}
-          >
-            Apple로 로그인
-          </button>
-        </section>
-
         {/* 이메일/비밀번호 로그인 */}
-        <section
-          className={`${styles.loginSection} ${styles.loginSectionForm}`}
-        >
-          <p className={styles.loginSectionCaption}>
-            이메일 혹은 아이디로 로그인
-          </p>
+        <form onSubmit={onSubmit} className={styles.loginForm}>
+          <label className={styles.loginLabel}>
+            <span>이메일 주소</span>
+            <input
+              className={styles.loginInput}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="이메일을 입력하세요"
+              autoComplete="username"
+              required
+            />
+          </label>
 
-          <form onSubmit={onSubmit} className={styles.loginForm}>
-            <label className={styles.loginLabel}>
-              <span>이메일 주소 또는 아이디</span>
-              <input
-                className={styles.loginInput}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="email"
-                autoComplete="username"
-                required
-              />
-            </label>
+          <label className={styles.loginLabel}>
+            <span>비밀번호</span>
+            <input
+              className={styles.loginInput}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="비밀번호를 입력하세요"
+              type="password"
+              autoComplete="current-password"
+              required
+            />
+          </label>
 
-            <label className={styles.loginLabel}>
-              <span>비밀번호</span>
-              <input
-                className={styles.loginInput}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="password"
-                type="password"
-                autoComplete="current-password"
-                required
-              />
-            </label>
-
-            <button type="submit" className={styles.loginSubmit}>
-              로그인
-            </button>
-          </form>
-        </section>
+          <button type="submit" className={styles.loginSubmit}>
+            로그인
+          </button>
+        </form>
 
         <div className={styles.loginFooter}>
+          <span className={styles.loginFooterText}>계정이 없으신가요?</span>
           <Link to="/signup" className={styles.loginSignupLink}>
             회원가입
           </Link>
