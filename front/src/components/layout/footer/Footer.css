@@ -1,8 +1,11 @@
+/* src/components/layout/footer/Footer.css */
+
+/* ===== 전체 푸터 영역 ===== */
 .footer {
   background: #000;
   color: #fff;
   margin-top: 80px;
-  padding: 32px 0 24px;
+  padding: 36px 0 24px;
   font-size: 13px;
 }
 
@@ -13,46 +16,44 @@
   box-sizing: border-box;
 }
 
-/* 상단 영역 */
+/* ===== 상단 영역 ===== */
+
 .footer-top {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
+/* Insight News 텍스트 */
 .footer-logo {
   font-size: 20px;
   font-weight: 700;
+  margin-top: 8px; /* 여기 숫자만 조절하면서 살짝 위/아래 미세 조정 가능 */
 }
 
-/* Insight News 옆 본문 전체 */
+/* 로고 아래 한 줄: 오른쪽 회사 정보 블럭만 보이도록 정리 */
 .footer-top-body {
   display: flex;
-  justify-content: space-between;
-  gap: 48px;
-}
-
-/* 왼쪽 (임시 컨텐츠 + 카테고리) */
-.footer-left {
-  display: flex;
+  justify-content: flex-end;  /* 오른쪽으로 붙이기 */
+  align-items: flex-start;
   gap: 24px;
 }
 
-.footer-left-col {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+/* 👉 왼쪽 임시 컨텐츠(임시 컨텐츠1~4, 카테고리)는 화면에서 숨김 */
+.footer-left {
+  display: none;
 }
 
-/* 공통 세로 구분선: 한 줄로 쭉 내려감 */
+/* 회사 정보 왼쪽 세로 줄 */
 .footer-divider {
   width: 1px;
-  background: #555;
-  align-self: stretch; /* 부모 높이만큼 늘리기 */
+  background: #333;      /* 하단 가로선과 같은 색 */
+  align-self: stretch;   /* 부모 높이만큼 세로로 쭉 */
 }
 
-/* 오른쪽 (솔데스크 정보) */
+/* 오른쪽 회사 정보 블럭 */
+
 .footer-right {
   display: flex;
   gap: 24px;
@@ -69,16 +70,18 @@
   line-height: 1.6;
 }
 
-/* 하단 바 */
+/* ===== 하단 영역 ===== */
+
 .footer-bottom {
   border-top: 1px solid #333;
   padding-top: 12px;
-  margin-top: 12px;
+  margin-top: 17px;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
+/* 하단 링크들 (고객센터 / 이용약관 등) */
 .footer-bottom-links {
   display: flex;
   gap: 16px;
@@ -97,6 +100,7 @@
   color: #fff;
 }
 
+/* 저작권 문구 */
 .footer-copy {
   font-size: 11px;
   color: #aaa;
