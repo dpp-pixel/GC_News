@@ -69,18 +69,22 @@ export default function MySubscribeSection() {
       clearTimeout(timer);
       window.removeEventListener("resize", updateSize);
     };
-  }, []);
+  }, [reporters.length]); // reporters가 로드되면 다시 계산
 
-  // 한 번에 이동할 카드 개수 (VISIBLE_COUNT만큼 이동)
-  const SCROLL_STEP = VISIBLE_COUNT;
+  // 한 번에 이동할 카드 개수 (1개씩 이동)
+  const SCROLL_STEP = 1;
 
   const maxIndex = Math.max(0, reporters.length - VISIBLE_COUNT);
   const canPrev = index > 0;
-  const canNext = index < reporters.length - VISIBLE_COUNT;
+  const canNext = index < maxIndex;
 
   // 카드 하나 이동할 때의 이동량 = 카드 폭 + 간격
   const step = cardWidth + GAP;
   const translateX = index * step;
+
+  console.log('🎯 Current index:', index);
+  console.log('🎯 TranslateX:', translateX);
+  console.log('🎯 Step:', step);
 
   if (loading) return <Loading text="구독 목록을 불러오는 중" />;
 
