@@ -73,7 +73,14 @@ export default function AdminSummaryCard({
 
       {/* 본문 영역 */}
       <div className={styles.cardBody}>
-        {loading && <p>요약을 불러오는 중...</p>}
+        {loading && (
+          <>
+            <div style={{ height: "24px", background: "#e0e0e0", borderRadius: "4px", marginBottom: "12px", width: "60%", opacity: 0.6 }} />
+            <div style={{ height: "16px", background: "#e0e0e0", borderRadius: "4px", marginBottom: "8px", width: "100%", opacity: 0.6 }} />
+            <div style={{ height: "16px", background: "#e0e0e0", borderRadius: "4px", marginBottom: "8px", width: "95%", opacity: 0.6 }} />
+            <div style={{ height: "16px", background: "#e0e0e0", borderRadius: "4px", width: "90%", opacity: 0.6 }} />
+          </>
+        )}
         {error && <p>요약을 불러오는데 실패했습니다.</p>}
         {!loading && !error && summary && (
           <>

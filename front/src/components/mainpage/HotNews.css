@@ -91,15 +91,8 @@
 
 .hot-item {
   margin-bottom: 8px;
-  padding-left: 12px;
+  padding-left: 0;
   position: relative;
-}
-
-.hot-item::before {
-  content: "•";
-  position: absolute;
-  left: 0;
-  color: #666;
 }
 
 .hot-title {

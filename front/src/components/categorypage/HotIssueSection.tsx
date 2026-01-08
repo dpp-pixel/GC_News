@@ -15,19 +15,75 @@ interface Article {
 
 export default function HotIssueSection({ themeId }: { themeId: number }) {
   const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     axios
       .get<Article[]>("http://localhost:8081/api/articles/headline", {
         params: {
           days: 3,
-          limit: 5,
+          limit: 20,
           themeId,
         },
       })
-      .then((res) => setArticles(res.data))
-      .catch(console.error);
+      .then((res) => {
+        // 같은 URL 또는 같은 clusterCount를 가진 기사 필터링
+        const seenUrls = new Set<string>();
+        const seenClusterCounts = new Set<number>();
+        const uniqueArticles: Article[] = [];
+
+        // 관련뉴스가 많은 순으로 정렬 (clusterCount 내림차순)
+        const sortedByCluster = [...res.data].sort((a, b) => b.clusterCount - a.clusterCount);
+
+        for (const article of sortedByCluster) {
+          if (uniqueArticles.length >= 5) break;
+
+          if (!seenUrls.has(article.urlString) && !seenClusterCounts.has(article.clusterCount)) {
+            seenUrls.add(article.urlString);
+            seenClusterCounts.add(article.clusterCount);
+            uniqueArticles.push(article);
+          }
+        }
+
+        // 5개가 안 되면 관련뉴스가 적은 순으로 추가
+        if (uniqueArticles.length < 5) {
+          const sortedByClusterAsc = [...res.data].sort((a, b) => a.clusterCount - b.clusterCount);
+
+          for (const article of sortedByClusterAsc) {
+            if (uniqueArticles.length >= 5) break;
+
+            if (!seenUrls.has(article.urlString)) {
+              seenUrls.add(article.urlString);
+              uniqueArticles.push(article);
+            }
+          }
+        }
+
+        setArticles(uniqueArticles);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, [themeId]);
+
+  if (loading) {
+    return (
+      <section className="hot-issue">
+        <h2>헤드라인 뉴스</h2>
+        <ul className="hot-list">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <li key={i} className="hot-item" style={{ opacity: 0.6 }}>
+              <div className="hot-thumbnail" style={{ background: "#e0e0e0" }} />
+              <div className="hot-content" style={{ flex: 1 }}>
+                <div style={{ height: "20px", background: "#e0e0e0", borderRadius: "4px", marginBottom: "8px", width: "80%" }} />
+                <div style={{ height: "14px", background: "#e0e0e0", borderRadius: "4px", width: "40%" }} />
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+    );
+  }
 
   if (articles.length === 0) return null;
 

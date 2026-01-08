@@ -317,7 +317,7 @@ public class NewsCrawlingService {
                     .get();
 
             // li.opinion_column_item 이 한 칼럼 카드
-            Elements items = doc.select("div.opinion_column_list li.opinion_column_item");
+            Elements items = doc.select("ul.opinion_column_list li.opinion_column_item");
             System.out.println("[COLUMN] li.opinion_column_item size = " + items.size());
 
             // Theme 200 (칼럼) 조회

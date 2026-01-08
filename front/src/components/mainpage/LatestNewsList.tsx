@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { Loading } from "@/components";
@@ -13,61 +13,37 @@ interface Article {
   mediaList?: { url: string }[];
 }
 
+const fetchLatestArticles = async () => {
+  const [newsRes, columnsRes] = await Promise.all([
+    axios.get<Article[]>("http://localhost:8081/api/articles/latest?limit=16"),
+    axios.get<Article[]>("http://localhost:8081/api/articles/columns?limit=10")
+  ]);
+
+  return {
+    news: newsRes.data,
+    columns: columnsRes.data
+  };
+};
+
 export default function LatestNewsList() {
-  const [news, setNews] = useState<Article[]>([]);
-  const [columns, setColumns] = useState<Article[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['latestArticles'],
+    queryFn: fetchLatestArticles,
+  });
 
-  useEffect(() => {
-    let cancelled = false;
-
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // 최신 기사와 칼럼을 병렬로 fetch
-        const [newsRes, columnsRes] = await Promise.all([
-          axios.get<Article[]>("http://localhost:8081/api/articles/latest?limit=16"),
-          axios.get<Article[]>("http://localhost:8081/api/articles/columns?limit=10")
-        ]);
-
-        if (!cancelled) {
-          setNews(newsRes.data);
-          setColumns(columnsRes.data);
-        }
-      } catch (e: any) {
-        console.error("LatestNewsList fetch error:", e);
-        if (!cancelled) {
-          setError("기사 목록을 불러오는 데 실패했습니다.");
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchData();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  /* 여기만 핵심 변경 */
-  if (loading) {
+  if (isLoading) {
     return <Loading text="최신 기사 불러오는 중" />;
   }
 
   if (error) {
-    return <p style={{ color: "red" }}>{error}</p>;
+    return <p style={{ color: "red" }}>기사 목록을 불러오는 데 실패했습니다.</p>;
   }
 
-  if (news.length === 0) {
+  if (!data || data.news.length === 0) {
     return <p>표시할 최신 기사가 없습니다.</p>;
   }
+
+  const { news, columns } = data;
 
   const leftNews = news.slice(0, 3);
   const centerNews = news.slice(3);

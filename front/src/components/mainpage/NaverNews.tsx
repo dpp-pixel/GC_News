@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { Loading } from "@/components";
@@ -31,36 +31,27 @@ function stripHtml(html: string | null, maxLength = 120): string {
   return text;
 }
 
+const fetchHeadlineNews = async () => {
+  const res = await axios.get<Article[]>(
+    "http://localhost:8081/api/articles/headline",
+    {
+      params: {
+        limit: 6,
+      },
+    }
+  );
+  return res.data;
+};
+
 export default function NaverNews() {
-  const [news, setNews] = useState<Article[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const { data: news, isLoading, error } = useQuery({
+    queryKey: ['headlineNews'],
+    queryFn: fetchHeadlineNews,
+  });
 
-  useEffect(() => {
-    const fetchNews = async () => {
-      try {
-        const res = await axios.get<Article[]>(
-  "http://localhost:8081/api/articles/headline",
-  {
-    params: {
-      limit: 6,
-    },
-  }
-);
-        setNews(res.data);
-      } catch (e) {
-        console.error("NaverNews /api/articles/headline error:", e);
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchNews();
-  }, []);
-
-  if (loading) return <Loading text="뉴스를 불러오는 중" />;
+  if (isLoading) return <Loading text="뉴스를 불러오는 중" />;
   if (error) return <p>오류가 발생했습니다.</p>;
-  if (news.length === 0) return <p>뉴스가 없습니다.</p>;
+  if (!news || news.length === 0) return <p>뉴스가 없습니다.</p>;
 
   // 이미지가 있는 기사만 필터링
   const articlesWithImages = news.filter(
@@ -95,6 +86,7 @@ export default function NaverNews() {
 
 function MainArticle({ item }: { item: Article }) {
   const summary = stripHtml(item.content, 160); // 메인 카드라 조금 더 길게
+  const title = item.title.length > 50 ? item.title.slice(0, 50) + "…" : item.title;
 
   return (
     <article className="main-article horizontal">
@@ -107,7 +99,7 @@ function MainArticle({ item }: { item: Article }) {
       <div className="main-text">
         {/* 제목 클릭 → 기사 상세 */}
         <Link to={`/news/${item.articleId}`} className="title-link">
-          <h1>{item.title}</h1>
+          <h1>{title}</h1>
         </Link>
 
         {summary && <p className="summary">{summary}</p>}
@@ -152,17 +144,14 @@ function SubArticle({ item }: { item: Article }) {
 }
 
 function ListArticle({ item }: { item: Article }) {
+  const summary = stripHtml(item.content, 103);
+
   return (
     <article className="list-article">
       {/* 리스트 전체 클릭 → 기사 상세 */}
       <Link to={`/news/${item.articleId}`} className="list-link">
-        {item.mediaList?.[0]?.url && (
-          <div className="list-thumb">
-            <img src={item.mediaList[0].url} alt={item.title} />
-          </div>
-        )}
-
         <h4>{item.title}</h4>
+        {summary && <p className="list-summary">{summary}</p>}
         <span>{item.press}</span>
       </Link>
       <div className="cluster-count">

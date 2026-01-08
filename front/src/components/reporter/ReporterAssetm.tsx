@@ -45,9 +45,15 @@ export default function ReporterAsset({ reporter }: ReporterAssetProps) {
 
   // reporter 정보가 변경되면 카운트 업데이트
   useEffect(() => {
+    if (!reporter) {
+      setSubscriberCount(0);
+      setRecommendationCount(0);
+      return;
+    }
+
     setSubscriberCount(reporter.subscriberCount ?? 0);
     setRecommendationCount(reporter.recommendationCount ?? 0);
-  }, [reporter.subscriberCount, reporter.recommendationCount]);
+  }, [reporter]);
 
   const handleSubscribe = async (e: React.MouseEvent) => {
     e.preventDefault();

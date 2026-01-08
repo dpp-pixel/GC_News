@@ -12,7 +12,9 @@ record ReporterSummary(
         Long reporterId,
         String name,
         String profileImageUrl,
-        String press
+        String press,
+        Integer subscriberCount,
+        Integer recommendationCount
 ) {
     static ReporterSummary from(Reporter reporter) {
         if (reporter == null) return null;
@@ -20,7 +22,9 @@ record ReporterSummary(
                 reporter.getReporterId(),
                 reporter.getName(),
                 reporter.getProfileImageUrl(),
-                reporter.getPress()
+                reporter.getPress(),
+                reporter.getSubscriberCount(),      
+                reporter.getRecommendationCount()   
         );
     }
 }

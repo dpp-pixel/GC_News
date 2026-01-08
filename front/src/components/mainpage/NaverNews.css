@@ -23,7 +23,7 @@
 .main-article.horizontal {
   display: flex;
   gap: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 5px;
 }
 
 .main-image {
@@ -119,6 +119,10 @@
 .list-article {
   padding: 14px 0;
   border-bottom: 1px solid #f0f0f0;
+  height: 212px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .list-article a {
@@ -133,18 +137,6 @@
   text-decoration: underline;
 }
 
-/*이미지 크기 2배 */
-.list-thumb {
-  width: 100%;
-  height: 150px;
-  margin-bottom: 6px;
-}
-
-.list-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
 
 /* 제목 */
 .list-article h4 {
@@ -153,10 +145,28 @@
   margin: 0;
 }
 
+/* 요약 */
+.list-summary {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.4;
+  margin: 4px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* 언론사 */
 .list-article span {
   font-size: 12px;
   color: #999;
+}
+
+/* 리스트 기사의 관련 뉴스 */
+.list-article .cluster-count {
+  margin-top: 6px;
 }
 .news-container a {
   color: #000;
