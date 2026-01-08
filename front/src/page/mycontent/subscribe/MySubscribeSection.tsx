@@ -54,13 +54,25 @@ export default function MySubscribeSection() {
       const totalGap = GAP * (VISIBLE_COUNT - 1);
       const widthPerCard = (viewportWidth - totalGap) / VISIBLE_COUNT;
 
+      console.log('Viewport width:', viewportWidth);
+      console.log('Total gap:', totalGap);
+      console.log('Card width:', widthPerCard);
+
       setCardWidth(widthPerCard);
     };
 
-    updateSize();
+    // 초기 렌더링 후 DOM이 완전히 로드된 후 계산
+    const timer = setTimeout(updateSize, 0);
+
     window.addEventListener("resize", updateSize);
-    return () => window.removeEventListener("resize", updateSize);
-  }, []);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", updateSize);
+    };
+  }, [reporters.length]); // reporters가 로드되면 다시 계산
+
+  // 한 번에 이동할 카드 개수 (1개씩 이동)
+  const SCROLL_STEP = 1;
 
   const maxIndex = Math.max(0, reporters.length - VISIBLE_COUNT);
   const canPrev = index > 0;
@@ -69,6 +81,10 @@ export default function MySubscribeSection() {
   // 카드 하나 이동할 때의 이동량 = 카드 폭 + 간격
   const step = cardWidth + GAP;
   const translateX = index * step;
+
+  console.log('🎯 Current index:', index);
+  console.log('🎯 TranslateX:', translateX);
+  console.log('🎯 Step:', step);
 
   if (loading) return <Loading text="구독 목록을 불러오는 중" />;
 
@@ -82,7 +98,7 @@ export default function MySubscribeSection() {
       <button
         type="button"
         className={`arrow ${!canPrev ? "disabled" : ""}`}
-        onClick={() => canPrev && setIndex(index - 1)}
+        onClick={() => canPrev && setIndex(Math.max(0, index - SCROLL_STEP))}
         disabled={!canPrev}
       >
         ‹
@@ -111,7 +127,7 @@ export default function MySubscribeSection() {
       <button
         type="button"
         className={`arrow ${!canNext ? "disabled" : ""}`}
-        onClick={() => canNext && setIndex(index + 1)}
+        onClick={() => canNext && setIndex(Math.min(maxIndex, index + SCROLL_STEP))}
         disabled={!canNext}
       >
         ›

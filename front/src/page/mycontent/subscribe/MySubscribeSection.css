@@ -27,9 +27,9 @@
 
 /* 보이는 영역: 가로는 부모(content-wrapper) 기준으로 100% 사용 */
 .card-viewport {
-  flex: 0 1 auto;
-  width: 100%;
+  flex: 1;
   overflow: hidden;   /* 👉 4개 밖은 잘라버리기 */
+  min-width: 0;       /* flex item이 내용에 맞게 줄어들 수 있도록 */
 }
 
 /* 실제 움직이는 레일 */

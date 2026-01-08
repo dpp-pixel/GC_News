@@ -1,8 +1,8 @@
 /* src/components/reporter/ReporterCard.module.css */
 
 .card {
-  width: 92%;
-  max-width: 340px;
+  width: 100%;
+  max-width: 300px;
   margin: 0 auto;
   padding: 16px;
   border-radius: 8px;
