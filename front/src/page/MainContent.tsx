@@ -16,11 +16,11 @@ export default function MainContent() {
         {/* 1. 큰 메인 뉴스 */}
         <NaverNews />
 
-        {/* 2. 🔽 메인 뉴스 AI 요약 카드 (한 장) */}
+        {/* 2.  메인 뉴스 AI 요약 카드 (한 장) */}
         <section
           style={{
             width: 1100,
-            margin: "32px auto 24px",
+            margin: "0px auto 24px",
           }}
         >
           <AdminSummaryCard badge="메인 뉴스" badgeTone="main" />

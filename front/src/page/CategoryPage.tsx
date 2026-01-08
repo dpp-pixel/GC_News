@@ -33,7 +33,7 @@ export default function CategoryPage() {
       <section
         style={{
           width: 1100,
-          margin: "32px auto 24px",
+          margin: "0px auto 48px",
         }}
       >
         <AdminSummaryCard badge={themeName} themeId={numericThemeId} />

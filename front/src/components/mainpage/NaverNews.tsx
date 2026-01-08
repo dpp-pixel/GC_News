@@ -95,6 +95,7 @@ export default function NaverNews() {
 
 function MainArticle({ item }: { item: Article }) {
   const summary = stripHtml(item.content, 160); // 메인 카드라 조금 더 길게
+  const title = item.title.length > 50 ? item.title.slice(0, 50) + "…" : item.title;
 
   return (
     <article className="main-article horizontal">
@@ -107,7 +108,7 @@ function MainArticle({ item }: { item: Article }) {
       <div className="main-text">
         {/* 제목 클릭 → 기사 상세 */}
         <Link to={`/news/${item.articleId}`} className="title-link">
-          <h1>{item.title}</h1>
+          <h1>{title}</h1>
         </Link>
 
         {summary && <p className="summary">{summary}</p>}
@@ -152,17 +153,14 @@ function SubArticle({ item }: { item: Article }) {
 }
 
 function ListArticle({ item }: { item: Article }) {
+  const summary = stripHtml(item.content, 103);
+
   return (
     <article className="list-article">
       {/* 리스트 전체 클릭 → 기사 상세 */}
       <Link to={`/news/${item.articleId}`} className="list-link">
-        {item.mediaList?.[0]?.url && (
-          <div className="list-thumb">
-            <img src={item.mediaList[0].url} alt={item.title} />
-          </div>
-        )}
-
         <h4>{item.title}</h4>
+        {summary && <p className="list-summary">{summary}</p>}
         <span>{item.press}</span>
       </Link>
       <div className="cluster-count">

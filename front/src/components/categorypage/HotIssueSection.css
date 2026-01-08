@@ -1,12 +1,12 @@
 .hot-issue {
   width: 100%;
-  margin: 32px auto 40px;
+  margin: 2px auto 2px;
 }
 
 .hot-issue h2 {
   font-size: 20px;
   font-weight: 700;
-  margin-bottom: 16px;
+  margin-bottom: 6px;
   color: #000;
 }
 
@@ -16,7 +16,7 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 2px;
 }
 
 .hot-item {
