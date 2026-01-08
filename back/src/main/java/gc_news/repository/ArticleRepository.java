@@ -24,7 +24,7 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
                         SELECT a
                         FROM Article a
                         LEFT JOIN FETCH a.mediaList
-                        ORDER BY a.publishedAt DESC
+                        ORDER BY a.articleId DESC
                         """)
         List<Article> findTopLatestArticles(Pageable pageable);
 

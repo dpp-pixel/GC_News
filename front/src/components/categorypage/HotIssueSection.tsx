@@ -15,8 +15,10 @@ interface Article {
 
 export default function HotIssueSection({ themeId }: { themeId: number }) {
   const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     axios
       .get<Article[]>("http://localhost:8081/api/articles/headline", {
         params: {
@@ -60,8 +62,28 @@ export default function HotIssueSection({ themeId }: { themeId: number }) {
 
         setArticles(uniqueArticles);
       })
-      .catch(console.error);
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, [themeId]);
+
+  if (loading) {
+    return (
+      <section className="hot-issue">
+        <h2>헤드라인 뉴스</h2>
+        <ul className="hot-list">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <li key={i} className="hot-item" style={{ opacity: 0.6 }}>
+              <div className="hot-thumbnail" style={{ background: "#e0e0e0" }} />
+              <div className="hot-content" style={{ flex: 1 }}>
+                <div style={{ height: "20px", background: "#e0e0e0", borderRadius: "4px", marginBottom: "8px", width: "80%" }} />
+                <div style={{ height: "14px", background: "#e0e0e0", borderRadius: "4px", width: "40%" }} />
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+    );
+  }
 
   if (articles.length === 0) return null;
 
