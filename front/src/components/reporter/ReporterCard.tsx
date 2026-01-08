@@ -295,7 +295,9 @@ export default function ReporterCard({
               style={{ width: `${clampedScore}%` }}
             />
           </div>
-          <span className={styles.trustLabel}>{clampedScore}%</span>
+          <span className={styles.trustLabel}>
+            {clampedScore === 0 ? '?%' : `${clampedScore.toFixed(1)}%`}
+          </span>
         </div>
       </div>
 
