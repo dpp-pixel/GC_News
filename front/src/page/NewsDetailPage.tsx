@@ -21,6 +21,8 @@ interface ReporterSummary {
   name: string;
   profileImageUrl?: string | null;
   press: string;
+  subscriberCount?: number;
+  recommendationCount?: number;
 }
 
 interface ArticleDetail {

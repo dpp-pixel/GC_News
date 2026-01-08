@@ -78,8 +78,8 @@ export default function MyCommentSection() {
     if (commentSort === "created") {
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     }
-    const aScore = a.likeCount + a.dislikeCount;
-    const bScore = b.likeCount + b.dislikeCount;
+    const aScore = a.likeCount - a.dislikeCount;
+    const bScore = b.likeCount - b.dislikeCount;
     return bScore - aScore;
   });
 
@@ -124,45 +124,45 @@ export default function MyCommentSection() {
 
       <ul className="bookmark-list comment-list">
         {sortedComments.map((item) => {
-  const imageUrl = item.articleImageUrl || null;
+          const imageUrl = item.articleImageUrl || null;
 
-  return (
-    <li key={item.commentId} className="bookmark-item comment-item">
-      <div className="bookmark-thumb">
-        {imageUrl ? (
-          <img src={imageUrl} alt={item.articleTitle || "기사"} />
-        ) : (
-          <div className="no-image-box">이미지 없음</div>
-        )}
-      </div>
+          return (
+            <li key={item.commentId} className="bookmark-item comment-item">
+              <div className="bookmark-thumb">
+                {imageUrl ? (
+                  <img src={imageUrl} alt={item.articleTitle || "기사"} />
+                ) : (
+                  <div className="no-image-box">이미지 없음</div>
+                )}
+              </div>
 
-      <div className="bookmark-info">
-        <div
-          className="bookmark-title"
-          onClick={() => handleClickComment(item.articleId, item.commentId)}
-          style={{ cursor: "pointer" }}
-        >
-          {item.articleTitle || "제목 없음"}
-        </div>
+              <div className="bookmark-info">
+                <div
+                  className="bookmark-title"
+                  onClick={() => handleClickComment(item.articleId, item.commentId)}
+                  style={{ cursor: "pointer" }}
+                >
+                  {item.articleTitle || "제목 없음"}
+                </div>
 
-        <div className="comment-text">{item.content}</div>
-        <div className="bookmark-meta">{new Date(item.createdAt).toLocaleString()}</div>
+                <div className="comment-text">{item.content}</div>
+                <div className="bookmark-meta">{new Date(item.createdAt).toLocaleString()}</div>
 
-        <div className="bookmark-stats">
-          <span>좋아요 {item.likeCount}</span>
-          <span>싫어요 {item.dislikeCount}</span>
-          <button
-            type="button"
-            className="bookmark-delete"
-            onClick={() => handleDeleteOneComment(item.commentId)}
-          >
-            삭제
-          </button>
-        </div>
-      </div>
-    </li>
-  );
-})}
+                <div className="bookmark-stats">
+                  <span>좋아요 {item.likeCount}</span>
+                  <span>싫어요 {item.dislikeCount}</span>
+                  <button
+                    type="button"
+                    className="bookmark-delete"
+                    onClick={() => handleDeleteOneComment(item.commentId)}
+                  >
+                    삭제
+                  </button>
+                </div>
+              </div>
+            </li>
+          );
+        })}
       </ul>
 
       {loading && <div>로딩 중...</div>}
