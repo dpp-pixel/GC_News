@@ -9,6 +9,7 @@ import ArticleReaction from "../components/articledetailpage/ArticleReaction";
 import ArticleComments from "../components/articledetailpage/ArticleComments";
 import ReporterAssetm from "@/components/reporter/ReporterAssetm";
 import { isLoggedIn, requireLogin } from "../auth/auth";
+import Loading from "../components/common/loading/Loading";
 
 interface Media {
   url: string;
