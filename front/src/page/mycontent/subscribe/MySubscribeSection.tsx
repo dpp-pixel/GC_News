@@ -54,17 +54,29 @@ export default function MySubscribeSection() {
       const totalGap = GAP * (VISIBLE_COUNT - 1);
       const widthPerCard = (viewportWidth - totalGap) / VISIBLE_COUNT;
 
+      console.log('Viewport width:', viewportWidth);
+      console.log('Total gap:', totalGap);
+      console.log('Card width:', widthPerCard);
+
       setCardWidth(widthPerCard);
     };
 
-    updateSize();
+    // 초기 렌더링 후 DOM이 완전히 로드된 후 계산
+    const timer = setTimeout(updateSize, 0);
+
     window.addEventListener("resize", updateSize);
-    return () => window.removeEventListener("resize", updateSize);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", updateSize);
+    };
   }, []);
+
+  // 한 번에 이동할 카드 개수 (VISIBLE_COUNT만큼 이동)
+  const SCROLL_STEP = VISIBLE_COUNT;
 
   const maxIndex = Math.max(0, reporters.length - VISIBLE_COUNT);
   const canPrev = index > 0;
-  const canNext = index < maxIndex;
+  const canNext = index < reporters.length - VISIBLE_COUNT;
 
   // 카드 하나 이동할 때의 이동량 = 카드 폭 + 간격
   const step = cardWidth + GAP;
@@ -82,7 +94,7 @@ export default function MySubscribeSection() {
       <button
         type="button"
         className={`arrow ${!canPrev ? "disabled" : ""}`}
-        onClick={() => canPrev && setIndex(index - 1)}
+        onClick={() => canPrev && setIndex(Math.max(0, index - SCROLL_STEP))}
         disabled={!canPrev}
       >
         ‹
@@ -111,7 +123,7 @@ export default function MySubscribeSection() {
       <button
         type="button"
         className={`arrow ${!canNext ? "disabled" : ""}`}
-        onClick={() => canNext && setIndex(index + 1)}
+        onClick={() => canNext && setIndex(Math.min(maxIndex, index + SCROLL_STEP))}
         disabled={!canNext}
       >
         ›
