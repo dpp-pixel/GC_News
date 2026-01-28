@@ -10,7 +10,6 @@ type UserInfo = {
   email: string;
   name: string | null;
   role: string;
-  createdAt: string;
 };
 
 export default function ProfilePage() {
@@ -109,15 +108,6 @@ export default function ProfilePage() {
     return null;
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("ko-KR", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
   return (
     <div className="profile-page">
       <h2 className="page-title">회원정보</h2>
@@ -130,11 +120,6 @@ export default function ProfilePage() {
         <div className="info-row">
           <span className="label">이름</span>
           <span className="value">{userInfo.name || "미설정"}</span>
-        </div>
-
-        <div className="info-row">
-          <span className="label">가입일시</span>
-          <span className="value">{formatDate(userInfo.createdAt)}</span>
         </div>
 
         <div className="info-row">
