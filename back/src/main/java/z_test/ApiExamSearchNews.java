@@ -15,8 +15,8 @@ public class ApiExamSearchNews {
 
     public static void main(String[] args) {
 
-        String clientId = "EpWWkQ2d0jxw6KT8qumS"; 
-        String clientSecret = "naDlhHtOBP";
+        String clientId = requireEnvironmentVariable("NAVER_CLIENT_ID");
+        String clientSecret = requireEnvironmentVariable("NAVER_CLIENT_SECRET");
 
           String text;
         try {
@@ -36,6 +36,14 @@ public class ApiExamSearchNews {
 
         System.out.println("=== 네이버 뉴스 검색 결과 ===\n");
         System.out.println(responseBody);
+    }
+
+    private static String requireEnvironmentVariable(String name) {
+        String value = System.getenv(name);
+        if (value == null || value.isBlank()) {
+            throw new IllegalStateException(name + " environment variable is required");
+        }
+        return value;
     }
 
     private static String get(String apiUrl, Map<String, String> requestHeaders) {
